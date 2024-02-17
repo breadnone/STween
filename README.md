@@ -34,10 +34,20 @@ A deltatime simulation is needed for the duration-based interpolators to work pr
 STween.move(gameObject, new Vector3(50, 0, 0), 5f).setEase(Ease.EaseInOutQuad).setLoop(2);
 
 //Repositioning on start
-STween.move(gameObject, new Vector3(80, 0, 0), 3f).setEase(Ease.EaseInQuad).setLoop(2).setFrom(new Vector3(20, 0, 0));
+STween.move(gameObject, new Vector3(80, 0, 0), 3f).setEase(Ease.EaseInQuad).setLoop(2).setFrom(new Vector3(20, 0, 0)).setId(12);
+//Cancelling
+STween.Cancel(gameObject);
+// OR
+STween.Cancel(12);
 
 //Not affected by Time.timeScale.
-STween.move(gameObject, new Vector3(0, 90, 0), 2f).setUnscaledTime(true);
+STween.move(gameObject, new Vector3(0, 90, 0), 2f).setUnscaledTime(true).setId(12);
+//Pause
+STween.Pause(gameObject);
+//Resume
+STween.Resume(gameObject);
+//OR
+STween.Resume(12);
 
 //Move to another gameObject as target position
 STween.move(gameObject, target.transform, 2f);
@@ -99,6 +109,10 @@ STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tfo
 STween.scaleX(gameObject, 2f, 4f)
 .next(STween.scaleY(gameObject, 3f, 4f))
 .next(STween.scaleY(gameObject, 4f, 4f));
+
+// Custom Id : Custom id
+STween.scaleY(gameObject, 45, 4f).setId(12);
+STween.Cancel(12);
 
 ///Asynchoronous awaiting.
 async Task AwaitAsTask()

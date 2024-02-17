@@ -29,6 +29,11 @@ A deltatime simulation is needed for the duration-based interpolators to work pr
 
 **Syntaxes**
 ```cs
+
+//Add the namespace
+using Breadnone;
+
+
 /// Move
 
 STween.move(gameObject, new Vector3(50, 0, 0), 5f).setEase(Ease.EaseInOutQuad).setLoop(2);

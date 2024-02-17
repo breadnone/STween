@@ -1,2 +1,164 @@
-# STween
-Zero allocation tweening library for Unity3D.
+**STween - Zero allocation tweening library for Unity3D.**
+
+A lightweight, thread-safe, zero allocation tweening library that works for both runtime and edit-mode (editor).
+
+Features:
+- Move
+- Rotation (Quats, Eulers etc)
+- Scale
+- Quadratic Splines
+- Easings
+- AnimationCurve
+- Can be async-awaited (as Task<T>)
+- Can be yielded (coroutine)
+- Speed Based Tweening
+- Event dispatching
+- Queues
+- Tweening UIElements(UIToolkit)
+- Values(float, int, Vectors, Matix4x4, Quaternion, Rect, etc..)
+- Attachable MonoBehavior components.
+- Audio interpolations
+- Material/shader property interpolation
+- VFXGraph property interpolation
+- Custom tween
+
+**How the pooling works**
+Internally, STween heavily utilizes object pooling and with weakReferences as a secondary fallback layer when there's not enough resources can be taken from the pool.
+
+A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
+
+**Syntaxes**
+```cs
+/// Move
+
+STween.move(gameObject, new Vector3(50, 0, 0), 5f).setEase(Ease.EaseInOutQuad).setLoop(2);
+
+//Repositioning on start
+STween.move(gameObject, new Vector3(80, 0, 0), 3f).setEase(Ease.EaseInQuad).setLoop(2).setFrom(new Vector3(20, 0, 0));
+
+//Not affected by Time.timeScale.
+STween.move(gameObject, new Vector3(0, 90, 0), 2f).setUnscaledTime(true);
+
+//Move to another gameObject as target position
+STween.move(gameObject, target.transform, 2f);
+
+//Single axis : moves along X axis 
+STween.moveX(gameObject, 35, 5f);
+
+//Single axis : moves along Y axis
+STween.moveY(gameObject, 35, 3f);
+
+//Single axis : moves along Z axis
+STween.moveZ(gameObject, 25, 5f);
+
+//Local positions
+STween.moveLocal(gameObject, new Vector3(12, 43, 34), 4f);
+STween.moveLocalX(gameObject, 22, 2f);
+STween.moveLocalY(gameObject, 40, 2f);
+STween.moveLocalZ(gameObject, 120, 10f);
+
+/// Rotate
+
+//Speed based rotation with pingpong-like movement/cycle
+STween.rotate(gameObject, new Vector3(0, 0, 90), 3f).setSpeed(4f).setLoopPingPong(2);
+
+//Rotate with a degree angle from the object's origin.
+STween.rotateAround(gameObject, 90, 3f).setSpeed(4f).setLoopPingPong(2);
+
+//Single axis rotations
+STween.rotateX(gameObject, 90, 2f);
+STween.rotateY(gameObject, 90, 2f);
+STween.rotateZ(gameObject, 90, 2f);
+STween.rotateLocalX(gameObject, 90, 2f);
+STween.rotateLocalY(gameObject, 90, 2f);
+STween.rotateLocalZ(gameObject, 90, 2f);
+
+/// Scale
+
+STween.scale(gameObject, new Vector3(2f, 2f, 2f), 4f);
+
+// Single axis scaling : 
+STween.scaleX(gameObject, new Vector3(2f, 2f, 2f), 4f);
+STween.scaleY(gameObject, new Vector3(2f, 2f, 2f), 4f);
+STween.scaleZ(gameObject, new Vector3(2f, 2f, 2f), 4f);
+
+/// Value
+
+STween.value(0, 100, value =>{Debug.Log(value);});
+
+/// 
+
+```
+
+**APIs**
+
+Main APIs : Can be chained with helper apis
+
+- STween.move
+- STween.moveLocal
+- STween.rotate
+- STween.rotateLocal
+- STween.rotateAround
+- STween.scale
+- STween.size
+- STween.spline
+- STween.value (float, int, Vector2, Vector3, Vector4, Matrix4x4, Quaternion, Rect)
+- STween.combine
+- STween.create
+- STween.queue
+- STween.Cancel
+- STween.Resume
+- STween.Pause
+- STween.alpha
+- STween.color
+- STween.slider
+- STween.sliderInt
+
+Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).setLoop(2);
+
+- setLoop
+- setEase
+- setPingpong
+- setOnUpdate
+- setOnComplete
+- setDelay
+- setAnimationCurve
+- setId
+- setUnscaledTime
+- setSpeed
+- setOnCompleteRepeat
+- setDestroyOnComplete
+- setCancelOn
+- setPauseOn
+- setResumeOn
+- setFrom
+- setLookAt
+
+Extensions : can be chained to both main and helper apis.
+
+- queue
+- next
+- delay
+- styleLerp
+- lerpThis (float, int, Vectors, Quats, Matrix4x4, Rect)
+- moveThis
+- scaleThis
+- rotateThis
+- widthThis
+- heightThis
+- sizeThis
+- colorThis
+- moveByTag
+- scaleByTag
+- rotateByTag
+- lerpMaterial
+- audioFadeIn
+- audioFadeOut
+- audioFadeGlobalIn
+- audioFadeGlobalOut
+- vfxFloat
+- vfxInt
+- vfxVector2
+- vfxVector3
+- vfxVector4
+- sliderUI

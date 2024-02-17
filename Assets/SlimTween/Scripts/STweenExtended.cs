@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine.VFX;
+//using UnityEngine.VFX;
 using TMPro;
 
 namespace Breadnone
@@ -377,6 +377,7 @@ namespace Breadnone
 
             return ins;
         }
+        /*
         /// <summary>
         /// Lerps vfxgraph field in a component.
         /// </summary>
@@ -476,6 +477,7 @@ namespace Breadnone
                 vfxComponent.SetVector4(nameId, value);
             });
         }
+        */
         /// <summary>
         /// Interpolates the color.
         /// </summary>

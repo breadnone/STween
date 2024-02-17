@@ -85,7 +85,10 @@ STween.scaleZ(gameObject, new Vector3(2f, 2f, 2f), 4f);
 /// Value
 
 STween.value(0, 100, value =>{Debug.Log(value);});
-
+STween.value(Vector3.zero, new Vector3(120, 200, 300), value =>{Debug.Log(value);});
+STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
+STween.value(Vector4.zero, new Vector4(120, 200, 300, 100), value =>{Debug.Log(value);});
+STween.value(Quaternion.identity, myQuat, value =>{Debug.Log(value);});
 /// 
 
 ```
@@ -113,6 +116,16 @@ Main APIs : Can be chained with helper apis
 - STween.color
 - STween.slider
 - STween.sliderInt
+- STween.shaderFloat
+- STween.shaderVector2
+- STween.shaderVector3
+- STween.shaderVector4
+- STween.shaderInt
+- STween.vfxFloat
+- STween.vfxInt
+- STween.vfxVector2
+- STween.vfxVector3
+- STween.vfxVector4
 
 Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).setLoop(2);
 
@@ -136,7 +149,8 @@ Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).se
 
 Extensions : can be chained to both main and helper apis.
 
-- queue
+- AsCoroutine
+- AsTask
 - next
 - delay
 - styleLerp
@@ -156,9 +170,4 @@ Extensions : can be chained to both main and helper apis.
 - audioFadeOut
 - audioFadeGlobalIn
 - audioFadeGlobalOut
-- vfxFloat
-- vfxInt
-- vfxVector2
-- vfxVector3
-- vfxVector4
 - sliderUI

@@ -23,7 +23,7 @@ Features:
 - Custom tween
 
 **How the pooling works**
-Internally, STween heavily utilizes object pooling and with weakReferences as a secondary fallback layer when there's not enough resources can be taken from the pool.
+Internally, STween heavily utilizes object pooling and with weakReferences as a fallback when there's not enough resources can be taken from the pool.
 
 A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
 
@@ -89,8 +89,19 @@ STween.value(Vector3.zero, new Vector3(120, 200, 300), value =>{Debug.Log(value)
 STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
 STween.value(Vector4.zero, new Vector4(120, 200, 300, 100), value =>{Debug.Log(value);});
 STween.value(Quaternion.identity, myQuat, value =>{Debug.Log(value);});
-/// 
+///
 
+///Asynchoronous awaiting.
+async Task AwaitAsTask()
+{
+    await STween.move(gameObject, target.transform, 2f).AsTask();
+}
+
+///Yielding as coroutine.
+IEnumerator MyCoroutine()
+{
+    yield return STween.move(gameObject, target.transform, 2f).AsCoroutine();
+}
 ```
 
 **APIs**
@@ -171,3 +182,5 @@ Extensions : can be chained to both main and helper apis.
 - audioFadeGlobalIn
 - audioFadeGlobalOut
 - sliderUI
+
+This lib is inspired by the legendary LeanTween, thus you can see lots of similarities in the naming convention.

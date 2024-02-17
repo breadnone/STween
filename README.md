@@ -132,7 +132,7 @@ Main APIs : Can be chained with helper apis
 - STween.shaderVector3
 - STween.shaderVector4
 - STween.shaderInt
-- STween.vfxFloat
+- STween.vfxFloat //VFX extensions are disabled by default. 
 - STween.vfxInt
 - STween.vfxVector2
 - STween.vfxVector3
@@ -183,4 +183,8 @@ Extensions : can be chained to both main and helper apis.
 - audioFadeGlobalOut
 - sliderUI
 
+Note :
+All extensions related to VFXGraph are disabled by default due to Unity requires to install HDRP package to use VFXGraph.  
+Uncomment the extension and the namespace in SlimTween -> Scripts -> STweenExtended.cs
+  
 This lib is inspired by the legendary LeanTween, thus you can see lots of similarities in the naming convention.

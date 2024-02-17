@@ -78,9 +78,9 @@ STween.rotateLocalZ(gameObject, 90, 2f);
 STween.scale(gameObject, new Vector3(2f, 2f, 2f), 4f);
 
 // Single axis scaling : 
-STween.scaleX(gameObject, new Vector3(2f, 2f, 2f), 4f);
-STween.scaleY(gameObject, new Vector3(2f, 2f, 2f), 4f);
-STween.scaleZ(gameObject, new Vector3(2f, 2f, 2f), 4f);
+STween.scaleX(gameObject, 2, 4f);
+STween.scaleY(gameObject, 3, 4f);
+STween.scaleZ(gameObject, 2, 4f);
 
 /// Value
 
@@ -89,7 +89,16 @@ STween.value(Vector3.zero, new Vector3(120, 200, 300), value =>{Debug.Log(value)
 STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
 STween.value(Vector4.zero, new Vector4(120, 200, 300, 100), value =>{Debug.Log(value);});
 STween.value(Quaternion.identity, myQuat, value =>{Debug.Log(value);});
-///
+
+/// Spline : Quadratic spline based interpolation.
+
+var tform = gameObject.transform.position;
+STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tform.z), new Vector3(tform,x + 100, tform.y, tform,z), 3f);
+
+/// Queue : Chaining multiple tweens
+STween.scaleX(gameObject, 2f, 4f)
+.next(STween.scaleY(gameObject, 3f, 4f))
+.next(STween.scaleY(gameObject, 4f, 4f));
 
 ///Asynchoronous awaiting.
 async Task AwaitAsTask()

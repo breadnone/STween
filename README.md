@@ -132,6 +132,18 @@ IEnumerator MyCoroutine()
 }
 ```
 
+**Create Your Own Tweening Library**
+STween is a one powerful tweening library and highly extendable. You can make your own tweening library on top of it pretty easily by utilizing the built-in custom interpolators.  
+Custom interpolators :  
+- STFloat : Floating point type interpolator
+- STInt : Integer type interpolator
+- STVector2 : Vector2 type interpolator
+- STVector3 : Vector3 type interpolator
+- STVector4 : Vector4 type interpolator
+- STRectangle : Rect typpe interpolator
+- STMatrix : Matrix4x4 interpolator
+- STQuaternion : Quaternion interpolator
+  
 **APIs**
 
 Main APIs : Can be chained with helper apis

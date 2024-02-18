@@ -19,7 +19,7 @@ Features:
 - Attachable MonoBehavior components.
 - Audio interpolations
 - Material/shader property interpolation
-- VFXGraph property interpolation
+- VFXGraph property interpolation //Requires vfxgraph to be installed
 - Custom tween
 
 **How the pooling works**
@@ -43,7 +43,7 @@ STween.move(gameObject, new Vector3(80, 0, 0), 3f).setEase(Ease.EaseInQuad).setL
 //Cancelling
 STween.Cancel(gameObject);
 // OR
-STween.Cancel(12);
+STween.Cancel(12); // Cancels via the assigne custom id. 
 
 //Not affected by Time.timeScale.
 STween.move(gameObject, new Vector3(0, 90, 0), 2f).setUnscaledTime(true).setId(12);
@@ -52,7 +52,7 @@ STween.Pause(gameObject);
 //Resume
 STween.Resume(gameObject);
 //OR
-STween.Resume(12);
+STween.Resume(12); //Resumes via the assigned custom id
 
 //Move to another gameObject as target position
 STween.move(gameObject, target.transform, 2f);
@@ -74,10 +74,10 @@ STween.moveLocalZ(gameObject, 120, 10f);
 
 /// Rotate
 
-//Speed based rotation with pingpong-like movement/cycle
+//Speed based rotation that takes a degree angle with pingpong-like movement/cycle
 STween.rotate(gameObject, new Vector3(0, 0, 90), 3f).setSpeed(4f).setLoopPingPong(2);
 
-//Rotate with a degree angle from the object's origin.
+//Speed based rotation that takes a degree angle from the object's origin.
 STween.rotateAround(gameObject, 90, 3f).setSpeed(4f).setLoopPingPong(2);
 
 //Single axis rotations
@@ -105,7 +105,7 @@ STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
 STween.value(Vector4.zero, new Vector4(120, 200, 300, 100), value =>{Debug.Log(value);});
 STween.value(Quaternion.identity, myQuat, value =>{Debug.Log(value);});
 
-/// Spline : Quadratic spline based interpolation.
+/// Spline : Quadratic curve based interpolation.
 
 var tform = gameObject.transform.position;
 STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tform.z), new Vector3(tform,x + 100, tform.y, tform,z), 3f);
@@ -118,6 +118,10 @@ STween.scaleX(gameObject, 2f, 4f)
 // Custom Id : Custom id
 STween.scaleY(gameObject, 45, 4f).setId(12);
 STween.Cancel(12);
+
+// Callbacks
+STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnComplete(()=> Debug.Log("Was completed")); //Executed on complete
+STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnUpdate(x=> Debug.Log(x)); //Executed every frame with the value as it's event args
 
 ///Asynchoronous awaiting.
 async Task AwaitAsTask()

@@ -144,7 +144,7 @@ Custom interpolators :
 - STMatrix : Matrix4x4 interpolator
 - STQuaternion : Quaternion interpolator
 
-**PlayerLoop**  
+**PlayerLoop & Execution Order**  
 STween uses it's own custom Update timing that gets triggered before any script Updates via the undocumented managed update PlayerLoop api in Unity3D.  
 So the order is like this : GetTween => SendToUpdatePool => Queued for the nextfame => All MonoBehaviors Script Updates next.  
   

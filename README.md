@@ -34,8 +34,7 @@ A deltatime simulation is needed for the duration-based interpolators to work pr
 using Breadnone;
 
 
-/// Move
-
+/// Move :
 STween.move(gameObject, new Vector3(50, 0, 0), 5f).setEase(Ease.EaseInOutQuad).setLoop(2);
 
 //Repositioning on start
@@ -66,14 +65,13 @@ STween.moveY(gameObject, 35, 3f);
 //Single axis : moves along Z axis
 STween.moveZ(gameObject, 25, 5f);
 
-//Local positions
+//Local positions :
 STween.moveLocal(gameObject, new Vector3(12, 43, 34), 4f);
 STween.moveLocalX(gameObject, 22, 2f);
 STween.moveLocalY(gameObject, 40, 2f);
 STween.moveLocalZ(gameObject, 120, 10f);
 
-/// Rotate
-
+/// Rotate :
 //Speed based rotation that takes a degree angle with pingpong-like movement/cycle
 STween.rotate(gameObject, new Vector3(0, 0, 90), 3f).setSpeed(4f).setLoopPingPong(2);
 
@@ -88,8 +86,7 @@ STween.rotateLocalX(gameObject, 90, 2f);
 STween.rotateLocalY(gameObject, 90, 2f);
 STween.rotateLocalZ(gameObject, 90, 2f);
 
-/// Scale
-
+/// Scale :
 STween.scale(gameObject, new Vector3(2f, 2f, 2f), 4f);
 
 // Single axis scaling : 
@@ -102,7 +99,6 @@ STween.translate(gameObject, new Vector3(30, 0, 0), 6f);
 STween.translateLocal(gameObject, new Vector3(30, 0, 0), 6f); // LocalSpace translation.
 
 /// Value
-
 STween.value(0, 100, value =>{Debug.Log(value);});
 STween.value(Vector3.zero, new Vector3(120, 200, 300), value =>{Debug.Log(value);});
 STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
@@ -110,7 +106,6 @@ STween.value(Vector4.zero, new Vector4(120, 200, 300, 100), value =>{Debug.Log(v
 STween.value(Quaternion.identity, myQuat, value =>{Debug.Log(value);});
 
 /// Spline : Quadratic curve based interpolation.
-
 var tform = gameObject.transform.position;
 STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tform.z), new Vector3(tform,x + 100, tform.y, tform,z), 3f);
 
@@ -123,9 +118,15 @@ STween.scaleX(gameObject, 2f, 4f)
 STween.scaleY(gameObject, 45, 4f).setId(12);
 STween.Cancel(12);
 
-// Callbacks
+// Callbacks :
 STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnComplete(()=> Debug.Log("Was completed")); //Executed on complete
 STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnUpdate(x=> Debug.Log(x)); //Executed every frame with the value as it's event args
+
+STween.execLater(5f, ()=> {Debug.Log("will be executed later in 5 seconds");});
+
+// Multiple positions :
+var destinations = new Vector3[]{new Vector3(10, 10, 10), new Vector3(30, 10, 10), new Vector3(30, 10, 50), 5f};
+STween.moveToPoints(gameObject, destinations, 8f);
 
 ///Asynchoronous awaiting.
 async Task AwaitAsTask()

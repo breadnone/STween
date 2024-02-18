@@ -97,6 +97,10 @@ STween.scaleX(gameObject, 2, 4f);
 STween.scaleY(gameObject, 3, 4f);
 STween.scaleZ(gameObject, 2, 4f);
 
+//Translate
+STween.translate(gameObject, new Vector3(30, 0, 0), 6f);
+STween.translateLocal(gameObject, new Vector3(30, 0, 0), 6f); // LocalSpace translation.
+
 /// Value
 
 STween.value(0, 100, value =>{Debug.Log(value);});

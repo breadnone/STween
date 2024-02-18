@@ -147,7 +147,10 @@ STween is a one powerful tweening library and highly extendable. You can make yo
 **PlayerLoop & Execution Order**  
 STween uses it's own custom Update timing that gets triggered before any script Updates via the undocumented managed update PlayerLoop api in Unity3D.  
 So the order is like this : GetTween => SendToUpdatePool => Queued for the nextfame => All MonoBehaviors Script Updates next.  
-  
+
+**Zero-Allocation**  
+You can get zero allocation all the time as long as you're accessing via STween apis. There are exceptions, such as custom interpolators other than STFloat might resulted in 128 bytes allocation, this is due to extra delegate instantiation assigned to them internally. 128 bytes is like nothing and much much less compared to the more popular nextdoor neighbor :) 
+
 **APIs**
 
 Main APIs : Can be chained with helper apis

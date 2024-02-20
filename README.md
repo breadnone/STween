@@ -85,7 +85,7 @@ STween.moveLocalZ(gameObject, 120, 10f);
 STween.rotate(gameObject, new Vector3(0, 0, 90), 3f).setSpeed(4f).setLoopPingPong(2);
 
 //Speed based rotation that takes a degree angle from the object's origin.
-STween.rotateAround(gameObject, 90, 3f).setSpeed(4f).setLoopPingPong(2);
+STween.rotateAround(gameObject, new Vector3(120f, 40f, 1f), 3f).setSpeed(4f).setLoopPingPong(2);
 
 //Single axis rotations
 STween.rotateX(gameObject, 90, 2f);

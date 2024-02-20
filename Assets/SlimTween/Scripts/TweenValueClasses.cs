@@ -48,23 +48,12 @@ namespace Breadnone.Extension
         float ICoreValue<float>.from { get => from; set => from = value; }
         float ICoreValue<float>.to { get => to; set => to = value; }
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
-        public void SetBase(float from, float to, float time, Action<float> callback)
+        public void SetBase(float startfrom, float target, float time, Action<float> excallback)
         {
-            this.from = from;
-            this.to = to;
-            this.callback = callback;
-            this.duration = time;
-            TweenManager.InsertToActiveTween(this);
-        }
-        /// <summary>
-        /// Simple version with preset range of 0 - 1 range.
-        /// </summary>
-        /// <param name="callback"></param>
-        public void SetBaseNormalize(Action<float> callback)
-        {
-            this.from = 0f;
-            this.to = 1f;
-            this.callback = callback;
+            from = startfrom;
+            to = target;
+            duration = time;
+            callback = excallback;
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>
@@ -157,7 +146,7 @@ namespace Breadnone.Extension
             duration = time;
             from = fromValue;
             to = toValue;
-            this.callback = callback != null ? callback : this.callback;
+            this.callback = callback;
             TweenManager.InsertToActiveTween(this);
         }
         protected override void InternalOnComplete()

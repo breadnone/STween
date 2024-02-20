@@ -450,7 +450,7 @@ namespace Breadnone.Extension
             Vector3 from = transform.position;
             var sfloat = new STFloat();
             (sfloat as ISlimRegister).GetSetDuration = time;
-            Multiple(transform, new List<Vector3> { start, middle, end, start, middle, end }, sfloat);
+            Multiple(transform, new List<Vector3> { start, middle, end, start, middle, end }, sfloat, time);
         }
         void Three(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time, STFloat sfloat)
         {
@@ -458,7 +458,7 @@ namespace Breadnone.Extension
             Vector3 controlStart = start + 2f * (middle - start) / 3f;
             Vector3 controlEnd = end + 2f * (middle - end) / 3f;
 
-            sfloat.SetBaseNormalize(tick =>
+            sfloat.SetBase(0f, 1f, time, tick =>
             {
                 // Calculate position on the Bezier curve using cubic formula
                 float t = Mathf.LerpUnclamped(0f, 1f, tick);
@@ -477,14 +477,14 @@ namespace Breadnone.Extension
                 transform.position = position;
             });
         }
-        void Four(Transform transform, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, STFloat sfloat)
+        void Four(Transform transform, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, STFloat sfloat, float time)
         {
             // Calculate control points for cubic Bezier curve
             Vector3 p0p1 = p0 + 2f * (p1 - p0) / 3f;
             Vector3 p1p2 = p1 + 2f * (p2 - p1) / 3f;
             Vector3 p2p3 = p3 + 2f * (p2 - p3) / 3f;
 
-            sfloat.SetBaseNormalize(tick =>
+            sfloat.SetBase(0f, 1f, time, tick =>
             {
                 // Calculate position on the Bezier curve using cubic formula
                 float t = Mathf.LerpUnclamped(0f, 1f, tick);
@@ -503,7 +503,7 @@ namespace Breadnone.Extension
                 transform.position = position;
             });
         }
-        void Multiple(Transform transform, List<Vector3> points, STFloat sfloat)
+        void Multiple(Transform transform, List<Vector3> points, STFloat sfloat, float time)
         {
             List<(Vector3 p0, Vector3 p1, Vector3 pp0, Vector3 pp1, Vector3 pp2)> npoints = new();
             points.Add(transform.position);
@@ -513,7 +513,7 @@ namespace Breadnone.Extension
                 npoints.Add((points[i] + 2f * (points[i + 1] - points[i]) / 3f,
                 points[i + 2] + 2f * (points[i + 1] - points[i + 2]) / 3f, points[i], points[i + 1], points[i + 2]));
             }
-            sfloat.SetBaseNormalize(tick =>
+            sfloat.SetBase(0f, 1f, time, tick =>
             {
                 // Ensure loop iterates within valid npoints range
                 for (int i = 0; i < npoints.Count; i++)
@@ -562,7 +562,7 @@ namespace Breadnone.Extension
             }
 
             // Set base function based on interpolation choice
-            sfloat.SetBaseNormalize(tick =>
+            sfloat.SetBase(0f, 1f, duration, tick =>
             {
                 transform.position = GetBezierSegmentProgress(tick);
             });
@@ -811,52 +811,56 @@ namespace Breadnone.Extension
                 return;
             }
 
-            if (type == TransformType.Move)
+            switch(type)
             {
-                if (!isLocal)
-                    LerpPosition(this.FloatLerp(tick));
-                else
-                    LerpPositionLocal(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.Scale)
-            {
-                LerpScale(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.Rotate)
-            {
-                LerpEuler(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.RotateAround)
-            {
-                LerpRotateAround(this.FloatLerp(tick), angle);
+                case TransformType.Move:
+                    if (!isLocal)
+                        LerpPosition(this.FloatLerp(tick));
+                    else
+                        LerpPositionLocal(this.FloatLerp(tick));
+                    break;
+                case TransformType.Scale:
+                    LerpScale(this.FloatLerp(tick));
+                    break;
+                case TransformType.Rotate:
+                    LerpEuler(this.FloatLerp(tick));
+                    break;
+                case TransformType.RotateAround:
+                    LerpRotateAround(this.FloatLerp(tick), angle);
+                    break;
+                case TransformType.Translate:
+                    LerpTranslate(this.FloatLerp(tick));
+                    break;
             }
         }
         void InvokeLerps(float tick)
         {
-            if (type == TransformType.Move)
+            switch(type)
             {
-                if (!isLocal)
-                    LerpPosition(this.FloatLerp(tick));
-                else
-                    LerpPositionLocal(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.Scale)
-            {
-                LerpScale(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.Rotate)
-            {
-                LerpEuler(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.RotateAround)
-            {
-                LerpRotateAround(this.FloatLerp(tick), angle);
+                case TransformType.Move:
+                    if (!isLocal)
+                        LerpPosition(this.FloatLerp(tick));
+                    else
+                        LerpPositionLocal(this.FloatLerp(tick));
+                    break;
+                case TransformType.Scale:
+                    LerpScale(this.FloatLerp(tick));
+                    break;
+                case TransformType.Rotate:
+                    LerpEuler(this.FloatLerp(tick));
+                    break;
+                case TransformType.RotateAround:
+                    LerpRotateAround(this.FloatLerp(tick), angle);
+                    break;
+                case TransformType.Translate:
+                    LerpTranslate(this.FloatLerp(tick));
+                    break;
             }
         }
         /// <summary>Updates the transform.</summary>
         void ISlimTween.UpdateTransform()
         {
-            if (type == TransformType.Move)
+            if (type == TransformType.Move || type == TransformType.Translate)
             {
                 fromto.SetFrom(!isLocal ? transform.position : transform.localPosition);
             }
@@ -1012,10 +1016,11 @@ namespace Breadnone.Extension
             {
                 fromto.SetFrom(objectTransform.sizeDelta);
             }
-            else if(transformType == TransformType.Size)
+            else if(transformType == TransformType.SizeAnchored)
             {
-                
+                fromto.SetFrom(new Vector2(objectTransform.rect.width, objectTransform.rect.height));
             }
+
             //Make sure the transform will be assigned based on the target value. May not necessary due to rounding in SFloat class, just to be safe.
             TweenManager.InsertToActiveTween(this);
         }
@@ -1066,26 +1071,7 @@ namespace Breadnone.Extension
                 return;
             }
 
-            if (type == TransformType.Move)
-            {
-                if (!isLocal)
-                    LerpPosition(this.FloatLerp(tick));
-                else
-                    LerpPositionLocal(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.Scale)
-            {
-                LerpScale(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.Rotate)
-            {
-                LerpEuler(this.FloatLerp(tick));
-            }
-            else if (type == TransformType.RotateAround)
-            {
-                LerpRotateAround(this.FloatLerp(tick), angle);
-            }
-
+            InvokeLerps(tick);
         }
         void InvokeLerps(float tick)
         {
@@ -1106,8 +1092,11 @@ namespace Breadnone.Extension
                 case TransformType.RotateAround:
                     LerpRotateAround(this.FloatLerp(tick), angle);
                     break;
-                case TransformType.Size:
-                    LerpSize(this.FloatLerp(tick));
+                case TransformType.SizeDelta:
+                    LerpSizeDelta(this.FloatLerp(tick));
+                    break;
+                case TransformType.SizeAnchored:
+                    LerpSizeAnchored(this.FloatLerp(tick));
                     break;
             }
         }
@@ -1159,9 +1148,18 @@ namespace Breadnone.Extension
             transform.RotateAround(fromto.from(), fromto.to(), angle * value);
         }
         /// <summary>Interpolate delta value.</summary>
-        void LerpSize(float value)
+        void LerpSizeDelta(float value)
         {
             transform.sizeDelta = fromto.Interpolate(value);
+        }
+        void LerpSizeAnchored(float value)
+        {
+            Vector2 myPrevPivot = transform.pivot;
+            var to = fromto.to();
+            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,  Mathf.Lerp(transform.rect.width, to.x, value));
+            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,  Mathf.Lerp(transform.rect.height, to.y, value));
+            transform.pivot = myPrevPivot;
+            transform.ForceUpdateRectTransforms();
         }
     }
 
@@ -1184,13 +1182,12 @@ namespace Breadnone.Extension
     public enum TransformType : byte
     {
         Move,
-        MoveTranslate,
         Scale,
         Rotate,
         RotateAround,
         Follow,
         SizeDelta,
-        Size,
+        SizeAnchored,
         Translate,
         None
     }

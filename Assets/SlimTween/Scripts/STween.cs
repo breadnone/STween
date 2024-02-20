@@ -337,6 +337,106 @@ namespace Breadnone
             instance.Init(rectTransform, to, duration, false, TransformType.Move);
             return instance;
         }
+        ///<summary>Resizes a rectTransform to target value.</summary>
+        /// <param name="rectTransform">The rectTransform to resize.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect size(RectTransform rectTransform, Vector2 to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.Init(rectTransform, to, duration, false, TransformType.SizeDelta);
+            return instance;
+        }
+        ///<summary>Resizes a width of rectTransform to target value.</summary>
+        /// <param name="rectTransform">The rectTransform to resize.</param>
+        /// <param name="to">Target width value.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect sizeX(RectTransform rectTransform, float to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var totarget = new Vector2(to, rectTransform.sizeDelta.y);
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.Init(rectTransform, totarget, duration, false, TransformType.SizeDelta);
+            return instance;
+        }
+        ///<summary>Resizes a height of rectTransform to target value.</summary>
+        /// <param name="rectTransform">The rectTransform to resize.</param>
+        /// <param name="to">Target height value.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect sizeY(RectTransform rectTransform, float to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var totarget = new Vector2(rectTransform.sizeDelta.y, to);
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.Init(rectTransform, totarget, duration, false, TransformType.SizeDelta);
+            return instance;
+        }
+        ///<summary>Resizes a rectTransform relative to the anchored position.</summary>
+        /// <param name="rectTransform">The rectTransform to resize.</param>
+        /// <param name="to">Target scale value.</param>
+        /// <param name="duration">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect sizeAnchored(RectTransform rectTransform, Vector2 to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.Init(rectTransform, to, duration, false, TransformType.SizeAnchored);
+            return instance;
+        }
+        ///<summary>Resizes the width of a rectTransform relative to the anchored position.</summary>
+        /// <param name="rectTransform">The rectTransform to resize.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="duration">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect sizeAnchoredX(RectTransform rectTransform, float to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var totarget = new Vector2(to, rectTransform.rect.height);
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.Init(rectTransform, totarget, duration, false, TransformType.SizeAnchored);
+            return instance;
+        }
+        ///<summary>Resizes the height of a rectTransform relative to the anchored position.</summary>
+        /// <param name="rectTransform">The rectTransform to resize.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="duration">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect sizeAnchoredY(RectTransform rectTransform, float to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var totarget = new Vector2(rectTransform.rect.height, to);
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.Init(rectTransform, totarget, duration, false, TransformType.SizeAnchored);
+            return instance;
+        }
         ///<summary>Scales rectTransform to target value.</summary>
         /// <param name="rectTransform">The rectTransform to scale.</param>
         /// <param name="to">Target scale value.</param>
@@ -660,7 +760,26 @@ namespace Breadnone
             return instance;
         }
         ///<summary>Rotates around target.</summary>
+        /// <param name="transform">The transform to rotate.</param>
+        /// <param name="target">Target transform.</param>
+        /// <param name="angle">Angle value.</param>
+        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimTransform rotateAround(Transform transform, Transform target, Vector3 direction, float angle, float duration)
+        {
+            if (transform is null || target == null)
+            {
+                throw new STweenException("Transforms can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimTransform>(transform.gameObject.GetInstanceID());
+            instance.InitRotateAround(transform, target.position, direction, angle, duration, TransformType.RotateAround);
+            return instance;
+        }
+        ///<summary>Rotates around target.</summary>
         /// <param name="gameObject">The transform to rotate.</param>
+        /// <param name="target">Target to be rotated around.</param>
         /// <param name="angle">Target angle value.</param>
         /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
@@ -677,7 +796,26 @@ namespace Breadnone
             return instance;
         }
         ///<summary>Rotates around target.</summary>
+        /// <param name="gameObject">The transform to rotate.</param>
+        /// <param name="target">The transform to rotate.</param>
+        /// <param name="angle">Target angle value.</param>
+        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimTransform rotateAround(GameObject gameObject, GameObject target, Vector3 direction, float angle, float duration)
+        {
+            if (gameObject is null || target is null)
+            {
+                throw new STweenException("GameObjects can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimTransform>(gameObject.GetInstanceID());
+            instance.InitRotateAround(gameObject.transform, target.transform.position, direction, angle, duration, TransformType.RotateAround);
+            return instance;
+        }
+        ///<summary>Rotates around target.</summary>
         /// <param name="rectTransform">The transform to rotate.</param>
+        /// <param name="target">Target to be rotated around.</param>
         /// <param name="angle">Target angle value.</param>
         /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
@@ -1256,7 +1394,9 @@ namespace Breadnone
             instance.Init();
             return instance;
         }
-
+        /// <summary>Lazily queue an already running tween.</summary>
+        /// <param name="id">Target tween id.</param>
+        /// <param name="stween">Tween instance.</param>
         public static TweenClass queue(int id, TweenClass stween)
         {
             stween.halt(true);
@@ -1271,6 +1411,7 @@ namespace Breadnone
                     });
                 }
             }
+
             return stween;
         }
 

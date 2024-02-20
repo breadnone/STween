@@ -2,8 +2,6 @@ using UnityEngine;
 using System.Runtime.CompilerServices;
 using System;
 using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace Breadnone.Extension
 {
@@ -67,130 +65,143 @@ namespace Breadnone.Extension
             return (vecStart, vecEnd);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CombineLerps(TweenClass a, TweenClass b, int id = -1)
+        public static void CombineLerps(TweenClass atransform, TweenClass btransform, int id = -1)
         {
-            if (a is SlimTransform aa && b is SlimTransform bb)
+            if (atransform is SlimTransform atrans && btransform is SlimTransform btrans)
             {
-                if ((aa as ISlimTween).GetTransformType != TransformType.Move || (bb as ISlimTween).GetTransformType != TransformType.Move)
+                if ((atrans as ISlimTween).GetTransformType != TransformType.Move || (btrans as ISlimTween).GetTransformType != TransformType.Move)
                 {
                     throw new STweenException("Non-move tweens able to run without combining. Only combine moves of same object.");
                 }
 
-                var islimA = aa as ISlimTween;
-                var islimB = bb as ISlimTween;
-                Vector3 AA = Vector3.zero;
+                var islimA = atrans as ISlimTween;
+                var islimB = btrans as ISlimTween;
+                Vector3 pos = Vector3.zero;
 
-                var backupCallbackA = islimA.GetSetCallback;
-                var backupCallbackB = islimB.GetSetCallback;
-                Transform transform = aa.GetTransform;
+                islimA.DisableLerps(true);
+                islimB.DisableLerps(true);
+
+                Transform transform = atrans.GetTransform;
                 var startFromA = islimA.FromTo.from;
                 var startFromB = islimB.FromTo.from;
-
-                (aa as ISlimTween).ForceReplaceCallback((x) =>
-                {
-                    AA = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, x);
-                });
-
-                (bb as ISlimTween).ForceReplaceCallback((x) =>
-                {
-                    AA = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, x), AA, x);
-                });
-
-                islimA.ReplacePreviousType(TransformType.None);
-                islimB.ReplacePreviousType(TransformType.None);
-
-                aa.tprops.willBeDisposed = true;
-                bb.tprops.willBeDisposed = true;
 
                 var nt = new STFloat();
                 nt.setEase(Ease.Linear);
 
-                nt.SetBase(0f, 1f, Mathf.Max(aa.tprops.duration, bb.tprops.duration) * 30, (x) =>
+                float? aat = 0;
+                float? bat = 0;
+
+                nt.SetBase(0f, 1f, float.PositiveInfinity, (x) =>
                 {
-                    if (a.state == TweenState.None && backupCallbackA != null)
+                    if (atransform.state == TweenState.None)
                     {
-                        if (b.state != TweenState.None)
+                        if (aat == null)
                         {
-                            islimB.GetSetCallback = backupCallbackB;
-                            backupCallbackB = null;
-                            //islimB.UpdateTransform();
-                            nt.Cancel();
-                            return;
+                            aat = Time.realtimeSinceStartup;
                         }
+
+                        if (btransform.state != TweenState.None)
+                            pos = Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, Mathf.Clamp01(btransform.tick));
                     }
-                    if (b.state == TweenState.None && backupCallbackB != null)
+                    else
                     {
-                        if (a.state != TweenState.None)
-                        {
-                            islimA.GetSetCallback = backupCallbackA;
-                            backupCallbackA = null;
-                            //islimA.UpdateTransform();
-                            nt.Cancel();
-                            return;
-                        }
+                        pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
                     }
 
-                    //transform.position = AA;
+                    if (btransform.state == TweenState.None)
+                    {
+                        if (bat == null)
+                        {
+                            bat = Time.realtimeSinceStartup;
+                        }
+
+                        if (atransform.state != TweenState.None)
+                            pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                    }
+                    else
+                    {
+                        var ttick = Mathf.Clamp01(btransform.tick);
+                        pos = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, ttick), pos, Mathf.Clamp01(ttick));
+                    }
+
+                    if (atransform.state == TweenState.None && btransform.state == TweenState.None)
+                    {
+                        nt.Cancel();
+                        return;
+                    }
+
+                    transform.position = pos;
+                });
+            }
+            else if (atransform is SlimRect arect && btransform is SlimRect brect)
+            {
+                if ((arect as ISlimTween).GetTransformType != TransformType.Move || (brect as ISlimTween).GetTransformType != TransformType.Move)
+                {
+                    throw new STweenException("Non-move tweens able to run without combining. Only combine moves of same object.");
+                }
+
+                var islimA = arect as ISlimTween;
+                var islimB = brect as ISlimTween;
+                Vector3 pos = Vector3.zero;
+
+                islimA.DisableLerps(true);
+                islimB.DisableLerps(true);
+
+                RectTransform transform = arect.GetTransform;
+                var startFromA = islimA.FromTo.from;
+                var startFromB = islimB.FromTo.from;
+
+                var nt = new STFloat();
+                nt.setEase(Ease.Linear);
+
+                float? aat = 0;
+                float? bat = 0;
+
+                nt.SetBase(0f, 1f, float.PositiveInfinity, (x) =>
+                {
+                    if (atransform.state == TweenState.None)
+                    {
+                        if (aat == null)
+                        {
+                            aat = Time.realtimeSinceStartup;
+                        }
+
+                        if (btransform.state != TweenState.None)
+                            pos = Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, Mathf.Clamp01(btransform.tick));
+                    }
+                    else
+                    {
+                        pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                    }
+
+                    if (btransform.state == TweenState.None)
+                    {
+                        if (bat == null)
+                        {
+                            bat = Time.realtimeSinceStartup;
+                        }
+
+                        if (atransform.state != TweenState.None)
+                            pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                    }
+                    else
+                    {
+                        pos = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, btransform.tick), pos, Mathf.Clamp01(btransform.tick));
+                    }
+
+                    if (atransform.state == TweenState.None && btransform.state == TweenState.None)
+                    {
+                        nt.Cancel();
+                        return;
+                    }
+
+                    transform.position = pos;
                 });
             }
 
             //TODO: STRect here 
         }
 
-        [Serializable]
-        public struct CustomPool
-        {
-            float[] array;
-            int index;
-            int len;
-            const int size = 60;
-            static ArrayPool<float> pool = ArrayPool<float>.Shared;
-            public CustomPool(int size = -1)
-            {
-                array = pool.Rent(size);
-                index = -1;
-                len = size - 1;
-            }
-            /// <summary>
-            /// The starting index to take the value from
-            /// </summary>
-            public ref float start()
-            {
-                if (index + 2 > len)
-                {
-                    reInitArray();
-                }
-
-                index++;
-                return ref array[index];
-            }
-            public ref float end()
-            {
-                return ref array[index + 1];
-            }
-            /// <summary>
-            /// The last index to take the value from
-            /// </summary>
-            public ref float time()
-            {
-                return ref array[index + 2];
-            }
-            /// <summary>
-            /// Reinitialization of the array.
-            /// </summary>
-            void reInitArray()
-            {
-                pool.Return(array);
-                array = pool.Rent(size);
-            }
-            /// <summary>
-            /// Returns the array to the pool.
-            /// </summary>
-            void Return()
-            {
-                pool.Return(array);
-            }
-        }
     }
 }
 public static class UnsafeMath
@@ -361,7 +372,6 @@ public static class UnsafeMath
     /// <param name="a"></param>
     /// <param name="b"></param>
     /// <param name="t"></param>
-    /// <returns></returns>
     public static float Flerp0(float a, float b, float t)
     {
         return a + (b - a) * Clamp0(t);
@@ -413,15 +423,16 @@ public static class UnsafeMath
     }
     public static float FPow(float input, int length)
     {
-        float result = 0f;
-        for (int i = 0; i < length; i++) result *= input;
+        float result = input;
+        for (int i = 0; i < length - 1; i++) result *= input;
         return result;
     }
     public static float FCosineLerp(float a, float b, float t)
     {
-        t = Mathf.Clamp01(t);
-        // Calculate the cosine-interpolated value
-        float ft = (1f - Mathf.Cos(t * Mathf.PI)) / 2f; // Map t to a cosine curve
-        return a + (b - a) * ft; // Combine with linear interpolation
+        return a + (b - a) * Mathf.Clamp01((1f - Mathf.Cos(t * Mathf.PI)) * 0.5f); // Combine with linear interpolation
+    }
+    public static float FSineLerp(float a, float b, float t)
+    {
+        return a + (b - a) * Mathf.Clamp01((1f - Mathf.Cos(t * Mathf.PI)) * 0.5f); // Combine with linear interpolation
     }
 }

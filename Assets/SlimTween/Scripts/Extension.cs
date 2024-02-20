@@ -53,7 +53,7 @@ namespace Breadnone
             }
 
             stween.tprops.animationCurve = animationCurve;
-            stween.tprops.duration = animationCurve.keys[animationCurve.length-1].time;
+            (stween as ISlimRegister).GetSetDuration = animationCurve.keys[animationCurve.length-1].time;
             return stween;
         }
         /// <summary>
@@ -122,7 +122,6 @@ namespace Breadnone
             #endif
 
             stween.tprops.unscaledTime = state;
-            (stween as ISlimRegister).ReRegisterDeltaTick();
             return stween;
         }
         /// <summary>

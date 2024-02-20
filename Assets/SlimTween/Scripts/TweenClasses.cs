@@ -1,6 +1,8 @@
 /*
 MIT License
 
+Created by : Stevphanie Ricardo
+
 Copyright(c) 2023
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this
@@ -27,6 +29,7 @@ using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Events;
+using System.Buffers;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -39,30 +42,25 @@ namespace Breadnone.Extension
     public class TweenClass : ISlimRegister
     {
         bool ISlimRegister.wasResurected { get; set; }
-        /// <summary>
-        /// Checks if delta tick previously assigned as unscaled or not.
-        /// </summary>
-        public bool deltaTickWasUnique { get; set; }
-        /// <summary>
-        /// Internal use only.
-        /// </summary>
+        /// <summary>Internal use only.</summary>
         public TProps tprops;
-        /// <summary>
-        /// The tween state of this instance.
-        /// </summary>
+        /// <summary>The tween state of this instance.</summary>
         public TweenState state = TweenState.None;
-        /// <summary>
-        /// The on update function.
-        /// </summary>
+        /// <summary>The on update function.</summary>
         protected Action update;
-        /// <summary>
-        /// The on complete function.
-        /// </summary>
+        /// <summary>The on complete function.</summary>
         protected Action oncomplete;
-        /// <summary>
-        /// The delta timing.
-        /// </summary>
-        protected Action deltaTime;
+        /// <summary>The total duration of this instance when tweening.</summary>
+        protected float duration;
+        /// <summary>The internal running time of this tween instance.</summary>
+        protected float runningTime = 0.00012f;
+        /// <summary>The frameCount when it 1st initialized.</summary>
+        protected int frameIn;
+        /// <summary>Gets and sets the duration.</summary>
+        float ISlimRegister.GetSetDuration { get => duration; set => duration = value; }
+        /// <summary>Gets and sets the runningTime.</summary>
+        float ISlimRegister.GetSetRunningTime { get => runningTime; set => runningTime = value; }
+        /// <summary>Flips the delta ticks</summary>
         protected void FlipTick()
         {
             if (flipTick)
@@ -80,28 +78,22 @@ namespace Breadnone.Extension
         }
         protected bool flipTick = false;
         bool ISlimRegister.FlipTickIs => flipTick;
-        /// <summary>
-        /// The running delta tick timing. This is internal use only and not useful for anything else.
-        /// </summary>
-        public float tick => tprops.runningTime / tprops.duration;
-        /// <summary>
-        /// Does not do anything other than delaying 1 frame. Internal use only.
-        /// </summary>
+        /// <summary>The running delta tick timing. This is internal use only and not useful for anything else.</summary>
+        public float tick => runningTime / duration;
+        /// <summary>Does not do anything other than delaying 1 frame. Internal use only.</summary>
         public void UpdateFrame()
         {
 #if UNITY_EDITOR
             if (!TweenManager.isPlayMode)
             {
-                tprops.frameIn = TweenManager.editorFrameCount.Invoke() + 2;
+                frameIn = TweenManager.editorFrameCount.Invoke() + 2;
                 return;
             }
 #endif
 
-            tprops.frameIn = Time.frameCount + 1;
+            frameIn = Time.frameCount + 1;
         }
-        /// <summary>
-        /// Checks the tween that it should not be running this frame.
-        /// </summary>
+        /// <summary>Checks the tween that it should not be running this frame.</summary>
         public bool IsValid
         {
             get
@@ -109,31 +101,26 @@ namespace Breadnone.Extension
 #if UNITY_EDITOR
                 if (!TweenManager.isPlayMode)
                 {
-                    return tprops.frameIn < TweenManager.editorFrameCount();
+                    return frameIn < TweenManager.editorFrameCount();
                 }
 #endif
-                return tprops.frameIn < Time.frameCount;
+                return frameIn < Time.frameCount;
             }
         }
         ///<summary>Registers init.</summary>
         public TweenClass()
         {
             tprops = STPool.GetTProps();
-            RegisterTime();
         }
-        /// <summary>
-        /// Executed on the very last.
-        /// </summary> 
+        /// <summary>Executed on the very last.</summary> 
         protected virtual void InternalOnComplete() { }
-        /// <summary>
-        /// Registers the delta timing of edit-mode and runtime. Edit-mode will be simulated.
-        /// </summary>
-        protected void RegisterTime()
+        /// <summary>Registers the delta timing of edit-mode and runtime. Edit-mode will be simulated.</summary>
+        protected void InternalTick()
         {
 #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)
             {
-                deltaTime = () => EditorDelta();
+                EditorDelta();
                 return;
             }
 #endif
@@ -142,26 +129,23 @@ namespace Breadnone.Extension
             {
                 if (tprops.delayedTime > 0)
                 {
-                    deltaTime = () => ScaledDeltaDelayed();
-                    deltaTickWasUnique = true;
+                    ScaledDeltaDelayed();
                 }
                 else
                 {
-                    deltaTime = () => ScaledDelta();
+                    ScaledDelta();
                 }
             }
             else
             {
                 if (tprops.delayedTime > 0)
                 {
-                    deltaTime = () => UnscaledDelta();
+                    UnscaledDelta();
                 }
                 else
                 {
-                    deltaTime = () => UnscaledDeltaDelayed();
+                    UnscaledDeltaDelayed();
                 }
-
-                deltaTickWasUnique = true;
             }
         }
         void EditorDelta()
@@ -174,22 +158,22 @@ namespace Breadnone.Extension
 
             if (!flipTick)
             {
-                tprops.runningTime += TweenManager.editorDelta.Invoke();
+                runningTime += TweenManager.editorDelta.Invoke();
             }
             else
             {
-                tprops.runningTime -= TweenManager.editorDelta.Invoke();
+                runningTime -= TweenManager.editorDelta.Invoke();
             }
         }
         void ScaledDelta()
         {
             if (!flipTick)
             {
-                tprops.runningTime += Time.deltaTime;
+                runningTime += Time.deltaTime;
             }
             else
             {
-                tprops.runningTime -= Time.deltaTime;
+                runningTime -= Time.deltaTime;
             }
         }
         void ScaledDeltaDelayed()
@@ -202,22 +186,22 @@ namespace Breadnone.Extension
 
             if (!flipTick)
             {
-                tprops.runningTime += Time.deltaTime;
+                runningTime += Time.deltaTime;
             }
             else
             {
-                tprops.runningTime -= Time.deltaTime;
+                runningTime -= Time.deltaTime;
             }
         }
         void UnscaledDelta()
         {
             if (!flipTick)
             {
-                tprops.runningTime += Time.unscaledDeltaTime;
+                runningTime += Time.unscaledDeltaTime;
             }
             else
             {
-                tprops.runningTime -= Time.unscaledDeltaTime;
+                runningTime -= Time.unscaledDeltaTime;
             }
         }
         void UnscaledDeltaDelayed()
@@ -230,20 +214,16 @@ namespace Breadnone.Extension
 
             if (!flipTick)
             {
-                tprops.runningTime += Time.unscaledDeltaTime;
+                runningTime += Time.unscaledDeltaTime;
             }
             else
             {
-                tprops.runningTime -= Time.unscaledDeltaTime;
+                runningTime -= Time.unscaledDeltaTime;
             }
         }
-        /// <summary>
-        /// Executed every frame. Note : Base must be called at the very beginning when overriding.
-        /// </summary>
-        protected virtual void InternalOnUpdate() { deltaTime.Invoke(); }
-        /// <summary>
-        /// Resets the loop.
-        /// </summary>
+        /// <summary>Executed every frame. Note : Base must be called at the very beginning when overriding.</summary>
+        protected virtual void InternalOnUpdate() { InternalTick(); }
+        /// <summary>Resets the loop.</summary>
         protected virtual void ResetLoop() { }
         ///<summary>Will be executed every frame. Use this if you want to use your own custom timing.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -256,7 +236,7 @@ namespace Breadnone.Extension
             {
                 if (!flipTick)
                 {
-                    if (tprops.runningTime > tprops.duration)
+                    if (runningTime > duration)
                     {
                         if (CheckIfFinished())
                         {
@@ -266,7 +246,7 @@ namespace Breadnone.Extension
                 }
                 else
                 {
-                    if (tprops.runningTime < 0f)
+                    if (runningTime < 0f)
                     {
                         if (CheckIfFinished())
                         {
@@ -279,7 +259,7 @@ namespace Breadnone.Extension
             {
                 if ((tprops.loopCounter & 1) == 0)
                 {
-                    if (!flipTick && tprops.runningFloat + 0.00013 > 1f || (!flipTick && tprops.runningFloat - 0.00015 < 0f && Mathf.Approximately(tprops.runningTime, tprops.duration)))
+                    if (!flipTick && tprops.runningFloat + 0.00013 > 1f || (!flipTick && tprops.runningFloat - 0.00015 < 0f && Mathf.Approximately(runningTime, duration)))
                     {
                         if (CheckIfFinished())
                         {
@@ -349,7 +329,7 @@ namespace Breadnone.Extension
                 }
                 else
                 {
-                    tprops.runningTime = 0.00013f;
+                    runningTime = 0.00013f;
                     tprops.runningFloat = 0.00013f;
                 }
 
@@ -369,7 +349,6 @@ namespace Breadnone.Extension
                     return false;
             }
 
-
             ResetLoop();
 
             if (tprops.pingpong)
@@ -385,7 +364,7 @@ namespace Breadnone.Extension
             }
             else
             {
-                tprops.runningTime = 0.00013f;
+                runningTime = 0.00013f;
                 tprops.runningFloat = 0.00013f;
 
                 if (tprops.oncompleteRepeat)
@@ -396,15 +375,16 @@ namespace Breadnone.Extension
                 return tprops.loopCounter != tprops.loopAmount;
             }
         }
-        
+
         ///<summary>Set common properties to default value.</summary>
         protected void Clear()
         {
-            //(this as IEventRegister).ClearEvents();
             oncomplete = null;
             update = null;
             flipTick = false;
-            this.state = TweenState.None;
+            runningTime = 0.00012f;
+            duration = 0f;
+            state = TweenState.None;
             TweenManager.RemoveFromActiveTween(this);
         }
         ///<summary>Checks if tweening. Paused tween will also mean tweening.</summary>
@@ -433,7 +413,7 @@ namespace Breadnone.Extension
                     st.UpdateTransform();
                 }
 
-                this.UpdateFrame();
+                UpdateFrame();
             }
 
             state = TweenState.Tweening;
@@ -452,35 +432,15 @@ namespace Breadnone.Extension
                 }
             };
         }
-        void ISlimRegister.ReplaceRegisterOnTick(System.Action func)
-        {
-            deltaTime = null;
-            deltaTime = func;
-        }
-        /// <summary>
-        /// Clears all events. Will make the tween stop functioning unless ResubmitBaseValue is triggered. Use this with caustions.
-        /// </summary>
+        /// <summary>Clears all events. Will make the tween stop functioning unless ResubmitBaseValue is triggered. Use this with caustions.</summary>
         void ISlimRegister.ClearEvents()
         {
             oncomplete = null;
             update = null;
         }
-        /// <summary>
-        /// Reassing the delta tick delegate.
-        /// </summary>
-        void ISlimRegister.ReRegisterDeltaTick()
-        {
-            RegisterTime();
-        }
-        /// <summary>
-        /// Registers on complete.
-        /// </summary>
-        /// <param name="func"></param>
+        /// <summary>Registers on complete.</summary>
         void ISlimRegister.RegisterOnComplete(Action func) { oncomplete += func; }
-        /// <summary>
-        /// Registers on update.
-        /// </summary>
-        /// <param name="func"></param>
+        /// <summary>Registers on update.</summary>
         void ISlimRegister.RegisterOnUpdate(Action func) { update += func; }
     }
     public sealed class STSplines
@@ -489,8 +449,11 @@ namespace Breadnone.Extension
         {
             Vector3 from = transform.position;
             var sfloat = new STFloat();
-            sfloat.tprops.duration = time;
-
+            (sfloat as ISlimRegister).GetSetDuration = time;
+            Multiple(transform, new List<Vector3> { start, middle, end, start, middle, end }, sfloat);
+        }
+        void Three(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time, STFloat sfloat)
+        {
             // Calculate control points for cubic Bezier curve
             Vector3 controlStart = start + 2f * (middle - start) / 3f;
             Vector3 controlEnd = end + 2f * (middle - end) / 3f;
@@ -514,6 +477,67 @@ namespace Breadnone.Extension
                 transform.position = position;
             });
         }
+        void Four(Transform transform, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, STFloat sfloat)
+        {
+            // Calculate control points for cubic Bezier curve
+            Vector3 p0p1 = p0 + 2f * (p1 - p0) / 3f;
+            Vector3 p1p2 = p1 + 2f * (p2 - p1) / 3f;
+            Vector3 p2p3 = p3 + 2f * (p2 - p3) / 3f;
+
+            sfloat.SetBaseNormalize(tick =>
+            {
+                // Calculate position on the Bezier curve using cubic formula
+                float t = Mathf.LerpUnclamped(0f, 1f, tick);
+                float t2 = t * t;
+                float t3 = t2 * t;
+                float oneMinusT = 1f - t;
+                float oneMinusT2 = oneMinusT * oneMinusT;
+                float oneMinusT3 = oneMinusT2 * oneMinusT;
+
+                Vector3 position =
+                    oneMinusT3 * p0 +
+                    3f * oneMinusT2 * t * p0p1 +
+                    3f * oneMinusT * t2 * p1p2 +
+                    t3 * p2p3;
+
+                transform.position = position;
+            });
+        }
+        void Multiple(Transform transform, List<Vector3> points, STFloat sfloat)
+        {
+            List<(Vector3 p0, Vector3 p1, Vector3 pp0, Vector3 pp1, Vector3 pp2)> npoints = new();
+            points.Add(transform.position);
+
+            for (int i = 0; i <= points.Count - 2; i += 2)
+            {
+                npoints.Add((points[i] + 2f * (points[i + 1] - points[i]) / 3f,
+                points[i + 2] + 2f * (points[i + 1] - points[i + 2]) / 3f, points[i], points[i + 1], points[i + 2]));
+            }
+            sfloat.SetBaseNormalize(tick =>
+            {
+                // Ensure loop iterates within valid npoints range
+                for (int i = 0; i < npoints.Count; i++)
+                {
+                    var tmp = npoints[i];
+                    // Calculate position on the Bezier curve
+                    float t = Mathf.LerpUnclamped(0f, 1f, tick);
+                    float t2 = t * t;
+                    float t3 = t2 * t;
+                    float oneMinusT = 1f - t;
+                    float oneMinusT2 = oneMinusT * oneMinusT;
+                    float oneMinusT3 = oneMinusT2 * oneMinusT;
+
+                    Vector3 position =
+                        oneMinusT3 * tmp.pp0 +
+                        3f * oneMinusT2 * t * tmp.p0 +
+                        3f * oneMinusT * t2 * tmp.p1 +
+                        t3 * tmp.pp2;
+
+                    // Use the calculated position (assuming it's for transform)
+                    transform.position = position;
+                }
+            });
+        }
     }
     public sealed class STBezier
     {
@@ -524,7 +548,7 @@ namespace Breadnone.Extension
         {
             Vector3 from = transform.position;
             var sfloat = new STFloat();
-            sfloat.tprops.duration = duration;
+            (sfloat as ISlimRegister).GetSetDuration = duration;
             this.points = points;
 
             // Initialize control points based on evenly spaced segments
@@ -543,18 +567,22 @@ namespace Breadnone.Extension
                 transform.position = GetBezierSegmentProgress(tick);
             });
         }
-
+        /// <summary>
+        /// Interpolates bezier points.
+        /// </summary>
+        /// <param name="tick"></param>
         private Vector3 GetBezierSegmentProgress(float tick)
         {
             // Calculate segment index and interpolation factor within that segment
-            int segmentIndex = Mathf.FloorToInt(tick * (controlPoints.Count - 1));
+            int segmentIndex = Mathf.Clamp(Mathf.FloorToInt(tick * (controlPoints.Count - 1)), 0, controlPoints.Count * 2);
             float segmentProgress = tick * (controlPoints.Count - 1) - segmentIndex;
 
+
             // Extract points for the current segment
-            Vector3 p0 = points[segmentIndex];
+            Vector3 p0 = controlPoints[segmentIndex];
             Vector3 p1 = controlPoints[segmentIndex * 2];
             Vector3 p2 = controlPoints[(segmentIndex + 1) * 2];
-            Vector3 p3 = points[segmentIndex + 1];
+            Vector3 p3 = controlPoints[segmentIndex + 1];
 
             // Use cubic Bezier formula for position within the segment
             float t = Mathf.LerpUnclamped(0f, 1f, segmentProgress);
@@ -563,9 +591,64 @@ namespace Breadnone.Extension
             float oneMinusT = 1f - t;
             float oneMinusT2 = oneMinusT * oneMinusT;
             float oneMinusT3 = oneMinusT2 * oneMinusT;
+
             return oneMinusT3 * p0 + 3f * oneMinusT2 * t * p1 + 3f * oneMinusT * t2 * p2 + t3 * p3;
         }
 
+    }
+    public sealed class Bezier
+    {
+        public void SetBase(Transform transform, Vector3[] points, int segments, float time)
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                GetBezierCurvePoints(points, segments);
+            }
+        }
+        public List<Vector3> GetBezierCurvePoints(Vector3[] points, int segments)
+        {
+            if (points.Length < 2 || segments < 1)
+            {
+                throw new ArgumentException("Need at least 2 points and 1 segment");
+            }
+
+            List<Vector3> curvePoints = new List<Vector3>();
+
+            float t = 0f;
+            float dt = 1f / segments;
+
+            while (t <= 1f)
+            {
+                Vector3 point = Vector3.zero;
+
+                for (int i = 0; i < points.Length; i++)
+                {
+                    // Calculate binomial coefficient manually
+                    int n = points.Length - 1;
+                    int k = i;
+                    float binomial = Factorial(n) / (Factorial(k) * Factorial(n - k));
+
+                    float term = binomial * Mathf.Pow(t, i) * Mathf.Pow(1 - t, points.Length - 1 - i);
+                    point += points[i] * term;
+                }
+
+                curvePoints.Add(point);
+                t += dt;
+            }
+
+            return curvePoints;
+        }
+
+        // Helper function to calculate factorial
+        private int Factorial(int n)
+        {
+            int result = 1;
+            for (int i = 2; i <= n; i++)
+            {
+                result *= i;
+            }
+            return result;
+        }
     }
     ///<summary>State of the tweening instance.</summary>
     public enum TweenState : byte
@@ -623,82 +706,42 @@ namespace Breadnone.Extension
     [Serializable]
     public sealed class TProps
     {
-        public bool willBeDisposed;
-        /// <summary>
-        /// The running underlying tick value;
-        /// </summary>
+        /// <summary>The running underlying tick value;</summary>
         public float runningFloat = 0.00012f;
-        /// <summary>
-        /// Instance id
-        /// </summary>
+        /// <summary>Instance id</summary>
         public int id = -1;
-        /// <summary>
-        /// Instance unique id based on the hashcode.
-        /// </summary>
+        /// <summary>Instance unique id based on the hashcode.</summary>
         public int subId = -1;
-        /// <summary>
-        /// The totatl loop count assinged to the this instance.
-        /// </summary>
+        /// <summary>The totatl loop count assinged to the this instance.</summary>
         public int loopAmount;
-        /// <summary>
-        /// Loop counter used internally when tweening.
-        /// </summary>
+        /// <summary>Loop counter used internally when tweening.</summary>
         public int loopCounter;
-        /// <summary>
-        /// Ping pong like interpolation.
-        /// </summary>
+        /// <summary>Ping pong like interpolation.</summary>
         public bool pingpong;
-        /// <summary>
-        /// The total duration of this instance when tweening
-        /// </summary>
-        public float duration;
-        /// <summary>
-        /// The internal running time of this tween instance.
-        /// </summary>
-        public float runningTime = 0.00012f;
-        /// <summary>
-        /// The startup delayed time of this tween instance. 
-        /// </summary>
+        /// <summary>The startup delayed time of this tween instance.</summary>
         public float delayedTime = -1f;
-        /// <summary>
-        /// Executes the oncomplete on each of the cycle completion.
-        /// </summary>
+        /// <summary>Executes the oncomplete on each of the cycle completion.</summary>
         public bool oncompleteRepeat;
-        /// <summary>
-        /// Speed based value instead of time.
-        /// </summary>
+        /// <summary>Speed based value instead of time.</summary>
         public float speed = -1f;
-        /// <summary>
-        /// Easing types.
-        /// </summary>
+        /// <summary>Easing types.</summary>
         public Ease easeType = Ease.Linear;
-        /// <summary>
-        /// Unscaled or scaled delta time.
-        /// </summary>
+        /// <summary>Unscaled or scaled delta time.</summary>
         public bool unscaledTime = false;
-        /// <summary>
-        /// Frame indication of when the tween 1st started.
-        /// </summary>
-        public int frameIn;
-        /// <summary>
-        /// AnimationCurves
-        /// </summary>
+        /// <summary>AnimationCurves</summary>
         public AnimationCurve animationCurve;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ///<summary>Sets to default value to be reused in a pool. If not then will be normally disposed.</summary>
         public void SetDefault()
         {
             loopAmount = 0;
             pingpong = false;
             loopCounter = 0;
-            runningTime = 0.00012f;
             oncompleteRepeat = false;
             speed = -1f;
             animationCurve = null;
             easeType = Ease.Linear;
             unscaledTime = false;
             delayedTime = -1;
-            willBeDisposed = false;
             runningFloat = 0.00012f;
         }
         public void ResetLoopProperties()
@@ -706,195 +749,146 @@ namespace Breadnone.Extension
             loopCounter = 0;
         }
     }
+
     /// <summary>
     /// Event registers interface
     /// </summary>
     public interface ISlimRegister
     {
         public bool FlipTickIs { get; }
-        /// <summary>
-        /// An object can only be revived once and MUST NOT be pooled.
-        /// </summary>
+        /// <summary> An object can only be revived once and MUST NOT be pooled.</summary>
         public bool wasResurected { get; set; }
-        /// <summary>
-        /// Indicator that the deltaTime was unscaled or non setDelay was used.
-        /// </summary>
-        public bool deltaTickWasUnique { get; set; }
-        /// <summary>
-        /// Basically there's a small window of when the tween being finalized.\nThis will be called at the very very last and get executed only once before being disposed.
-        /// </summary>
-        /// <param name="func">Delegate.</param>
+        /// <summary>There's a small window of when the tween being finalized.\nThis will be called at the very very last and get executed only once before being disposed.</summary>
         public void RegisterLastOnComplete(Action func);
-        /// <summary>
-        /// Registers on complete.
-        /// </summary>
-        /// <param name="func"></param>
+        /// <summary>Registers on complete.</summary>
         public void RegisterOnComplete(Action func);
-        /// <summary>
-        /// Registers on update.
-        /// </summary>
-        /// <param name="func"></param>
+        /// <summary>Registers on update.</summary>
         public void RegisterOnUpdate(Action func);
-        /// <summary>
-        /// Registers on deltaTime delegate.
-        /// </summary>
-        /// <param name="func"></param>
-        public void ReplaceRegisterOnTick(Action func);
-        /// <summary>
-        /// This will make the tween instance to stop working/tweening completely unless ResubmitBaseValue being triggered.
-        /// </summary>
+        /// <summary>This will make the tween instance to stop working/tweening completely unless ResubmitBaseValue being triggered.</summary>
         public void ClearEvents();
-        /// <summary>
-        /// Resets and re-register the delta tick automatically.
-        /// </summary>
-        public void ReRegisterDeltaTick();
+        public float GetSetDuration { get; set; }
+        /// <summary>Gets and sets the runningTime field.</summary>
+        public float GetSetRunningTime { get; set; }
     }
-    /// <summary>
-    /// STTransform class to handle all Transforms.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <summary>STTransform class to handle all Transforms.</summary>
     public sealed class SlimTransform : TweenClass, ISlimTween
     {
-        /// <summary>
-        /// Previous assigned type.
-        /// </summary>
-        TransformType ISlimTween.GetTransformType { get => previousType; set => previousType = value; }
-        /// <summary>
-        /// The transform.
-        /// </summary>
-        private Transform transform;
-        /// <summary>
-        /// Starting value.
-        /// </summary>
-        private Vector3 from;
-        /// <summary>
-        /// Target value.
-        /// </summary>
-        private Vector3 to;
-        /// <summary>
-        /// Get the underlying transform object. Note : This is only for development purposes.
-        /// </summary>
+        /// <summary>Previous assigned type.</summary>
+        TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
+        /// <summary>The transform.</summary>
+        Transform transform;
+        /// <summary>Starting value.</summary>
+        Vector6 fromto = default;
+        /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public Transform GetTransform => transform;
-        private TransformType previousType = TransformType.None;
-        private bool isLocal = false;
-        public Action<float> callback;
-        Action<float> ISlimTween.GetSetCallback { get => callback; set => callback = value; }
-        void ISlimTween.ReplacePreviousType(Breadnone.Extension.TransformType type)
-        {
-            previousType = type;
-        }
+        /// <summary>Tween type.</summary>
+        TransformType type = TransformType.None;
+        /// <summary>Locality.</summary>
+        bool isLocal = false;
+        float angle;
+        bool disableLerps;
+        void ISlimTween.DisableLerps(bool state) { disableLerps = state; }
+        /// <summary>Locality.</summary>
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
-        void ISlimTween.RebaseInit()
-        {
-            if (previousType == TransformType.Move)
-            {
-                callback ??= !isLocal ? x => LerpPosition(x) : x => LerpPositionLocal(x);
-            }
-            else if (previousType == TransformType.Scale)
-            {
-                callback ??= x => LerpScale(x);
-            }
-            else if (previousType == TransformType.Rotate)
-            {
-                callback ??= x => LerpEuler(x);
-            }
-        }
-        /// <summary>
-        /// Invoked at the very last of a completion. Won't be executec if cancelled.
-        /// </summary>
+        /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
         protected override void InternalOnComplete()
         {
-            callback.Invoke(tprops.pingpong ? 0f : 1f);
+            InvokeLerps(tprops.pingpong ? 0f : 1f);
+            disableLerps = false;
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ///<summary>Resets properties shuffle from/to value.</summary>
         protected override void ResetLoop()
         {
-            callback.Invoke(!flipTick ? 1f : 0f);
+            InvokeLerps(!flipTick ? 1f : 0f);
         }
-        /// <summary>
-        /// Invoked every frame.
-        /// </summary>
+        /// <summary>Invoked every frame.</summary>
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            callback.Invoke(this.FloatLerp(tick));
-        }
-        void ISlimTween.UpdateTransform()
-        {
-            if (previousType == TransformType.Move)
-            {
-                from = !isLocal ? transform.position : transform.localPosition;
-            }
-            else if (previousType == TransformType.Scale)
-            {
-                from = transform.localScale;
-            }
-        }
-        /// <summary>
-        /// Replace the callback.
-        /// </summary>
-        /// <param name="callback"></param>
-        void ISlimTween.ForceReplaceCallback(Action<float> callback)
-        {
-            this.callback = callback;
-        }
-        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (from, to); } set { from = value.from; to = value.to; } }
-        /// <summary>
-        /// Dummy initialization used for pool.
-        /// </summary>
-        /// <param name="typo"></param>
-        public void ZeroInit(TransformType typo, int intype = -1)
-        {
-            if (previousType != TransformType.None)
-            {
-                throw new STweenException("Was initialized. Operation failed!");
-            }
 
-            previousType = typo;
-
-            if (intype == 0)
+            if (disableLerps)
             {
-                isLocal = true;
+                return;
             }
-        }
-        /// <summary>
-        /// Initialize transform base value.
-        /// </summary>
-        /// <param name="transform">The transform.</param>
-        /// <param name="from">Starting value</param>
-        /// <param name="to">Target value.</param>
-        /// <param name="time">Duration.</param>
-        /// <param name="isLocal">Locality.</param>
-        /// <param name="type">Transform operation type.</param>
-        public void Init(Transform transform, Vector3 to, float time, bool isLocal, TransformType type)
-        {
-            if (this.previousType != type || this.isLocal != isLocal)
-            {
-                callback = null;
-            }
-
-            this.previousType = type;
-            this.transform = transform;
-            this.to = to;
-            tprops.duration = time;
-            this.isLocal = isLocal;
-            //ROTATION will take FROM as axis and TO.x as degree angle.
 
             if (type == TransformType.Move)
             {
-                from = !isLocal ? transform.position : transform.localPosition;
-                callback ??= !isLocal ? x => LerpPosition(x) : x => LerpPositionLocal(x);
+                if (!isLocal)
+                    LerpPosition(this.FloatLerp(tick));
+                else
+                    LerpPositionLocal(this.FloatLerp(tick));
             }
             else if (type == TransformType.Scale)
             {
-                from = transform.localScale;
-                callback ??= x => LerpScale(x);
+                LerpScale(this.FloatLerp(tick));
             }
-            else if (type == TransformType.Translate)
+            else if (type == TransformType.Rotate)
             {
-                from = !isLocal ? transform.position : transform.localPosition;
-                callback ??= x => LerpTranslate(x);
+                LerpEuler(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.RotateAround)
+            {
+                LerpRotateAround(this.FloatLerp(tick), angle);
+            }
+        }
+        void InvokeLerps(float tick)
+        {
+            if (type == TransformType.Move)
+            {
+                if (!isLocal)
+                    LerpPosition(this.FloatLerp(tick));
+                else
+                    LerpPositionLocal(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.Scale)
+            {
+                LerpScale(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.Rotate)
+            {
+                LerpEuler(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.RotateAround)
+            {
+                LerpRotateAround(this.FloatLerp(tick), angle);
+            }
+        }
+        /// <summary>Updates the transform.</summary>
+        void ISlimTween.UpdateTransform()
+        {
+            if (type == TransformType.Move)
+            {
+                fromto.SetFrom(!isLocal ? transform.position : transform.localPosition);
+            }
+            else if (type == TransformType.Scale)
+            {
+                fromto.SetFrom(transform.localScale);
+            }
+        }
+        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (fromto.from(), fromto.to()); } set { fromto.SetFrom(value.from); fromto.SetTo(value.to); } }
+        /// <summary>Initialize transform base value.</summary>
+        /// <param name="objectTransform">The transform.</param>
+        /// <param name="from">Starting value</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="time">Duration.</param>
+        /// <param name="local">Locality.</param>
+        /// <param name="transformType">Transform operation type.</param>
+        public void Init(Transform objectTransform, Vector3 to, float time, bool local, TransformType transformType)
+        {
+            type = transformType;
+            transform = objectTransform;
+            fromto.SetTo(to);
+            duration = time;
+            isLocal = local;
+            //ROTATION will take FROM as axis and TO.x as degree angle.
+
+            if (transformType == TransformType.Move || transformType == TransformType.Translate)
+            {
+                fromto.SetFrom(!local ? objectTransform.position : objectTransform.localPosition);
+            }
+            else if (transformType == TransformType.Scale)
+            {
+                fromto.SetFrom(objectTransform.localScale);
             }
 
             TweenManager.InsertToActiveTween(this);
@@ -903,379 +897,282 @@ namespace Breadnone.Extension
         /// <summary>
         /// Initialize ROTATION base value.
         /// </summary>
-        /// <param name="transform">The transform.</param>
+        /// <param name="objectTransform">The transform.</param>
         /// <param name="axis">The axis.</param>
         /// <param name="degree">Angle degree.</param>
         /// <param name="time">Time duration.</param>
-        /// <param name="isLocal">Locality.</param>
-        public void InitRotation(Transform transform, Vector3 axis, float time, bool isLocal, TransformType type)
+        /// <param name="local">Locality.</param>
+        public void InitRotation(Transform objectTransform, Vector3 axis, float time, bool local, TransformType transformType)
         {
-            if (this.previousType != type || this.isLocal != isLocal)
-            {
-                callback = null;
-            }
-
-            previousType = type;
-            tprops.duration = time;
-            this.transform = transform;
-            this.isLocal = isLocal;
+            type = transformType;
+            duration = time;
+            transform = objectTransform;
+            isLocal = local;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
-            to = axis;
-            //sfloat.SetBase(0f, 1f, time, x => LerpEuler(x));
-            callback ??= x => LerpEuler(x);
+            fromto.SetTo(axis);
             TweenManager.InsertToActiveTween(this);
         }
-        public void InitRotateAround(Transform transform, Vector3 point, Vector3 axis, float angle, float time, TransformType type)
+        public void InitRotateAround(Transform objectTransform, Vector3 point, Vector3 axis, float targetAngle, float time, TransformType transformType)
         {
-            this.previousType = type;
-            this.transform = transform;
-            tprops.duration = time;
-            //ROTATION will take FROM as axis and TO.x as degree angle.
-            to = axis;
-            from = point;
-            //sfloat.SetBase(0f, 1f, time, x => LerpRotateAround(x, angle));
+            type = transformType;
+            transform = objectTransform;
+            duration = time;
+            angle = targetAngle;
 
-            callback = x => LerpRotateAround(x, angle);
+            //ROTATION will take FROM as axis and TO.x as degree angle.
+            fromto.Set(point, axis);
             TweenManager.InsertToActiveTween(this);
         }
-        /// <summary>
-        /// Interpolates local position.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary> Interpolates local position.</summary>
         void LerpPositionLocal(float value)
         {
-            transform.localPosition = Vector3.LerpUnclamped(from, to, value);
+            transform.localPosition = fromto.Interpolate(value);
         }
-        /// <summary>
-        /// Interpoaltes world position.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.position = Vector3.LerpUnclamped(from, to, value);
+            //transform.position = Vector3.LerpUnclamped(from, to, value);
+            transform.position = fromto.Interpolate(value);
+
         }
-        /// <summary>
-        /// Interpolates the scale.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
         {
-            transform.localScale = Vector3.LerpUnclamped(from, to, value);
+            transform.localScale = fromto.Interpolate(value);
         }
-        /// <summary>
-        /// Interpolates local/world rotation.
-        /// </summary>
+        /// <summary>Interpolates local/world rotation.</summary>
         void LerpEuler(float value)
         {
             if (!isLocal)
             {
-                transform.rotation = Quaternion.Euler(to * value);
+                transform.rotation = Quaternion.Euler(fromto.to() * value);
             }
             else
             {
-                transform.localRotation = Quaternion.Euler(to * value);
+                transform.localRotation = Quaternion.Euler(fromto.to() * value);
             }
         }
-        /// <summary>
-        /// Rotates based on target point.
-        /// </summary>
+        /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value, float angle)
         {
-            transform.RotateAround(from, to, angle * value);
+            transform.RotateAround(fromto.from(), fromto.to(), angle * value);
         }
-        /// <summary>
-        /// Rotates based on target point.
-        /// </summary>
+        /// <summary>Rotates based on target point.</summary>
         void LerpTranslate(float value)
         {
-            transform.Translate(to * value, !isLocal ? Space.World : Space.Self);
-        }
-        void ISlimTween.Dispose()
-        {
-            callback = null;
-        }
-        ~SlimTransform()
-        {
-            callback = null;
+            transform.Translate(fromto.to() * value, !isLocal ? Space.World : Space.Self);
         }
     }
-    /// <summary>
-    /// The sub base class.
-    /// </summary>
+    /// <summary>The sub base class.</summary>
     public sealed class SlimRect : TweenClass, ISlimTween
     {
-        /// <summary>
-        /// Previous assigned type.
-        /// </summary>
-        TransformType ISlimTween.GetTransformType { get => previousType; set => previousType = value; }
-        /// <summary>
-        /// The transform.
-        /// </summary>
-        private UnityEngine.RectTransform transform;
-        /// <summary>
-        /// Starting value.
-        /// </summary>
-        private Vector3 from;
-        /// <summary>
-        /// Target value.
-        /// </summary>
-        private Vector3 to;
-        private Action<float> callback;
-        Action<float> ISlimTween.GetSetCallback { get => callback; set => callback = value; }
-        /// <summary>
-        /// Get the underlying transform object. Note : This is only for development purposes.
-        /// </summary>
+        /// <summary>The transform.</summary>
+        UnityEngine.RectTransform transform;
+        /// <summary>Starting position to target value.</summary>
+        Vector6 fromto;
+        /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public UnityEngine.RectTransform GetTransform => transform;
-        public TransformType previousType { get; private set; } = TransformType.None;
-        private bool isLocal = false;
-        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (from, to); } set { from = value.from; to = value.to; } }
-        void ISlimTween.ReplacePreviousType(Breadnone.Extension.TransformType type)
-        {
-            previousType = type;
-        }
+        /// <summary>Tween type.</summary>
+        TransformType type = TransformType.None;
+        /// <summary>Locality.</summary>
+        bool isLocal = false;
+        bool disableLerps;
+        float angle;
+        void ISlimTween.DisableLerps(bool state) { disableLerps = state; }
+        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (fromto.from(), fromto.to()); } set { fromto.SetFrom(value.from); fromto.SetTo(value.to); } }
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
-        void ISlimTween.RebaseInit()
-        {
-            if (previousType == TransformType.Move)
-            {
-                callback ??= !isLocal ? x => LerpPosition(x) : x => LerpPositionLocal(x);
-            }
-            else if (previousType == TransformType.Scale)
-            {
-                callback ??= x => LerpScale(x);
-            }
-            else if (previousType == TransformType.Rotate)
-            {
-                callback ??= x => LerpEuler(x);
-            }
-            else if (previousType == TransformType.SizeDelta)
-            {
-                callback ??= x => LerpSize(x);
-            }
-            else if (previousType == TransformType.Size)
-            {
-
-            }
-        }
-        /// <summary>
-        /// Initialize transform base value.
-        /// </summary>
-        /// <param name="transform">The transform.</param>
+        /// <summary>Previous assigned type.</summary>
+        TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
+        /// <summary>Initialize transform base value.</summary>
+        /// <param name="objectTransform">The transform.</param>
         /// <param name="from">Starting value</param>
         /// <param name="to">Target value.</param>
         /// <param name="time">Duration.</param>
         /// <param name="isLocal">Locality.</param>
-        /// <param name="type">Transform operation type.</param>
-        public void Init(UnityEngine.RectTransform transform, Vector3 to, float time, bool isLocal, TransformType type)
+        /// <param name="transformType">Transform operation type.</param>
+        public void Init(UnityEngine.RectTransform objectTransform, Vector3 to, float time, bool local, TransformType transformType)
         {
-            if (previousType != type || this.isLocal != isLocal)
-            {
-                callback = null;
-            }
-
-            previousType = type;
-            this.transform = transform;
-            this.to = to;
-            tprops.duration = time;
-            this.isLocal = isLocal;
+            type = transformType;
+            transform = objectTransform;
+            fromto.SetTo(to);
+            duration = time;
+            isLocal = local;
             //ROTATION will take FROM as axis and TO.x as degree angle.
 
-            if (type == TransformType.Move)
+            if (transformType == TransformType.Move)
             {
-                from = !isLocal ? transform.position : transform.localPosition;
-                callback ??= !isLocal ? x => LerpPosition(x) : x => LerpPositionLocal(x);
+                fromto.SetFrom(!isLocal ? objectTransform.position : objectTransform.localPosition);
             }
-            else if (type == TransformType.Scale)
+            else if (transformType == TransformType.Scale)
             {
-                from = transform.localScale;
-                callback ??= x => LerpScale(x);
+                fromto.SetFrom(objectTransform.localScale);
             }
-            else if (type == TransformType.SizeDelta)
+            else if (transformType == TransformType.SizeDelta)
             {
-                from = transform.sizeDelta;
-                callback ??= x => LerpSize(x);
+                fromto.SetFrom(objectTransform.sizeDelta);
             }
-
+            else if(transformType == TransformType.Size)
+            {
+                
+            }
             //Make sure the transform will be assigned based on the target value. May not necessary due to rounding in SFloat class, just to be safe.
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>
         /// Initialize ROTATION base value.
         /// </summary>
-        /// <param name="transform">The transform.</param>
+        /// <param name="objectTransform">The transform.</param>
         /// <param name="axis">The axis.</param>
         /// <param name="degree">Angle degree.</parsam>
         /// <param name="time">Time duration.</param>
-        /// <param name="isLocal">Locality.</param>
-        public void InitRotation(UnityEngine.RectTransform transform, Vector3 axis, float angle, float time, bool isLocal, TransformType type)
+        /// <param name="local">Locality.</param>
+        public void InitRotation(UnityEngine.RectTransform objectTransform, Vector3 axis, float targetAngle, float time, bool local, TransformType transformType)
         {
-            if (this.previousType != type || this.isLocal != isLocal)
-            {
-                callback = null;
-            }
-
-            previousType = type;
-            tprops.duration = time;
-            this.transform = transform;
-            this.isLocal = isLocal;
-
-            //ROTATION will take FROM as axis and TO.x as degree angle.
-            to = axis;
-            from = new Vector3(0f, angle, 0f);
-            //sfloat.SetBase(0f, 1f, time, x => LerpEuler(x));
-            callback ??= x => LerpEuler(x);
-
+            type = transformType;
+            duration = time;
+            transform = objectTransform;
+            isLocal = local;
+            angle = targetAngle;
+            fromto.Set(new Vector3(0f, angle, 0f), axis);
             TweenManager.InsertToActiveTween(this);
         }
-        public void InitRotateAround(UnityEngine.RectTransform transform, Vector3 point, Vector3 axis, float angle, float time, TransformType type)
+        public void InitRotateAround(UnityEngine.RectTransform objectTransform, Vector3 point, Vector3 axis, float angle, float time, TransformType transformType)
         {
-            previousType = type;
-            this.transform = transform;
-            tprops.duration = time;
-            //ROTATION will take FROM as axis and TO.x as degree angle.
-            to = axis;
-            from = point;
-            //sfloat.SetBase(0f, 1f, time, x => LerpRotateAround(x, angle));
-
-            callback = x => LerpRotateAround(x, angle);
+            type = transformType;
+            transform = objectTransform;
+            duration = time;
+            fromto.Set(point, axis);
             TweenManager.InsertToActiveTween(this);
         }
-        /// <summary>
-        /// Dummy initialization used for pool.
-        /// </summary>
-        /// <param name="typo"></param>
-        public void ZeroInit(TransformType typo, int intype = -1)
-        {
-            if (previousType != TransformType.None)
-            {
-                throw new STweenException("Was initialized. Operation failed!");
-            }
-
-            previousType = typo;
-
-            if (intype == 0)
-            {
-                isLocal = true;
-            }
-        }
-        /// <summary>
-        /// Invoked at the very last of a completion. Won't be executec if cancelled.
-        /// </summary>
+        /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
         protected override void InternalOnComplete()
         {
-            callback.Invoke(tprops.pingpong ? 0f : 1f);
+            InvokeLerps(tprops.pingpong ? 0f : 1f);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ///<summary>Resets properties shuffle from/to value.</summary>
         protected override void ResetLoop()
         {
-            callback.Invoke(!flipTick ? 1f : 0f);
+            InvokeLerps(!flipTick ? 1f : 0f);
         }
-        /// <summary>
-        /// Invoked every frame.
-        /// </summary>
+        /// <summary>Invoked every frame.</summary>
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            callback.Invoke(this.FloatLerp(tick));
+
+            if (disableLerps)
+            {
+                return;
+            }
+
+            if (type == TransformType.Move)
+            {
+                if (!isLocal)
+                    LerpPosition(this.FloatLerp(tick));
+                else
+                    LerpPositionLocal(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.Scale)
+            {
+                LerpScale(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.Rotate)
+            {
+                LerpEuler(this.FloatLerp(tick));
+            }
+            else if (type == TransformType.RotateAround)
+            {
+                LerpRotateAround(this.FloatLerp(tick), angle);
+            }
+
+        }
+        void InvokeLerps(float tick)
+        {
+            switch (type)
+            {
+                case TransformType.Move:
+                    if (!isLocal)
+                        LerpPosition(this.FloatLerp(tick));
+                    else
+                        LerpPositionLocal(this.FloatLerp(tick));
+                    break;
+                case TransformType.Scale:
+                    LerpScale(this.FloatLerp(tick));
+                    break;
+                case TransformType.Rotate:
+                    LerpEuler(this.FloatLerp(tick));
+                    break;
+                case TransformType.RotateAround:
+                    LerpRotateAround(this.FloatLerp(tick), angle);
+                    break;
+                case TransformType.Size:
+                    LerpSize(this.FloatLerp(tick));
+                    break;
+            }
         }
         void ISlimTween.UpdateTransform()
         {
-            if (previousType == TransformType.Move)
+            if (type == TransformType.Move)
             {
-                from = !isLocal ? transform.position : transform.localPosition;
+                fromto.SetFrom(!isLocal ? transform.position : transform.localPosition);
             }
-            else if (previousType == TransformType.Scale)
+            else if (type == TransformType.Scale)
             {
-                from = transform.localScale;
+                fromto.SetFrom(transform.localScale);
             }
             else if ((this as ISlimTween).GetTransformType == TransformType.SizeDelta)
             {
-                from = transform.sizeDelta;
+                fromto.SetFrom(transform.sizeDelta);
             }
         }
-        void ISlimTween.ForceReplaceCallback(Action<float> callback)
-        {
-            this.callback = callback;
-        }
-        /// <summary>
-        /// Interpolates local position.
-        /// </summary>
-        /// <param name="value">Delta tick value. 0 - 1.</param>
+        /// <summary>Interpolates local position.</summary>
         void LerpPositionLocal(float value)
         {
-            transform.localPosition = Vector3.LerpUnclamped(from, to, value);
+            transform.localPosition = fromto.Interpolate(value);
         }
-        /// <summary>
-        /// Interpoaltes world position.
-        /// </summary>
-        /// <param name="value">Delta tick value. 0 - 1.</param>
+        /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.position = Vector3.LerpUnclamped(from, to, value);
+            transform.position = fromto.Interpolate(value);
         }
-        /// <summary>
-        /// Interpolates the scale.
-        /// </summary>
-        /// <param name="value">Delta tick value. 0 - 1.</param>
+        /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
         {
-            transform.localScale = Vector3.LerpUnclamped(from, to, value);
+            transform.localScale = fromto.Interpolate(value);
         }
-        /// <summary>
-        /// Interpolates local/world rotation.
-        /// </summary>
+        /// <summary>Interpolates local/world rotation.</summary>
         void LerpEuler(float value)
         {
             if (!isLocal)
             {
-                transform.rotation = Quaternion.Euler(to * value);
+                transform.rotation = Quaternion.Euler(fromto.to() * value);
             }
             else
             {
-                transform.localRotation = Quaternion.Euler(to * value);
+                transform.localRotation = Quaternion.Euler(fromto.to() * value);
             }
         }
-        /// <summary>
-        /// Rotates based on target point.
-        /// </summary>
+        /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value, float angle)
         {
-            transform.RotateAround(from, to, angle * value);
+            transform.RotateAround(fromto.from(), fromto.to(), angle * value);
         }
-        /// <summary>
-        /// Interpolate delta value.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Interpolate delta value.</summary>
         void LerpSize(float value)
         {
-            transform.sizeDelta = Vector3.LerpUnclamped(from, to, value);
-        }
-        void ISlimTween.Dispose()
-        {
-            callback = null;
-        }
-        ~SlimRect()
-        {
-            callback = null;
+            transform.sizeDelta = fromto.Interpolate(value);
         }
     }
 
     public interface ISlimTween
     {
         public bool Locality { get; set; }
-        public void RebaseInit();
+        public void DisableLerps(bool state);
         public TransformType GetTransformType { get; set; }
-        public void Dispose();
         public void UpdateTransform();
-        public void ForceReplaceCallback(Action<float> callback);
-        /// <summary>
-        /// The tween type. e.g: move, rotate etc.
-        /// </summary>
-        public void ReplacePreviousType(TransformType type);
+        /// <summary>Access to the starting and target value.</summary>
         public (Vector3 from, Vector3 to) FromTo { get; set; }
-        public Action<float> GetSetCallback { get; set; }
     }
     /// <summary>
     /// Delegate to pass easeing refs
@@ -1297,34 +1194,74 @@ namespace Breadnone.Extension
         Translate,
         None
     }
+
     [Serializable]
-    [StructLayout(LayoutKind.Auto)]
-    public struct TFloat2
+    public struct Vector6
     {
-        public float a;
-        public float b;
-        public TFloat2(float a, float b)
+        float x;
+        float a;
+        float y;
+        float b;
+        float z;
+        float c;
+        public ref Vector3 from() 
         {
-            this.a = a;
-            this.b = b;
+            vec.Set(a, b, c);
+            return ref vec;
+        }
+        public ref Vector3 to()
+        {
+            vec.Set(x, y, z);
+            return ref vec;
+        }
+        static Vector3 vec;
+        public void Set(Vector3 from, Vector3 to)
+        {
+            SetFrom(from);
+            SetTo(to);
+        }
+
+        public void SetFrom(Vector3 from)
+        {
+            a = from.x;
+            b = from.y;
+            c = from.z;
+        }
+        public void SetTo(Vector3 to)
+        {
+            x = to.x;
+            y = to.y;
+            z = to.z;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Swap()
+        public ref Vector3 Interpolate(float tick)
         {
-            var aa = a;
-            a = b;
-            b = aa;
+                vec.Set(
+                a + (x - a) * tick,
+                b + (y - b) * tick,
+                c + (z - c) * tick);
+            return ref vec; 
         }
     }
-    public struct Vector3Byte
+    public struct TimeStruct
     {
-        public byte a;
-        public byte b;
-        public byte c;
-    }
-    public struct Vector2Byte
-    {
-        public byte a;
-        public byte b;
+        float _runningTime;
+        float _duration;
+        public float runningTime => _runningTime;
+        public float duration => _duration;
+        public float tick => _runningTime / _duration;
+        public TimeStruct(float defaultRunTime = 0.00012f, float defaultDuration = 0f)
+        {
+            _runningTime = defaultRunTime;
+            _duration = defaultDuration;
+        }
+        public void SetTime(float time)
+        {
+            _runningTime = time;
+        }
+        public void SetDuration(float time)
+        {
+            _duration = time;
+        }
     }
 }

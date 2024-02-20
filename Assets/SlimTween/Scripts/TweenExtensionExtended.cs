@@ -238,8 +238,8 @@ namespace Breadnone
                 var tmp = sf.FromTo;
                 sf.FromTo = (tmp.from, to);
 
-                tclass.tprops.duration = duration;
-                tclass.tprops.runningTime = 0f;
+                (tclass as ISlimRegister).GetSetDuration = duration;
+                (tclass as ISlimRegister).GetSetRunningTime = 0f;
                 tclass.tprops.speed = tclass.tprops.speed > 0 ? duration : -1;
                 tclass.Resume();
             }

@@ -38,7 +38,7 @@ namespace Breadnone.Extension
     {
         public void SetBaseValues(float time, Action func)
         {
-            tprops.duration = time;
+            duration = time;
 
             (this as ISlimRegister).RegisterLastOnComplete(func);
         }
@@ -51,26 +51,6 @@ namespace Breadnone.Extension
             base.InternalOnUpdate();
         }
     }
-
-    public static class SineFunctio
-    {
-        /// <summary>
-        /// Move to target position in a sine wave like behavior
-        /// </summary>
-        public static STFloat SineToTarget(GameObject gameObject, Vector3 targetPosition, float duration, Ease ease)
-        {
-            var ins = new STFloat();
-            return ins;
-        }
-        /// <summary>
-        /// Interpolating in a sine wave like behavior.
-        /// </summary>
-        public static void SineInterpolator()
-        {
-
-        }
-    }
-
     /*
     //Sample async/coroutine uses
 
@@ -105,7 +85,7 @@ namespace Breadnone.Extension
             var tcs = new TaskCompletionSource<bool>();
             var delTime = tween.tprops.delayedTime < 0 ? 0 : tween.tprops.delayedTime;
             tween.Resume();
-            YieldInstruction sec = new WaitForSeconds(tween.tprops.duration + delTime + 0.001f);
+            YieldInstruction sec = new WaitForSeconds((tween as ISlimRegister).GetSetDuration + delTime + 0.001f);
             TweenManager.mono.RunCoroutine(sec, tcs);
             return sec;
         }
@@ -235,6 +215,7 @@ namespace Breadnone.Extension
         Integer = 4,
         None = 5
     }
+
 
     public static class VectorExt
     {

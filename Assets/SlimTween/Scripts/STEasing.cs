@@ -1,5 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
+/*
+MIT License
+
+created by : Breadnone
+
+Copyright(c) 2023
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 using UnityEngine;
 using System.Runtime.CompilerServices;
 
@@ -29,15 +48,15 @@ namespace Breadnone
         }
         public static float EaseInSine(float val)
         {
-            return 1 - Mathf.Cos((val * Mathf.PI) / 2f);
+            return 1 - Mathf.Cos(val * Mathf.PI * 0.5f);
         }
         public static float EaseOutSine(float val)
         {
-            return clamp1(Mathf.Sin((val * Mathf.PI) / 2f));
+            return clamp1(Mathf.Sin(val * Mathf.PI * 0.5f));
         }
         public static float EaseInOutSine(float val)
         {
-            return clamp1(-(Mathf.Cos(Mathf.PI * val) - 1f) / 2f);
+            return clamp1(0.5f * (1-Mathf.Cos(Mathf.PI * val)));
         }
         public static float EaseInQuad(float val)
         {
@@ -46,13 +65,13 @@ namespace Breadnone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseOutQuad(float val)
         {
-            val = clamp1(val);
-            return 1f - (1f - val) * (1f - val);
+            float p0 = 1f - val;
+            return clamp1(1f - p0 * p0);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutQuad(float val)
         {
-            return val < 0.5001f ? 2f * val * val : clamp1(1f - pow(-2f * val + 2f, 2) / 2f);
+            return val < 0.5001f ? 2f * val * val : clamp1(1f - pow(-2f * val + 2f, 2) * 0.5f);
         }
         public static float EaseInCubic(float val)
         {
@@ -60,12 +79,13 @@ namespace Breadnone
         }
         public static float EaseOutCubic(float val)
         {
-            return clamp1(1 - pow(1f - val, 3));
+            val = 1f - val;
+            return clamp1(1 - (val * val * val));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutCubic(float val)
         {
-            return val < 0.5001f ? 4f * val * val * val : clamp1(1f - pow(-2f * val + 2f, 3) / 2f);
+            return val < 0.5001f ? 4f * val * val * val : clamp1(1f - pow(-2f * val + 2f, 3) * 0.5f);
         }
         public static float EaseInQuart(float val)
         {
@@ -73,12 +93,13 @@ namespace Breadnone
         }
         public static float EaseOutQuart(float val)
         {
-            return clamp1(1f - pow(1f - val, 4));
+            val = 1f - val;
+            return clamp1(1f - (val * val * val * val));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutQuart(float val)
         {
-            return val < 0.5001f ? 8f * val * val * val * val : clamp1(1f - pow(-2f * val + 2f, 4) / 2f);
+            return val < 0.5001f ? 8f * val * val * val * val : clamp1(1f - pow(-2f * val + 2f, 4) * 0.5f);
         }
         public static float EaseInQuint(float val)
         {
@@ -86,12 +107,13 @@ namespace Breadnone
         }
         public static float EaseOutQuint(float val)
         {
-            return 1f - clamp1(pow(1f - val, 5));
+            val = 1f - val;
+            return 1f - clamp1(val * val * val * val * val);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutQuint(float val)
         {
-            return val < 0.5001f ? 16f * val * val * val * val * val : clamp1(1f - pow(-2f * val + 2f, 5) / 2f);
+            return val < 0.5001f ? 16f * val * val * val * val * val : clamp1(1f - pow(-2f * val + 2f, 5) * 0.5f);
         }
         public static float EaseInExpo(float val)
         {
@@ -104,27 +126,35 @@ namespace Breadnone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutExpo(float val)
         {
-            return val - 0.0001f < 0f
+            return val < 0f
             ? 0f
-            : val + 0.00015f > 1f
+            : val > 1f
             ? 1f
-            : val < 0.5001 ? Mathf.Pow(2f, 20f * val - 10f) / 22f
-            : (2f - Mathf.Pow(2f, -20f * val + 10f)) / 2f;
+            : val < 0.5001 ? Mathf.Pow(2f, 20f * val - 10f) * 0.5f
+            : clamp1((2f - Mathf.Pow(2f, -20f * val + 10f)) * 0.5f);
         }
         public static float EaseInCirc(float val)
         {
-            return 1f - clamp0(Mathf.Sqrt(1f - pow(val, 2)));
+            return 1f - clamp1(Mathf.Sqrt(1f - (val * val)));
         }
         public static float EaseOutCirc(float val)
         {
-            return clamp1(Mathf.Sqrt(1f - pow(val - 1f, 2)));
+            val = val - 1f;
+            return clamp1(Mathf.Sqrt(1f - (val * val - 1f)));
         }
+        //TODO : Surely, this is not accurate.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutCirc(float val)
         {
-            return val < 0.5001f
-            ? (1f - Mathf.Sqrt(1f - pow(2f * val, 2))) / 2f
-            : (Mathf.Sqrt(1f - pow(-2f * val + 2f, 2)) + 1f) / 2f;
+            val = val * 2f;
+
+            if (val < 1f)
+            {
+                return 0.5f * (1f - Mathf.Sqrt(1f - val * val));
+            }
+
+            val -= 2f;
+            return clamp1(0.5f * (Mathf.Sqrt(1f - val * val) + 1f));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInBack(float val)
@@ -134,23 +164,27 @@ namespace Breadnone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseOutBack(float val)
         {
-            return 1f + 2.70158f * pow(val - 1f, 3) + 1.70158f * pow(val - 1f, 2);
+            float p0 = val - 1f;
+            float p1 = p0 * p0;
+            return 1f + 2.70158f * (p0 * p0 * p0) + 1.70158f * p1;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInOutBack(float val)
         {
             const float c2 = 2.594909f;
+            float p0 = val * 2f;
+            float p1 = p0 - 2f;
 
             return val < 0.5001f
-            ? (pow(2f * val, 2) * ((c2 + 1f) * 2f * val - c2)) / 2f
-            : (Mathf.Pow(2f * val - 2f, 2f) * ((c2 + 1f) * (val * 2f - 2f) + c2) + 2f) / 2f;
+            ? p0 * p0 * ((c2 + 1f) * 2f * val - c2) * 0.5f
+            : (p1 * p1 * ((c2 + 1f) * (p0 - 2f) + c2) + 2f) * 0.5f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInElastic(float val)
         {
-            return val - 0.00015f < 0f
+            return val < 0f
             ? 0f
-            : val + 0.00015f > 1f
+            : val > 1f
             ? 1f
             : -Mathf.Pow(2f, 10f * val - 10f) * Mathf.Sin((val * 10f - 10.75f) * 2.0943951023932f);
         }
@@ -168,13 +202,13 @@ namespace Breadnone
         {
             const float c5 = 1.39626340159546f;
 
-            return val - 0.00015f < 0f
+            return val < 0f
             ? 0f
-            : val + 0.00015f > 1f
+            : val > 1f
             ? 1f
             : val < 0.5001f
-            ? -(Mathf.Pow(2f, 20f * val - 10f) * Mathf.Sin((20f * val - 11.125f) * c5)) / 2f
-            : (Mathf.Pow(2f, -20f * val + 10f) * Mathf.Sin((20f * val - 11.125f) * c5)) / 2f + 1f;
+            ? -(Mathf.Pow(2f, 20f * val - 10f) * Mathf.Sin((20f * val - 11.125f) * c5)) * 0.5f
+            : Mathf.Pow(2f, -20f * val + 10f) * Mathf.Sin((20f * val - 11.125f) * c5) * 0.5f + 1f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float EaseInBounce(float val)
@@ -192,15 +226,18 @@ namespace Breadnone
             }
             else if (val < 2f / d1)
             {
-                return n1 * (val -= 1.5f / d1) * val + 0.75f;
+                val -= 1.5f / d1;
+                return n1 * val * val + 0.75f;
             }
             else if (val < 2.5f / d1)
             {
-                return n1 * (val -= 2.25f / d1) * val + 0.9375f;
+                val -= 2.25f / d1;
+                return n1 * val * val + 0.9375f;
             }
             else
             {
-                return n1 * (val -= 2.625f / d1) * val + 0.984375f;
+                val -= 2.625f / d1;
+                return n1 * val * val + 0.984375f;
             }
         }
         //TODO: This is very wrong.
@@ -208,8 +245,8 @@ namespace Breadnone
         public static float EaseInOutBounce(float val)
         {
             return val < 0.5001f
-            ? (1f - EaseOutBounce(1f - 2f * val)) / 2f
-            : (1f + EaseOutBounce(2f * val - 1f)) / 2f;
+            ? (1f - EaseOutBounce(1f - 2f * val)) * 0.5f
+            : (1f + EaseOutBounce(2f * val - 1f)) * 0.5f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SpringIn(float val)
@@ -219,22 +256,37 @@ namespace Breadnone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SpringOut(float val)
         {
-            return val < 1.0001f ? (val - 1f) * (val - 1f) * ((1.70158f + 1f) * (val - 1f) + 1.70158f) + 1f : 1f;
+            float p0 = val - 1f;
+            return val < 1.0001f ? p0 * p0 * ((1.70158f + 1f) * p0 + 1.70158f) + 1f : 1f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SpringInOut(float val)
         {
             const float c = 1.70158f;
-
+            
             if (val < 0.5001)
             {
-                return (val * 2f) * (val * 2f) * ((c + 1f) * val * 2f - c);
+                float p0 = val * 2f;
+                return p0 * p0 * ((c + 1f) * p0 - c);
             }
             else
             {
                 val = (1f - val)/2f;
-                return 1f - ((val * 2f) * (val * 2f) * ((c + 1f) * val * 2f - c));
+                float p0 = val * 2f;
+                return 1f - (p0 * p0 * ((c + 1f) * p0 - c));
             }
+        }
+        public static float EaseInWeightedOut(float val)
+        {
+            if (val < 0f) return 0f;
+            if (val > 1f) return 1f;
+            return val < 0.5f ? 8f * val * val * val : (1f - 8f * (val - 1f) * (val - 1f) * 1.70158f * ((val - 0.5f) * (val - 0.5f)));
+        }
+        public static float EaseInWeightedReboundOut(float val)
+        {
+            if (val < 0f) return 0f;
+            if (val > 1f) return 1f;
+            return val < 0.5f ? 8f * val * val * val : (1f - 8f * (val - 1f) * (val - 1f) * 1.70158f * ((val - 0.5f) * (val - 0.75f)));
         }
         /// <summary>
         /// Upperbound clamping.
@@ -257,13 +309,10 @@ namespace Breadnone
         //less than 10 this is faster
         public static float pow(float input, int length)
         {
-            float result = 1.0f;
-            for(int i = 0; i < length; i++) result *= input;
+            float result = input;
+            var len = length - 1;
+            for(int i = 0; i < len; i++) result *= input;
             return result;
-        }
-        public static float exp(float value) 
-        {
-            return (40320f+value*(40320f+value*(20160f+value*(6720f+value*(1680f+value*(336f+value*(56f+value*(8f+value))))))))*2.4801587301e-5f;
         }
         /// <summary>
         /// Easing functions interpolation.
@@ -343,7 +392,10 @@ namespace Breadnone
                     return EaseOutElastic(tick);
                 case Ease.EaseInOutElastic:
                     return EaseInOutElastic(tick);
-
+                case Ease.EaseInWeightedOut:
+                    return EaseInWeightedOut(tick);
+                case Ease.EaseInWeightedReboundOut:
+                    return EaseInWeightedReboundOut(tick);
             }
             return 0;
         }
@@ -354,6 +406,7 @@ namespace Breadnone
     /// </summary>
     public enum Ease : byte
     {
+        Linear = 0,
         EaseInQuad,
         EaseOutQuad,
         EaseInOutQuad,
@@ -375,7 +428,6 @@ namespace Breadnone
         EaseInCirc,
         EaseOutCirc,
         EaseInOutCirc,
-        Linear,
         SpringIn,
         SpringOut,
         SpringInOut,
@@ -388,7 +440,7 @@ namespace Breadnone
         EaseInElastic,
         EaseOutElastic,
         EaseInOutElastic,
-        EaseLogIn,
-        EaseLogOut
+        EaseInWeightedOut,
+        EaseInWeightedReboundOut
     }
 }

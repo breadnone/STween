@@ -53,7 +53,7 @@ namespace Breadnone.Extension
             this.from = from;
             this.to = to;
             this.callback = callback;
-            this.tprops.duration = time;
+            this.duration = time;
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>
@@ -116,7 +116,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(int fromValue, int toValue, float time, Action<int> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback;
@@ -154,7 +154,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(Vector2 fromValue, Vector2 toValue, float time, Action<Vector2> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback != null ? callback : this.callback;
@@ -190,7 +190,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(Vector3 fromValue, Vector3 toValue, float time, Action<Vector3> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback;
@@ -204,7 +204,7 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
             tprops.runningFloat = this.FloatLerp(tick);
-            callback?.Invoke(Vector3.LerpUnclamped(from, to, tprops.runningFloat));
+            callback.Invoke(Vector3.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -226,7 +226,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(Vector4 fromValue, Vector4 toValue, float time, Action<Vector4> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback;
@@ -240,7 +240,7 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
             tprops.runningFloat = this.FloatLerp(tick);
-            callback?.Invoke(Vector4.LerpUnclamped(from, to, tprops.runningFloat));
+            callback.Invoke(Vector4.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -262,7 +262,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(Rect fromValue, Rect toValue, float time, Action<Rect> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback;
@@ -279,7 +279,7 @@ namespace Breadnone.Extension
             var vec4two = new Vector4(to.x, to.y, to.width, to.height);
             tprops.runningFloat = this.FloatLerp(tick);
             var value = Vector4.LerpUnclamped(vec4one, vec4two, tprops.runningFloat);
-            callback?.Invoke(new Rect(value.x, value.y, value.z, value.w));
+            callback.Invoke(new Rect(value.x, value.y, value.z, value.w));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -302,7 +302,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(Matrix4x4 fromValue, Matrix4x4 toValue, float time, Action<Matrix4x4> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback;
@@ -316,7 +316,7 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
             runningFloat = this.FloatLerp(tick);
-            callback?.Invoke(UnsafeMath.FMatrixLerp(from, to, runningFloat));
+            callback.Invoke(UnsafeMath.FMatrixLerp(from, to, runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -338,7 +338,7 @@ namespace Breadnone.Extension
         ///<summary>Sets base values that aren't common properties of the base class.</summary>
         public void SetBase(Quaternion fromValue, Quaternion toValue, float time, Action<Quaternion> callback)
         {
-            tprops.duration = time;
+            duration = time;
             from = fromValue;
             to = toValue;
             this.callback = callback;
@@ -352,7 +352,7 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
             tprops.runningFloat = this.FloatLerp(tick);
-            callback?.Invoke(Quaternion.LerpUnclamped(from, to, tprops.runningFloat));
+            callback.Invoke(Quaternion.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()

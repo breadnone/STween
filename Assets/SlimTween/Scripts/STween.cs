@@ -1039,7 +1039,25 @@ namespace Breadnone
             return instance;
         }
         /// <summary>
-        /// Moves the gameObject in the direction and distance of translation.
+        /// Moves the transform in localSpace in the direction and distance of translation.
+        /// </summary>
+        /// <param name="transform">The transform to move.</param>
+        /// <param name="direction">Direction.</param>
+        /// <param name="duration">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimTransform translateLocal(Transform transform, Vector3 direction, float duration)
+        {
+            if(transform is null)
+            {
+                throw new STweenException("Transform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimTransform>(transform.gameObject.GetInstanceID());
+            instance.Init(transform, direction, duration, true, TransformType.Translate);
+            return instance;
+        }
+        /// <summary>
+        /// Moves the transform in the direction and distance of translation.
         /// </summary>
         /// <param name="gameObject">The gameObject to move.</param>
         /// <param name="direction">Direction.</param>
@@ -1049,11 +1067,29 @@ namespace Breadnone
         {
             if(gameObject is null)
             {
-                throw new STweenException("Transform can't be null.");
+                throw new STweenException("GameObject can't be null.");
             }
 
             var instance = STPool.GetInstance<SlimTransform>(gameObject.GetInstanceID());
             instance.Init(gameObject.transform, direction, duration, false, TransformType.Translate);
+            return instance;
+        }
+        /// <summary>
+        /// Moves the gameObject in localSpace in the direction and distance of translation.
+        /// </summary>
+        /// <param name="gameObject">The gameObject to move.</param>
+        /// <param name="direction">Direction.</param>
+        /// <param name="duration">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimTransform translateLocal(GameObject gameObject, Vector3 direction, float duration)
+        {
+            if(gameObject is null)
+            {
+                throw new STweenException("Transform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimTransform>(gameObject.GetInstanceID());
+            instance.Init(gameObject.transform, direction, duration, true, TransformType.Translate);
             return instance;
         }
         #endregion
@@ -1219,6 +1255,23 @@ namespace Breadnone
             instance.SetBaseValues(time, callback);
             instance.Init();
             return instance;
+        }
+
+        public static TweenClass queue(int id, TweenClass stween)
+        {
+            stween.halt(true);
+
+            if(TweenExtension.FindTween(id, out var tween))
+            {
+                if(tween.state != TweenState.Tweening)
+                {
+                    (tween as ISlimRegister).RegisterLastOnComplete(()=>
+                    {
+                        stween.Resume(true);
+                    });
+                }
+            }
+            return stween;
         }
 
         #endregion

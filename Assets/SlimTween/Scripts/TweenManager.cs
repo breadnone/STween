@@ -92,45 +92,17 @@ namespace Breadnone.Extension
                 {
                     var sform = new SlimTransform();
                     unusedTweens[i] = sform;
-
-                    if (i < 31)
-                    {
-                        sform.ZeroInit(TransformType.Move, -1);
-                    }
-                    else if (i < 41)
-                    {
-                        sform.ZeroInit(TransformType.Scale, -1);
-                    }
-                    else
-                    {
-                        sform.ZeroInit(TransformType.Rotate - 1);
-                    }
                 }
                 else if (i < 91)
                 {
                     var srect = new SlimRect();
                     unusedTweens[i] = srect;
-
-                    if (i < 70)
-                    {
-                        srect.ZeroInit(TransformType.Scale, -1);
-                    }
-                    else if (i < 81)
-                    {
-                        srect.ZeroInit(TransformType.Rotate, -1);
-                    }
-                    else
-                    {
-                        srect.ZeroInit(TransformType.Move, -1);
-                    }
                 }
                 else
                 {
                     var sfloat = new STFloat();
                     unusedTweens[i] = sfloat;
                 }
-
-                //unusedTransforms[i] = new SRect();
             }
 
             for (int i = 0; i < unusedTprops.Length; i++)
@@ -150,30 +122,28 @@ namespace Breadnone.Extension
                 removeList[i] = null;
                 ISlimRegister ievent = tmp;
 
-                if (!tmp.tprops.willBeDisposed)
+                if (!ievent.wasResurected)
                 {
-                    if (!ievent.wasResurected)
+                    for (int j = 0; j < unusedTweens.Length; j++)
                     {
-                        for (int j = 0; j < unusedTweens.Length; j++)
+                        if (unusedTweens[j] != null)
                         {
-                            if (unusedTweens[j] != null)
-                            {
-                                continue;
-                            }
-
-                            ReturnTProps(tmp);
-                            unusedTweens[j] = tmp;
-                            tmp = null;
-                            break;
+                            continue;
                         }
-                    }
 
-                    if (tmp != null)
-                    {
                         ReturnTProps(tmp);
-                        STPool.SendToCache(tmp);
+                        unusedTweens[j] = tmp;
+                        tmp = null;
+                        break;
                     }
                 }
+
+                if (tmp != null)
+                {
+                    ReturnTProps(tmp);
+                    STPool.SendToCache(tmp);
+                }
+
             }
 
             removeCount = 0;
@@ -337,7 +307,7 @@ namespace Breadnone.Extension
         }
         public static void Pause(int id, bool pauseElseResume)
         {
-            if(TweenManager.activeTweens == null || TweenManager.activeTweens.Count == 0)
+            if (TweenManager.activeTweens == null || TweenManager.activeTweens.Count == 0)
             {
                 return;
             }

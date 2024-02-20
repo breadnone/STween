@@ -47,10 +47,10 @@ namespace Breadnone.Editor
                 return;
             }
 
-            workerIsRunning = false;
             Worker();
-            editorDeltaTime = (float)(time - lastTime);
-            lastTime = time;
+            var ntime = EditorApplication.timeSinceStartup;
+            editorDeltaTime = (float)(ntime - lastTime);
+            lastTime = ntime;
             frameCount++;
         }
         public static bool initRun { get; set; }
@@ -63,7 +63,7 @@ namespace Breadnone.Editor
                 return;
             }
 
-            if (!initRun || TweenManager.isPlayMode || EditorApplication.isPlaying || TweenManager.activeTweens == null || TweenManager.activeTweens.Count == 0 || EditorApplication.isCompiling || TweenManager.editorPaused)
+            if (!initRun || workerIsRunning || TweenManager.isPlayMode || EditorApplication.isPlaying || TweenManager.activeTweens == null || TweenManager.activeTweens.Count == 0 || EditorApplication.isCompiling || TweenManager.editorPaused)
             {
                 return;
             }
@@ -72,11 +72,6 @@ namespace Breadnone.Editor
 
             for (int i = 0; i < TweenManager.activeTweens.Count; i++)
             {
-                if (editorDeltaTime < lastTime - EditorApplication.timeSinceStartup || !workerIsRunning)
-                {
-                    break;
-                }
-
                 var tween = TweenManager.activeTweens.array[i];
 
                 if (tween.IsValid)
@@ -85,7 +80,7 @@ namespace Breadnone.Editor
                 }
             }
 
-            if (TweenManager.removeCount > 1)
+            if (TweenManager.removeCount > 0)
             {
                 TweenManager.ClearRemoveList();
             }

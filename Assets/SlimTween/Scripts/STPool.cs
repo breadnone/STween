@@ -82,12 +82,6 @@ namespace Breadnone.Extension
             tween.tprops = GetTProps();
             tween.tprops.id = vid;
             tween.tprops.subId = tween.GetHashCode();
-
-            if (deltaTick.deltaTickWasUnique)
-            {
-                deltaTick.ReRegisterDeltaTick();
-                deltaTick.deltaTickWasUnique = false;
-            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TProps GetTProps()

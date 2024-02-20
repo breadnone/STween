@@ -138,6 +138,9 @@ STween.execLater(5f, ()=> {Debug.Log("will be executed later in 5 seconds");});
 var destinations = new Vector3[]{new Vector3(10, 10, 10), new Vector3(30, 10, 10), new Vector3(30, 10, 50), 5f};
 STween.moveToPoints(gameObject, destinations, 8f);
 
+// Lazy queue : Lazily queueing on already running tween. Wll run after the targeted tween finishes.
+STween.queue(id :2, STween.scale(gameObject, new Vector3(2f, 2f, 2f), 5f));
+
 ///Asynchoronous awaiting : Asynchonously awaiting a tween instance to finished via async/await.
 async Task AwaitAsTask()
 {

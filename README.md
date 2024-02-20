@@ -53,6 +53,15 @@ STween.Resume(gameObject);
 //OR
 STween.Resume(12); //Resumes via the assigned custom id
 
+// To cancel all
+STween.CancelAll();
+
+//To resume all paused tweens
+STween.ResumeAll();
+
+///To pause all cancelled tweens
+STween.PauseAll();
+
 //Move to another gameObject as target position
 STween.move(gameObject, target.transform, 2f);
 
@@ -122,19 +131,20 @@ STween.Cancel(12);
 STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnComplete(()=> Debug.Log("Was completed")); //Executed on complete
 STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnUpdate(x=> Debug.Log(x)); //Executed every frame with the value as it's event args
 
+//Scheduling a delegate to be executed later.
 STween.execLater(5f, ()=> {Debug.Log("will be executed later in 5 seconds");});
 
 // Multiple positions :
 var destinations = new Vector3[]{new Vector3(10, 10, 10), new Vector3(30, 10, 10), new Vector3(30, 10, 50), 5f};
 STween.moveToPoints(gameObject, destinations, 8f);
 
-///Asynchoronous awaiting.
+///Asynchoronous awaiting : Asynchonously awaiting a tween instance to finished via async/await.
 async Task AwaitAsTask()
 {
     await STween.move(gameObject, target.transform, 2f).AsTask();
 }
 
-///Yielding as coroutine.
+///Yielding as coroutine : Waiting a tween to finished via coroutine.
 IEnumerator MyCoroutine()
 {
     yield return STween.move(gameObject, target.transform, 2f).AsCoroutine();
@@ -216,31 +226,33 @@ Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).se
 
 Extensions : can be chained to both main and helper apis.
 
-- AsCoroutine
-- AsTask
-- next
-- delay
-- styleLerp
-- lerpThis (float, int, Vectors, Quats, Matrix4x4, Rect)
-- moveThis
-- scaleThis
-- rotateThis
-- widthThis
-- heightThis
-- sizeThis
-- colorThis
-- moveByTag
-- scaleByTag
-- rotateByTag
-- lerpMaterial
-- audioFadeIn
-- audioFadeOut
-- audioFadeGlobalIn
-- audioFadeGlobalOut
-- sliderUI
-
+- AsCoroutine : Waiting for a tween instance to finished in a coroutine.
+- AsTask : Awaiting asynchronously(async/await) a tween instance.
+- next : Tween chaining via fluent interface.
+- delay : Adds a delay to a queue.
+- styleLerp : Interpolates the IStyle (.style) interface members of a visualElement.
+- lerpThis (float, int, Vectors, Quats, Matrix4x4, Rect) : Directly interpolates a value of certain types.
+- moveThis : Moves a gameobject/visualElement/ui
+- scaleThis : Directly scales a gameOobject/visualElement/ui.
+- rotateThis : Rotates a gameObject.
+- widthThis : Sets the width of a visualElement(uitoolkit)
+- heightThis : Sets the height of a visualElement(uitoolkit)
+- sizeThis : Sets the delta size of a RectTransform
+- colorThis : Interpolates the color of a gameobject/visualElement/ui
+- moveByTag : Moves a gameobject after finding it in the scane by it's tag.
+- scaleByTag : Scales a gameobject after finding it in the scane by it's tag.
+- rotateByTag : Rotates a gameobject after finding it in the scane by it's tag.
+- lerpMaterial : Interpolates a shader property of a material.
+- audioFadeIn : Fades in effect of an AudioSource.
+- audioFadeOut : Fades out effect of an AudioSource.
+- audioFadeGlobalIn : Fades in effect for the static singleton AudioListener.
+- audioFadeGlobalOut : Fades out effect for the static AudioListener.
+- sliderUI : Interpolates the slider value.
+  
+There are lots more APIs that aren't too common internally but they're exposed and ready to use so you can just take a peek at the written code documentations/summaries in the scripts.  
+  
 Note :
 All extensions related to VFXGraph are disabled by default due to Unity requires to install HDRP package to use VFXGraph.  
 Uncomment the extension and the namespace in SlimTween -> Scripts -> STweenExtended.cs
   
-This lib is inspired by the legendary LeanTween, thus you can see lots of similarities in the naming convention.
+This lib is inspired by the legendary LeanTween, thus you can see lots of similarities in the naming convention.  

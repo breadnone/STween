@@ -114,6 +114,18 @@ STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
 STween.value(Vector4.zero, new Vector4(120, 200, 300, 100), value =>{Debug.Log(value);});
 STween.value(Quaternion.identity, myQuat, value =>{Debug.Log(value);});
 
+//Value chaining : Uses same duration or time. Can be chained as much as you want
+STween.value(0f, 10f, 5f, tick => Debug.Log("Test"))
+.value(0, 15, tick => Debug.Log("Test1"))
+.value(0, 15, tick => Debug.Log("Test2"))
+.value(0, 15, tick => Debug.Log("Test3"));
+
+//Value queueing : Queuing individual value interpoaltor. Can be chained as much as you want.
+STween.value(0f, 10f, 5f, tick => Debug.Log("Test1"))
+.qvalue(0f, 15f, tick => Debug.Log("Test2"))
+.qvalue(0f, 15f, tick => Debug.Log("Test3"))
+.qvalue(0f, 15f, tick => Debug.Log("Test4"));
+
 /// Spline : Quadratic curve based interpolation.
 var tform = gameObject.transform.position;
 STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tform.z), new Vector3(tform,x + 100, tform.y, tform,z), 3f);

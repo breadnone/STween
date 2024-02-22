@@ -146,7 +146,7 @@ STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnUpdate(x=> Debug.Log(x))
 //Scheduling a delegate to be executed later.
 STween.execLater(5f, ()=> {Debug.Log("will be executed later in 5 seconds");});
 
-// Multiple positions :
+// Move along path :
 var destinations = new Vector3[]{new Vector3(10, 10, 10), new Vector3(30, 10, 10), new Vector3(30, 10, 50), 5f};
 STween.moveToPoints(gameObject, destinations, 8f);
 
@@ -206,6 +206,7 @@ Main APIs : Can be chained with helper apis
 - STween.Pause
 - STween.alpha
 - STween.color
+- 
 - STween.slider
 - STween.sliderInt
 - STween.shaderFloat
@@ -221,23 +222,28 @@ Main APIs : Can be chained with helper apis
 
 Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).setLoop(2);
 
-- setLoop
-- setEase
-- setPingpong
-- setOnUpdate
-- setOnComplete
-- setDelay
-- setAnimationCurve
-- setId
-- setUnscaledTime
-- setSpeed
-- setOnCompleteRepeat
-- setDestroyOnComplete
-- setCancelOn
-- setPauseOn
-- setResumeOn
-- setFrom
-- setLookAt
+- setLoop : Set the loop count.
+- setEase : Set easing function.
+- setPingpong : PingPong style loop cycle.
+- setOnUpdate : Callback on every frame while tweening.
+- setOnComplete : Callback when a tween has completed.
+- setDelay : Delayed startup of a tween.
+- setAnimationCurve : Easing function based on AnimationCurve.
+- setId : Custom id.
+- setUnscaledTime : True = will not be affected by Time.timeScale
+- setSpeed : Constant speed based tween.
+- setOnCompleteRepeat : OnComplete callback will be repeatedly invoked on each loop cycle.
+- setDestroyOnComplete : Destroys the gameObject on completion.
+- setCancelOn : Cancelling based on a condition/predicate.
+- setPauseOn : Pausing based on a condition/predicate.
+- setResumeOn : Resuming based on a condition/predicate.
+- setFrom : Re-positioning on startup.
+- setLookAt : Focuses on the target's transform.
+- setActiveOnComplete : Set the active state of a gameObject on completion.
+- setActiveOnStart : Set the active state of a gameObject on startup.
+- setAudioOnStart : Play audioSource on startup.
+- setAudioOnComplete : Play audioSource on completion.
+- setSkip : Frame skipping effect (Experimental).
 
 Extensions : can be chained to both main and helper apis.
 
@@ -263,6 +269,11 @@ Extensions : can be chained to both main and helper apis.
 - audioFadeGlobalIn : Fades in effect for the static singleton AudioListener.
 - audioFadeGlobalOut : Fades out effect for the static AudioListener.
 - sliderUI : Interpolates the slider value.
+- eulerThis : Euler angle based rotation
+- angleAxisThis : Quaternion AngleAxis based rotation
+- fromToRotationThis : Creates a rotation which rotates from fromDirection to toDirection. 
+- eulerAnglesThis : Quaternion euler based rotation
+- rotateTowardsThis : Rotates a rotation from towards to  
   
 There are lots more APIs that aren't too common internally but they're exposed and ready to use so you can just take a peek at the written code documentations/summaries in the scripts.  
   

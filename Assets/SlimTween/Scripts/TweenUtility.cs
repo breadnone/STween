@@ -65,143 +65,246 @@ namespace Breadnone.Extension
             return (vecStart, vecEnd);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CombineLerps(TweenClass atransform, TweenClass btransform, int id = -1)
+        public static STCombine<TweenClass> CombineLerps(TweenClass atransform, TweenClass btransform, int id = -1, STCombine<TweenClass> fluent = null)
         {
-            if (atransform is SlimTransform atrans && btransform is SlimTransform btrans)
+            if (fluent == null)
             {
-                if ((atrans as ISlimTween).GetTransformType != TransformType.Move || (btrans as ISlimTween).GetTransformType != TransformType.Move)
-                {
-                    throw new STweenException("Non-move tweens able to run without combining. Only combine moves of same object.");
-                }
+                fluent = new();
+            }
 
-                var islimA = atrans as ISlimTween;
-                var islimB = btrans as ISlimTween;
-                Vector3 pos = Vector3.zero;
+            if (atransform != null)
+            {
+                fluent.Add(atransform);
+                fluent.Add(btransform);
+
+                var islimA = atransform as ISlimTween;
+                var islimB = btransform as ISlimTween;
 
                 islimA.DisableLerps(true);
                 islimB.DisableLerps(true);
 
-                Transform transform = atrans.GetTransform;
-                var startFromA = islimA.FromTo.from;
-                var startFromB = islimB.FromTo.from;
+                Transform transform = null;
 
-                var nt = new STFloat();
-                nt.setEase(Ease.Linear);
+                if (atransform is SlimTransform sf)
+                {
+                    transform = sf.GetTransform;
+                }
 
-                float? aat = 0;
-                float? bat = 0;
+                RectTransform rect = null;
 
-                nt.SetBase(0f, 1f, float.PositiveInfinity, (x) =>
+                if (atransform is SlimRect sr)
+                {
+                    rect = sr.GetTransform;
+                }
+
+                STFloat nt = fluent.sfloat;
+
+                if (fluent.sfloat == null)
+                {
+                    nt = new();
+                    nt.setEase(Ease.Linear);
+                    fluent.sfloat = nt;
+                    nt.SetBase(0, 1000, float.PositiveInfinity, x => { });
+                }
+
+                (nt as ICoreValue<float>).callback += (x) =>
                 {
                     if (atransform.state == TweenState.None)
                     {
-                        if (aat == null)
+                        if (btransform.state != TweenState.None)
                         {
-                            aat = Time.realtimeSinceStartup;
+                            if (islimB.GetTransformType == TransformType.Move)
+                            {
+                                var loc = Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, Mathf.Clamp01(btransform.tick));
+
+                                if (transform != null)
+                                {
+                                    fluent.previousPos = !islimB.Locality ? loc : transform.TransformDirection(loc);
+                                }
+                                if (rect != null)
+                                {
+                                    fluent.previousPos = !islimB.Locality ? loc : rect.TransformDirection(loc);
+                                }
+                            }
+                            else if (islimB.GetTransformType == TransformType.Scale)
+                            {
+                                fluent.previousScale = Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, Mathf.Clamp01(btransform.tick));
+                            }
                         }
 
-                        if (btransform.state != TweenState.None)
-                            pos = Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, Mathf.Clamp01(btransform.tick));
+                        fluent.Remove(atransform);
                     }
                     else
                     {
-                        pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                        if (islimA.GetTransformType == TransformType.Move)
+                        {
+                            var loc = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+
+                            if (transform != null)
+                            {
+                                fluent.previousPos = !islimA.Locality ? loc : transform.TransformDirection(loc);
+                            }
+                            if (rect != null)
+                            {
+                                fluent.previousPos = !islimA.Locality ? loc : rect.TransformDirection(loc);
+                            }
+                        }
+                        else if (islimA.GetTransformType == TransformType.Scale)
+                        {
+                            fluent.previousScale = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                        }
                     }
 
                     if (btransform.state == TweenState.None)
                     {
-                        if (bat == null)
+                        if (atransform.state != TweenState.None)
                         {
-                            bat = Time.realtimeSinceStartup;
+                            if (islimA.GetTransformType == TransformType.Move)
+                            {
+                                var loc = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+
+                                if (transform != null)
+                                {
+                                    fluent.previousPos = !islimA.Locality ? loc : transform.TransformDirection(loc);
+                                }
+                                if (rect != null)
+                                {
+                                    fluent.previousPos = !islimA.Locality ? loc : rect.TransformDirection(loc);
+                                }
+                            }
+                            else if (islimA.GetTransformType == TransformType.Scale)
+                            {
+                                fluent.previousScale = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                            }
                         }
 
-                        if (atransform.state != TweenState.None)
-                            pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                        fluent.Remove(btransform);
                     }
                     else
                     {
                         var ttick = Mathf.Clamp01(btransform.tick);
-                        pos = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, ttick), pos, Mathf.Clamp01(ttick));
+
+                        if (islimB.GetTransformType == TransformType.Move)
+                        {
+                            var loc = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, ttick), fluent.previousPos, Mathf.Clamp01(ttick));
+
+                            if (transform != null)
+                            {
+                                fluent.previousPos = !islimB.Locality ? loc : transform.TransformDirection(loc);
+                            }
+                            if (rect != null)
+                            {
+                                fluent.previousPos = !islimB.Locality ? loc : rect.TransformDirection(loc);
+                            }
+                        }
+                        else if (islimB.GetTransformType == TransformType.Scale)
+                        {
+                            fluent.previousScale = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, ttick), fluent.previousScale, Mathf.Clamp01(ttick));
+                        }
                     }
 
-                    if (atransform.state == TweenState.None && btransform.state == TweenState.None)
+                    if (transform != null)
                     {
-                        nt.Cancel();
-                        return;
+                        if (islimA.GetTransformType == TransformType.Move || islimB.GetTransformType == TransformType.Move)
+                            transform.position = fluent.previousPos;
+                        else if (islimA.GetTransformType == TransformType.Scale || islimB.GetTransformType == TransformType.Scale)
+                            transform.localScale = fluent.previousScale;
                     }
+                    else if (rect != null)
+                    {
+                        if (islimA.GetTransformType == TransformType.Move || islimB.GetTransformType == TransformType.Move)
+                            rect.position = fluent.previousPos;
 
-                    transform.position = pos;
-                });
+                        if (islimA.GetTransformType == TransformType.Scale || islimB.GetTransformType == TransformType.Scale)
+                            rect.localScale = fluent.previousScale;
+                    }
+                };
             }
-            else if (atransform is SlimRect arect && btransform is SlimRect brect)
+            else
             {
-                if ((arect as ISlimTween).GetTransformType != TransformType.Move || (brect as ISlimTween).GetTransformType != TransformType.Move)
-                {
-                    throw new STweenException("Non-move tweens able to run without combining. Only combine moves of same object.");
-                }
+                fluent.Add(btransform);
 
-                var islimA = arect as ISlimTween;
-                var islimB = brect as ISlimTween;
-                Vector3 pos = Vector3.zero;
-
-                islimA.DisableLerps(true);
+                var islimB = btransform as ISlimTween;
                 islimB.DisableLerps(true);
 
-                RectTransform transform = arect.GetTransform;
-                var startFromA = islimA.FromTo.from;
-                var startFromB = islimB.FromTo.from;
+                Transform transform = null;
 
-                var nt = new STFloat();
-                nt.setEase(Ease.Linear);
-
-                float? aat = 0;
-                float? bat = 0;
-
-                nt.SetBase(0f, 1f, float.PositiveInfinity, (x) =>
+                if (btransform is SlimTransform sf)
                 {
-                    if (atransform.state == TweenState.None)
-                    {
-                        if (aat == null)
-                        {
-                            aat = Time.realtimeSinceStartup;
-                        }
+                    transform = sf.GetTransform;
+                }
 
-                        if (btransform.state != TweenState.None)
-                            pos = Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, Mathf.Clamp01(btransform.tick));
-                    }
-                    else
-                    {
-                        pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
-                    }
+                RectTransform rect = null;
 
+                if (btransform is SlimRect sr)
+                {
+                    rect = sr.GetTransform;
+                }
+
+                STFloat nt = fluent.sfloat;
+
+                (nt as ICoreValue<float>).callback += (x) =>
+                {
                     if (btransform.state == TweenState.None)
                     {
-                        if (bat == null)
-                        {
-                            bat = Time.realtimeSinceStartup;
-                        }
-
-                        if (atransform.state != TweenState.None)
-                            pos = Vector3.LerpUnclamped(islimA.FromTo.from, islimA.FromTo.to, Mathf.Clamp01(atransform.tick));
+                        fluent.Remove(btransform);
                     }
                     else
                     {
-                        pos = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, btransform.tick), pos, Mathf.Clamp01(btransform.tick));
+                        var ttick = Mathf.Clamp01(btransform.tick);
+
+                        if (islimB.GetTransformType == TransformType.Move)
+                        {
+                            var loc = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, ttick), fluent.previousPos, Mathf.Clamp01(ttick));
+
+                            if (transform != null)
+                            {
+                                fluent.previousPos = !islimB.Locality ? loc : transform.TransformDirection(loc);
+                            }
+                            else if (rect != null)
+                            {
+                                fluent.previousPos = !islimB.Locality ? loc : rect.TransformDirection(loc);
+                            }
+                        }
+                        else if (islimB.GetTransformType == TransformType.Scale)
+                        {
+                            fluent.previousScale = Vector3.LerpUnclamped(Vector3.LerpUnclamped(islimB.FromTo.from, islimB.FromTo.to, ttick), fluent.previousScale, Mathf.Clamp01(ttick));
+                        }
                     }
 
-                    if (atransform.state == TweenState.None && btransform.state == TweenState.None)
+                    if (transform != null)
                     {
-                        nt.Cancel();
-                        return;
-                    }
+                        if (islimB.GetTransformType == TransformType.Move)
+                        {
+                            if (!islimB.Locality)
+                                transform.position = fluent.previousPos;
+                            else
+                                transform.localPosition = fluent.previousPos;
+                        }
 
-                    transform.position = pos;
-                });
+                        if (islimB.GetTransformType == TransformType.Scale)
+                            transform.localScale = fluent.previousScale;
+                    }
+                    else if (rect != null)
+                    {
+                        if (islimB.GetTransformType == TransformType.Move)
+                        {
+                            if (!islimB.Locality)
+                                rect.position = fluent.previousPos;
+                            else
+                                rect.localPosition = fluent.previousPos;
+                        }
+
+                        if (islimB.GetTransformType == TransformType.Scale)
+                        {
+                            rect.localScale = fluent.previousScale;
+                        }
+                    }
+                };
             }
 
-            //TODO: STRect here 
+            return fluent;
         }
-
     }
 }
 public static class UnsafeMath
@@ -225,7 +328,6 @@ public static class UnsafeMath
     /// Clamps the zero part.
     /// </summary>
     /// <param name="upperBound"></param>
-    /// <returns></returns>
     public static float Clamp0(float upperBound)
     {
         return upperBound > 0 ? upperBound : 0f;
@@ -234,7 +336,6 @@ public static class UnsafeMath
     /// Clamps the 1 part
     /// </summary>
     /// <param name="upperBound"></param>
-    /// <returns></returns>
     public static float Clamp1(float upperBound)
     {
         return upperBound < 1 ? upperBound : 1f;
@@ -242,7 +343,6 @@ public static class UnsafeMath
     /// <summary>
     /// Random odd/even.
     /// </summary>
-    /// <returns></returns>
     public static int RandomOddEven()
     {
         return UnityEngine.Random.Range(0, 4);
@@ -250,7 +350,6 @@ public static class UnsafeMath
     /// <summary>
     /// Random odd/even
     /// </summary>
-    /// <returns></returns>
     public static bool RandomBool()
     {
         return RandomOddEven() % 2 == 0;
@@ -260,7 +359,6 @@ public static class UnsafeMath
     /// </summary>
     /// <param name="start"></param>
     /// <param name="end"></param>
-    /// <returns></returns>
     public static float RandomFloat(float start, float end)
     {
         return UnityEngine.Random.Range(start, end);
@@ -270,7 +368,6 @@ public static class UnsafeMath
     /// </summary>
     /// <param name="vectors"></param>
     /// <param name="target"></param>
-    /// <returns></returns>
     public static Vector3 NearestVector3(Vector3[] vectors, Vector3 target)
     {
         float inf = float.PositiveInfinity;
@@ -291,7 +388,6 @@ public static class UnsafeMath
     /// </summary>
     /// <param name="a"></param>
     /// <param name="target"></param>
-    /// <returns></returns>
     public static float NearestFloat(float[] a, float target)
     {
         float val = 0f;
@@ -318,7 +414,6 @@ public static class UnsafeMath
     /// </summary>
     /// <param name="a"></param>
     /// <param name="target"></param>
-    /// <returns></returns>
     public static int NearestInt(int[] a, int target)
     {
         int val = 0;
@@ -346,7 +441,6 @@ public static class UnsafeMath
     /// <param name="a"></param>
     /// <param name="b"></param>
     /// <param name="t"></param>
-    /// <returns></returns>
     public static Matrix4x4 FMatrixLerp(Matrix4x4 a, Matrix4x4 b, float t)
     {
         Matrix4x4 result = new Matrix4x4();
@@ -434,5 +528,26 @@ public static class UnsafeMath
     public static float FSineLerp(float a, float b, float t)
     {
         return a + (b - a) * Mathf.Clamp01((1f - Mathf.Cos(t * Mathf.PI)) * 0.5f); // Combine with linear interpolation
+    }
+    /// <summary>
+    /// The correct way to change localScale of a gameobject while moving or doing something else.
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="pivot"></param>
+    /// <param name="newScale"></param>
+    public static void BetterLocalScale(GameObject target, Vector3 pivot, Vector3 newScale)
+    {
+        Vector3 a = target.transform.localPosition;
+        Vector3 b = pivot;
+        Vector3 c = a - b; // diff from object pivot to desired pivot/origin
+
+        float RS = newScale.x / target.transform.localScale.x; // relataive scale factor
+
+        // calc final position post-scale
+        Vector3 result = b + c * RS;
+
+        // finally, actually perform the scale/translation
+        target.transform.localScale = newScale;
+        target.transform.localPosition = result;
     }
 }

@@ -236,22 +236,16 @@ namespace Breadnone.Extension
             {
                 if (!flipTick)
                 {
-                    if (runningTime > duration)
+                    if (runningTime > duration && CheckIfFinished())
                     {
-                        if (CheckIfFinished())
-                        {
-                            return;
-                        }
+                        return;
                     }
                 }
                 else
                 {
-                    if (runningTime < 0f)
+                    if (runningTime < 0f && CheckIfFinished())
                     {
-                        if (CheckIfFinished())
-                        {
-                            return;
-                        }
+                        return;
                     }
                 }
             }
@@ -778,7 +772,8 @@ namespace Breadnone.Extension
         /// <summary>The transform.</summary>
         Transform transform;
         /// <summary>Starting value.</summary>
-        Vector6 fromto = default;
+        InterpolatorStruct fromto = default;
+        InterpolatorStruct ISlimTween.Interpolator {get => fromto;set => fromto = value;}
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public Transform GetTransform => transform;
         /// <summary>Tween type.</summary>
@@ -884,6 +879,7 @@ namespace Breadnone.Extension
             fromto.SetTo(to);
             duration = time;
             isLocal = local;
+
             //ROTATION will take FROM as axis and TO.x as degree angle.
 
             if (transformType == TransformType.Move || transformType == TransformType.Translate)
@@ -936,9 +932,7 @@ namespace Breadnone.Extension
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            //transform.position = Vector3.LerpUnclamped(from, to, value);
             transform.position = fromto.Interpolate(value);
-
         }
         /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
@@ -953,7 +947,7 @@ namespace Breadnone.Extension
                 transform.rotation = Quaternion.Euler(fromto.to() * value);
             }
             else
-            {
+            { 
                 transform.localRotation = Quaternion.Euler(fromto.to() * value);
             }
         }
@@ -974,7 +968,8 @@ namespace Breadnone.Extension
         /// <summary>The transform.</summary>
         UnityEngine.RectTransform transform;
         /// <summary>Starting position to target value.</summary>
-        Vector6 fromto;
+        InterpolatorStruct fromto;
+        InterpolatorStruct ISlimTween.Interpolator{get => fromto; set => fromto = value;}
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public UnityEngine.RectTransform GetTransform => transform;
         /// <summary>Tween type.</summary>
@@ -1002,11 +997,10 @@ namespace Breadnone.Extension
             fromto.SetTo(to);
             duration = time;
             isLocal = local;
-            //ROTATION will take FROM as axis and TO.x as degree angle.
 
             if (transformType == TransformType.Move)
             {
-                fromto.SetFrom(!isLocal ? objectTransform.position : objectTransform.localPosition);
+                fromto.SetFrom(!isLocal ? objectTransform.anchoredPosition3D : objectTransform.anchoredPosition);
             }
             else if (transformType == TransformType.Scale)
             {
@@ -1021,7 +1015,6 @@ namespace Breadnone.Extension
                 fromto.SetFrom(new Vector2(objectTransform.rect.width, objectTransform.rect.height));
             }
 
-            //Make sure the transform will be assigned based on the target value. May not necessary due to rounding in SFloat class, just to be safe.
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>
@@ -1118,12 +1111,12 @@ namespace Breadnone.Extension
         /// <summary>Interpolates local position.</summary>
         void LerpPositionLocal(float value)
         {
-            transform.localPosition = fromto.Interpolate(value);
+            transform.anchoredPosition = fromto.Interpolate(value);
         }
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.position = fromto.Interpolate(value);
+            transform.anchoredPosition3D = fromto.Interpolate(value);
         }
         /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
@@ -1171,6 +1164,7 @@ namespace Breadnone.Extension
         public void UpdateTransform();
         /// <summary>Access to the starting and target value.</summary>
         public (Vector3 from, Vector3 to) FromTo { get; set; }
+        public InterpolatorStruct Interpolator {get;set;}
     }
     /// <summary>
     /// Delegate to pass easeing refs
@@ -1193,7 +1187,7 @@ namespace Breadnone.Extension
     }
 
     [Serializable]
-    public struct Vector6
+    public struct InterpolatorStruct
     {
         float x;
         float a;
@@ -1201,17 +1195,19 @@ namespace Breadnone.Extension
         float b;
         float z;
         float c;
+        static Vector3 vec;
         public ref Vector3 from() 
         {
             vec.Set(a, b, c);
             return ref vec;
         }
+
         public ref Vector3 to()
         {
             vec.Set(x, y, z);
             return ref vec;
         }
-        static Vector3 vec;
+        
         public void Set(Vector3 from, Vector3 to)
         {
             SetFrom(from);
@@ -1231,13 +1227,14 @@ namespace Breadnone.Extension
             z = to.z;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref Vector3 Interpolate(float tick)
+        public Vector3 Interpolate(float tick)
         {
                 vec.Set(
                 a + (x - a) * tick,
                 b + (y - b) * tick,
                 c + (z - c) * tick);
-            return ref vec; 
+
+            return vec; 
         }
     }
     public struct TimeStruct

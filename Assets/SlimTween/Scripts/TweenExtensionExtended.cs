@@ -37,6 +37,68 @@ using System.Reflection;
 namespace Breadnone
 {
     [Serializable]
+    public sealed class STCombine<T> where T : TweenClass
+    {
+        public STFloat sfloat{get;set;}
+        public List<T> tween = new List<T>();
+        public Vector3 previousPos{get;set;}
+        public Quaternion previousRotation {get;set;}
+        public Vector3 previousScale {get;set;}
+        public T getLast
+        {
+            get
+            {
+                if(tween != null && tween.Count > 0)
+                return tween[tween.Count - 1];
+                else
+                return null;
+            }
+        }
+        public T getFirst => tween[0];
+        public int getCount => tween.Count;
+        public void Add(T tclass)
+        {
+            if (!tween.Contains(tclass))
+            {
+                tween.Add(tclass);
+            }
+        }
+        public void Clean()
+        {
+            for (int i = 0; i < tween.Count; i++)
+            {
+                if (tween[i] == null)
+                {
+                    continue;
+                }
+
+                if (tween[i].state == TweenState.Tweening || tween[i].state == TweenState.Paused)
+                {
+                    tween[i].Cancel();
+                }
+            }
+
+            tween.Clear();
+        }
+        public void Remove(T tween)
+        {
+            for(int i = 0; i < this.tween.Count; i++)
+            {
+                if(this.tween[i] == tween)
+                {
+                    this.tween.Remove(tween);
+                    break;
+                }
+            }
+
+            if(this.tween.Count == 0 && sfloat != null)
+            {
+                sfloat.Cancel();
+                (sfloat as IValueFinalizer).Dispose();
+            }
+        }
+    }
+    [Serializable]
     public sealed class STFluent<T> where T : TweenClass
     {
         public List<T> tween = new List<T>();
@@ -184,15 +246,23 @@ namespace Breadnone
             return fluent;
         }
         /// <summary>
-        /// Combines multiple moves. Non-move tweens won't need this to tween them all together, they will work without combining.
+        /// Combines multiple moves. Non-move tweens won't need this to tween them all together. Note : It must be the same type.
         /// </summary>
         /// <param name="tween">Current tween instance.</param>
         /// <param name="nextTween">The next tween instance.</param>
         /// <exception cref="STweenException"></exception>
-        public static TweenClass combine(this TweenClass tween, TweenClass nextTween)
+        public static STCombine<TweenClass> combine(this TweenClass tween, TweenClass nextTween)
         {
-            TweenUtil.CombineLerps(tween, nextTween);
-            return nextTween;
+            return TweenUtil.CombineLerps(tween, nextTween);
+        }
+        public static STCombine<TweenClass> combine(this STCombine<TweenClass> fluent, TweenClass nextTween)
+        {
+            if(fluent.tween.Contains(nextTween))
+            {
+                throw new STweenException("The tween instance was already added and combined. Can't combined same instances more than once.");
+            }
+
+            return TweenUtil.CombineLerps(null, nextTween, fluent: fluent);
         }
         /// <summary>
         /// Add delays to the chaining.

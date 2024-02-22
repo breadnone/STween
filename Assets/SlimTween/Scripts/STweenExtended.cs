@@ -14,9 +14,7 @@ namespace Breadnone
 {
     public static partial class STween
     {
-        /// <summary>
-        /// Moves the gameObject to target position.
-        /// </summary>
+        /// <summary>Moves the gameObject to target position.</summary>
         /// <param name="transform">The transform to move.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">Duration of the tween to reach the position.</param>
@@ -24,9 +22,7 @@ namespace Breadnone
         {
             return move(transform, target, duration);
         }
-        /// <summary>
-        /// Moves the gameObject to target position.
-        /// </summary>
+        /// <summary>Moves the gameObject to target position.</summary>
         /// <param name="transform">The transform.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">Duration of the tween to reach the position.</param>
@@ -34,9 +30,15 @@ namespace Breadnone
         {
             return move(transform, target, duration);
         }
-        /// <summary>
-        /// Scales the gameObject to target value.
-        /// </summary>
+        /// <summary>Moves the gameObject to target position.</summary>
+        /// <param name="gameObject">The transform.</param>
+        /// <param name="target">Target position.</param>
+        /// <param name="duration">Duration of the tween to reach the position.</param>
+        public static SlimTransform moveThis<T>(this GameObject gameObject, GameObject target, float duration)
+        {
+            return move(gameObject, target.transform, duration);
+        }
+        /// <summary>Scales the gameObject to target value.</summary>
         /// <param name="transform">The transform.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">Duration of the tween.</param>
@@ -44,9 +46,7 @@ namespace Breadnone
         {
             return scale(transform, target, duration);
         }
-        /// <summary>
-        /// Scales the transform.
-        /// </summary>
+        /// <summary>Scales the transform.</summary>
         /// <param name="transform">The transform.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">Duration of the tween.</param>
@@ -54,9 +54,7 @@ namespace Breadnone
         {
             return scale(transform, target, duration);
         }
-        /// <summary>
-        /// Rotates the transform to target value.
-        /// </summary>
+        /// <summary>Rotates the transform to target value.</summary>
         /// <param name="transform"></param>
         /// <param name="angle"></param>
         /// <param name="direction"></param>
@@ -65,9 +63,7 @@ namespace Breadnone
         {
             return rotate(transform, direction, duration);
         }
-        /// <summary>
-        /// Moves visualElement to target position.
-        /// </summary>
+        /// <summary>Moves visualElement to target position.</summary>
         /// <param name="visualElement">The visualElement to move.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">Duration.</param>
@@ -75,9 +71,7 @@ namespace Breadnone
         {
             return move(visualElement, target, duration);
         }
-        /// <summary>
-        /// Scales the visualElement to target scale value.
-        /// </summary>
+        /// <summary>Scales the visualElement to target scale value.</summary>
         /// <param name="visualElement">The visualElement to scale.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">Duration.</param>
@@ -85,9 +79,7 @@ namespace Breadnone
         {
             return scale(visualElement, target, duration);
         }
-        /// <summary>
-        /// Resizes the visualElement.
-        /// </summary>
+        /// <summary>Resizes the visualElement.</summary>
         /// <param name="visualElement">The visualElement</param>
         /// <param name="to">Target size.</param>
         /// <param name="duration">Duration.</param>
@@ -95,9 +87,7 @@ namespace Breadnone
         {
             return size(visualElement, to, duration);
         }
-        /// <summary>
-        /// Resizes te visualElement.
-        /// </summary>
+        /// <summary>Resizes te visualElement.</summary>
         /// <param name="visualElement">The visualElement.</param>
         /// <param name="to">Target size.</param>
         /// <param name="duration">Duration.</param>
@@ -105,9 +95,7 @@ namespace Breadnone
         {
             return size(visualElement, to, duration);
         }
-        /// <summary>
-        /// Rotates the visaulElement.
-        /// </summary>
+        /// <summary>Rotates the visaulElement.</summary>
         /// <param name="visualElement">The visualElement.</param>
         /// <param name="angle">Angle value.</param>
         /// <param name="direction">Direction of the rotation.</param>
@@ -116,6 +104,12 @@ namespace Breadnone
         {
             return rotate(visualElement, angle, duration);
         }
+        /// <summary>Resizes the width of a visualElement.</summary>
+        /// <param name="visualElement">A visualElement to resized.</param>
+        /// <param name="from">Initial value.</param>
+        /// <param name="to">To target value.</param>
+        /// <param name="duration">Duration</param>
+        /// <param name="isPercent">Percent based or pixel.</param>
         public static STFloat widthThis(this VisualElement visualElement, float from, float to, float duration, bool isPercent)
         {
             if (isPercent)
@@ -140,9 +134,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Changes the height of a visualElement.
-        /// </summary>
+        /// <summary>Changes the height of a visualElement.</summary>
         /// <param name="visualElement">Tareget visualElement.</param>
         /// <param name="from">Starting value to.</param>
         /// <param name="to">Target value.</param>
@@ -172,13 +164,10 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Changes the color of a visualElement.
-        /// </summary>
+        /// <summary>Changes the color of a visualElement.</summary>
         /// <param name="visualElement">Target visualElement.</param>
         /// <param name="to">Target color.</param>
         /// <param name="duration">Duration.</param>
-        /// <returns></returns>
         public static STVector3 colorThis(this VisualElement visualElement, Color to, float duration)
         {
             var ins = STPool.GetInstance<STVector3>(visualElement.GetHashCode());
@@ -195,9 +184,7 @@ namespace Breadnone
             return ins;
         }
         //TAG
-        /// <summary>
-        /// Moves the gameObject based on the 1st found tag.
-        /// </summary>
+        /// <summary>Moves the gameObject based on the 1st found tag.</summary>
         /// <param name="tag">The tag that was assigned to gameObject.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">The Duration.</param>
@@ -205,9 +192,7 @@ namespace Breadnone
         {
             return move(GameObject.FindGameObjectWithTag(tag), target, duration);
         }
-        /// <summary>
-        /// Move all gameObjects based on their tags.
-        /// </summary>
+        /// <summary>Move all gameObjects based on their tags.</summary>
         /// <param name="tag">The tag that was assigned to gameObject.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">The Duration.</param>
@@ -225,9 +210,7 @@ namespace Breadnone
                 move(objs[i], target, duration);
             }
         }
-        /// <summary>
-        /// Move a gameObject based on their tags.
-        /// </summary>
+        /// <summary>Move a gameObject based on their tags.</summary>
         /// <param name="tag">The tag that was assigned to gameObject.</param>
         /// <param name="targetTag">Target tag position.</param>
         /// <param name="duration">The Duration.</param>
@@ -235,9 +218,7 @@ namespace Breadnone
         {
             return move(GameObject.FindGameObjectWithTag(tag), GameObject.FindGameObjectWithTag(targetTag).transform.position, duration);
         }
-        /// <summary>
-        /// Scales a gameObject based on 1st found tag.
-        /// </summary>
+        /// <summary>Scales a gameObject based on 1st found tag.</summary>
         /// <param name="tag">The tag that was assigned to gameObject.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">The Duration.</param>
@@ -245,9 +226,7 @@ namespace Breadnone
         {
             return scale(GameObject.FindGameObjectWithTag(tag), target, duration);
         }
-        /// <summary>
-        /// Scales a gameObject based on 1st found tag.
-        /// </summary>
+        /// <summary>Scales a gameObject based on 1st found tag.</summary>
         /// <param name="tag">The tag that was assigned to gameObject.</param>
         /// <param name="targetTag">Target tag position.</param>
         /// <param name="duration">The Duration.</param>
@@ -255,9 +234,7 @@ namespace Breadnone
         {
             return scale(GameObject.FindGameObjectWithTag(tag), GameObject.FindGameObjectWithTag(targetTag).transform.localScale, duration);
         }
-        /// <summary>
-        /// Rotates a gameObject based on 1st found tag.
-        /// </summary>
+        /// <summary>Rotates a gameObject based on 1st found tag.</summary>
         /// <param name="tag">The tag that was assigned to gameObject.</param>
         /// <param name="angle">Rotation angle.</param>
         /// <param name="direction">Rotatin direction.</param>
@@ -266,9 +243,7 @@ namespace Breadnone
         {
             return rotate(GameObject.FindGameObjectWithTag(tag), direction, duration);
         }
-        /// <summary>
-        /// Lerps the shader field value.
-        /// </summary>
+        /// <summary>Lerps the shader field value.</summary>
         /// <param name="material">The material to lerp.</param>
         /// <param name="shaderFieldName">Shader field name(Case sensitive).</param>
         /// <param name="from">From value.</param>
@@ -300,9 +275,7 @@ namespace Breadnone
 
             throw new STweenException("Shader field name can't be found. Make sure it exposed and exists in the shader.");
         }
-        /// <summary>
-        /// Fades in an audio source.
-        /// </summary>
+        /// <summary>Fades in an audio source.</summary>
         /// <param name="audioSource">The audioSource.</param>
         /// <param name="fadeInDuration">Duration.</param>
         public static STFloat audioFadeIn(AudioSource audioSource, float fadeInDuration)
@@ -322,9 +295,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Fades in a AudioListener.
-        /// </summary>
+        /// <summary>Fades in a AudioListener.</summary>
         /// <param name="fadeInDuration">Duration.</param>
         /// <param name="id">Custom id for cancelling purposes.</param>
         public static STFloat audioFadeGlobalIn(float fadeInDuration, int id)
@@ -339,9 +310,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Fades out an audioSource.
-        /// </summary>
+        /// <summary>Fades out an audioSource.</summary>
         /// <param name="audioSource">The audioSource.</param>
         /// <param name="fadeInDuration">Duration.</param>
         public static STFloat audioFadeOut(AudioSource audioSource, float fadeInDuration)
@@ -360,9 +329,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Fades in AudioListener.
-        /// </summary>
+        /// <summary>Fades in AudioListener.</summary>
         /// <param name="fadeInDuration">Duration.</param>
         /// <param name="setId">Custom id for cancelling purposes.</param>
         public static STFloat audioFadeGlobalOut(float fadeInDuration, int setId)
@@ -478,9 +445,7 @@ namespace Breadnone
             });
         }
         */
-        /// <summary>
-        /// Interpolates the color.
-        /// </summary>
+        /// <summary>Interpolates the color.</summary>
         /// <param name="tmp">TMP_Text component.</param>
         /// <param name="to">Target color.</param>
         /// <param name="duration">Duration.</param>
@@ -505,9 +470,7 @@ namespace Breadnone
 
             return instance;
         }
-        /// <summary>
-        /// Interpolates slider value.
-        /// </summary>
+        /// <summary>Interpolates slider value.</summary>
         /// <param name="slider">The slider component.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
@@ -523,9 +486,7 @@ namespace Breadnone
 
             return instance;
         }
-        /// <summary>
-        /// Creates custom tween. Note : This api is EXPERIMENTAL and not fully tested.
-        /// </summary>
+        /// <summary>Creates custom tween. Note : This api is EXPERIMENTAL and not fully tested.</summary>
         /// <param name="type">Value type.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -537,9 +498,7 @@ namespace Breadnone
             var ins = new CreateTween<T>(type, from, to, duration, propertyName, classObject);
             return ins;
         }
-        /// <summary>
-        /// Modifies the localScale value of a rectTransform.
-        /// </summary>
+        /// <summary>Modifies the localScale value of a rectTransform.</summary>
         /// <param name="rectTransform">The rectTransform component.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
@@ -547,9 +506,7 @@ namespace Breadnone
         {
             return scale(rectTransform, to, duration);
         }
-        /// <summary>
-        /// Resizes the rectTransform via sizeDelta.
-        /// </summary>
+        /// <summary>Resizes the rectTransform via sizeDelta.</summary>
         /// <param name="rectTransform">The rectTransform component.</param>
         /// <param name="to">Target size.</param>
         /// <param name="duration">Duration.</param>
@@ -564,9 +521,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates float value.
-        /// </summary>
+        /// <summary>Interpolates float value.</summary>
         /// <param name="textField">The textField visualElement.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -590,9 +545,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates integer value.
-        /// </summary>
+        /// <summary>Interpolates integer value.</summary>
         /// <param name="integerField">The integerField.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -608,9 +561,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates Vector2Field value.
-        /// </summary>
+        /// <summary>Interpolates Vector2Field value.</summary>
         /// <param name="vector2Field">The vector field.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -626,9 +577,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates Vector3Field value.
-        /// </summary>
+        /// <summary>Interpolates Vector3Field value.</summary>
         /// <param name="vector3Field">The vector field.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -644,9 +593,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates Vector4Field value.
-        /// </summary>
+        /// <summary>Interpolates Vector4Field value.</summary>
         /// <param name="vector4Field">The vector field.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -662,9 +609,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates float value.
-        /// </summary>
+        /// <summary>Interpolates float value.</summary>
         /// <param name="textField">The text field.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -687,9 +632,7 @@ namespace Breadnone
 
             return ins;
         }
-        /// <summary>
-        /// Interpolates integer value.
-        /// </summary>
+        /// <summary>Interpolates integer value.</summary>
         /// <param name="textField">The text field.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -705,5 +648,44 @@ namespace Breadnone
 
             return ins;
         }
+
+        public static void punchThis(this GameObject stween, float punchFactor, float punchSize, float duration)
+        {
+            if(stween.transform != null)
+            {
+                var defrotation = stween.transform.rotation;
+                float val = 8.5f * punchFactor;
+                var vec = stween.transform.localScale;
+                float tmp = punchSize * 0.5f;
+
+                Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
+                var main = stween.transform.scaleThis(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
+                var sub = stween.transform.rotateThis(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
+                (sub as ISlimRegister).RegisterLastOnComplete(()=> 
+                {
+                    stween.transform.rotation = defrotation;
+                    var t = stween.transform.rotateThis(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
+                    (t as ISlimRegister).RegisterLastOnComplete(()=>
+                    {
+                        stween.transform.rotation = defrotation;
+                    });
+                });
+            }
+        }
+        public static void punch(GameObject stween, float punchFactor, float punchSize, float duration)
+        {
+            if(stween.transform != null)
+            {
+                float val = 8.5f * punchFactor;
+                var vec = stween.transform.localScale;
+                float tmp = punchSize * 0.5f;
+
+                Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
+                var main = stween.transform.scaleThis(new Vector3(punchSize, punchSize, punchSize), duration);
+                var sub = stween.transform.rotateThis(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutElastic);
+                (sub as ISlimRegister).RegisterLastOnComplete(()=> stween.transform.rotateThis(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutElastic));
+            }
+        }
+
     }
 }

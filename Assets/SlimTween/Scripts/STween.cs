@@ -226,7 +226,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = rectTransform.position;
+            var trans = rectTransform.anchoredPosition3D;
             var mod = new Vector3(to, trans.y, trans.z);
             instance.Init(rectTransform, mod, duration, false, TransformType.Move);
             return instance;
@@ -244,9 +244,9 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = rectTransform.localPosition;
-            var mod = new Vector3(to, trans.y, trans.z);
-            instance.Init(rectTransform, mod, duration, false, TransformType.Move);
+            var trans = rectTransform.anchoredPosition;
+            var mod = new Vector3(to, trans.y, 0);
+            instance.Init(rectTransform, mod, duration, true, TransformType.Move);
             return instance;
         }
         /// <summary>Moves rectTransfom to target x point in localSpace.</summary>
@@ -262,7 +262,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = rectTransform.position;
+            var trans = rectTransform.anchoredPosition3D;
             var mod = new Vector3(trans.x, to, trans.z);
             instance.Init(rectTransform, mod, duration, false, TransformType.Move);
             return instance;
@@ -280,9 +280,9 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = rectTransform.localPosition;
-            var mod = new Vector3(trans.x, to, trans.z);
-            instance.Init(rectTransform, mod, duration, false, TransformType.Move);
+            var trans = rectTransform.anchoredPosition;
+            var mod = new Vector3(trans.x, to, 0);
+            instance.Init(rectTransform, mod, duration, true, TransformType.Move);
             return instance;
         }
         ///<summary>Moves rectTransform to target point.</summary>
@@ -298,7 +298,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = rectTransform.position;
+            var trans = rectTransform.anchoredPosition3D;
             instance.Init(rectTransform, to, duration, false, TransformType.Move);
             return instance;
         }
@@ -315,7 +315,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = to.position;
+            var trans = to.anchoredPosition3D;
             var mod = new Vector3(trans.x, trans.y, trans.z);
             instance.Init(rectTransform, mod, duration, false, TransformType.Move);
             return instance;
@@ -333,8 +333,8 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            var trans = rectTransform.localPosition;
-            instance.Init(rectTransform, to, duration, false, TransformType.Move);
+            var trans = rectTransform.anchoredPosition;
+            instance.Init(rectTransform, to, duration, true, TransformType.Move);
             return instance;
         }
         ///<summary>Resizes a rectTransform to target value.</summary>
@@ -1245,11 +1245,6 @@ namespace Breadnone
             var instance = new STSplines(transform, transform.position, middle, end, duration);
             return instance;
         }
-        public static STBezier bezier(Transform transform, List<Vector3> points, float duration)
-        {
-            var instance = new STBezier(transform, points, duration);
-            return instance;
-        }
         #endregion
 
         #region Value
@@ -1394,13 +1389,11 @@ namespace Breadnone
             instance.Init();
             return instance;
         }
-        /// <summary>Lazily queue an already running tween.</summary>
+        /// <summary>Immediately queue an already running tween. Use next over queue whenever you can.</summary>
         /// <param name="id">Target tween id.</param>
         /// <param name="stween">Tween instance.</param>
         public static TweenClass queue(int id, TweenClass stween)
         {
-            stween.halt(true);
-
             if(TweenExtension.FindTween(id, out var tween))
             {
                 if(tween.state != TweenState.Tweening)
@@ -1637,7 +1630,36 @@ namespace Breadnone
                 }
             }
         }
+        /// <summary>
+        /// Equal to Vector3.forward in euler angle. Rotates on locked y axis.
+        /// </summary>
+        /// <param name="gameObject">GameObject.</param>
+        /// <param name="angle">Degree angle.</param>
+        /// <param name="duration">Duration.</param>
+        public static SlimTransform angle2D(GameObject gameObject, float angle, float duration)
+        {
+            if(gameObject == null)
+            {
+                throw new STweenException("GameObject can't be null.");
+            }
 
+            return rotateAround(gameObject, gameObject.transform.position, Vector3.forward, angle, duration);
+        }
+        /// <summary>
+        /// Equals to Vector3.right for positive angle, Vector2.left for negative angle. Rotates on locked origin.
+        /// </summary>
+        /// <param name="gameObject">GameObject.</param>
+        /// <param name="angle">Degree angle.</param>
+        /// <param name="duration">Duration.</param>
+        public static SlimTransform angle3D(GameObject gameObject, float angle, float duration)
+        {
+            if(gameObject == null)
+            {
+                throw new STweenException("GameObject can't be null.");
+            }
+            
+            return rotateAround(gameObject, gameObject.transform.position, Vector3.right, angle, duration);
+        }
         public static int ActiveCount
         {
             get

@@ -15,10 +15,10 @@ namespace Breadnone
         /// <param name="state">True = halt, else unhalt.</param>
         public static TweenClass halt(this TweenClass stween, bool state)
         {
-            if(state)
-            stween.Pause();
+            if (state)
+                stween.Pause();
             else
-            stween.Resume(true);
+                stween.Resume(true);
             return stween;
         }
         /// <summary>
@@ -47,13 +47,13 @@ namespace Breadnone
         /// <param name="animationCurve">The AnimationCurve object.</param>
         public static TweenClass setAnimationCurve(this TweenClass stween, AnimationCurve animationCurve)
         {
-            if(animationCurve == null || animationCurve.length == 0)
+            if (animationCurve == null || animationCurve.length == 0)
             {
                 return stween;
             }
 
             stween.tprops.animationCurve = animationCurve;
-            (stween as ISlimRegister).GetSetDuration = animationCurve.keys[animationCurve.length-1].time;
+            (stween as ISlimRegister).GetSetDuration = animationCurve.keys[animationCurve.length - 1].time;
             return stween;
         }
         /// <summary>
@@ -76,10 +76,10 @@ namespace Breadnone
             var sf = stween as SlimTransform;
             var sr = stween as SlimRect;
 
-            if(sf != null)
-            (stween as ISlimRegister).RegisterOnUpdate(() => callback.Invoke(!(stween as ISlimTween).Locality ? sf.GetTransform.position : sf.GetTransform.localPosition));
+            if (sf != null)
+                (stween as ISlimRegister).RegisterOnUpdate(() => callback.Invoke(!(stween as ISlimTween).Locality ? sf.GetTransform.position : sf.GetTransform.localPosition));
             else
-            (stween as ISlimRegister).RegisterOnUpdate(() => callback.Invoke(!(stween as ISlimTween).Locality ? sr.GetTransform.position : sr.GetTransform.localPosition));
+                (stween as ISlimRegister).RegisterOnUpdate(() => callback.Invoke(!(stween as ISlimTween).Locality ? sr.GetTransform.position : sr.GetTransform.localPosition));
             return stween;
         }
         /// <summary>
@@ -99,11 +99,11 @@ namespace Breadnone
         /// <param name="loopCount">The amount on how many time the loop should be repeated.</param>
         public static TweenClass setLoop(this TweenClass stween, int loopCount)
         {
-            if(loopCount <= 0)
+            if (loopCount <= 0)
             {
                 loopCount = 1;
             }
-            
+
             stween.tprops.loopAmount = !stween.tprops.pingpong ? loopCount : stween.tprops.loopAmount;
             return stween;
         }
@@ -114,12 +114,12 @@ namespace Breadnone
         /// <param name="state">Scaled or unscaled state.</param>
         public static TweenClass setUnscaledTime(this TweenClass stween, bool state)
         {
-            #if UNITY_EDITOR
-            if(!UnityEditor.EditorApplication.isPlaying)
+#if UNITY_EDITOR
+            if (!UnityEditor.EditorApplication.isPlaying)
             {
                 return stween;
             }
-            #endif
+#endif
 
             stween.tprops.unscaledTime = state;
             return stween;
@@ -131,7 +131,7 @@ namespace Breadnone
         /// <param name="value">Speed value.</param>
         public static TweenClass setSpeed(this TweenClass stween, float value)
         {
-            if(Mathf.Approximately(value, 0f))
+            if (Mathf.Approximately(value, 0f))
             {
                 return stween;
             }
@@ -178,23 +178,23 @@ namespace Breadnone
         /// <param name="state">Enable/disable.</param>
         public static TweenClass setDestroyOnComplete(this TweenClass stween, bool state)
         {
-            #if UNITY_EDITOR
-            if(!UnityEditor.EditorApplication.isPlaying)
+#if UNITY_EDITOR
+            if (!UnityEditor.EditorApplication.isPlaying)
             {
                 Debug.LogWarning("STween Warning : DestroyOnComplete isn't supported while in edit-mode!. Destroy was cancelled.");
                 return stween;
             }
-            #endif
+#endif
 
-            (stween as ISlimRegister).RegisterLastOnComplete(()=>
+            (stween as ISlimRegister).RegisterLastOnComplete(() =>
             {
                 var sf = stween as SlimTransform;
                 var sr = stween as SlimRect;
 
-                if(sf != null)
-                GameObject.Destroy(sf.GetTransform.gameObject);
+                if (sf != null)
+                    GameObject.Destroy(sf.GetTransform.gameObject);
                 else
-                GameObject.Destroy(sr.GetTransform.gameObject);
+                    GameObject.Destroy(sr.GetTransform.gameObject);
             });
             return stween;
         }
@@ -205,7 +205,7 @@ namespace Breadnone
         /// <param name="condition">Callback.</param>
         public static TweenClass setCancelOn(this TweenClass stween, Func<bool> condition)
         {
-            (stween as ISlimRegister).RegisterOnUpdate(()=> condition.Invoke());
+            (stween as ISlimRegister).RegisterOnUpdate(() => condition.Invoke());
             return stween;
         }
         /// <summary>
@@ -215,7 +215,7 @@ namespace Breadnone
         /// <param name="condition">Callback.</param>
         public static TweenClass setPauseOn(this TweenClass stween, Func<bool> condition)
         {
-            (stween as ISlimRegister).RegisterOnUpdate(()=> condition.Invoke());
+            (stween as ISlimRegister).RegisterOnUpdate(() => condition.Invoke());
             return stween;
         }
         /// <summary>
@@ -225,7 +225,7 @@ namespace Breadnone
         /// <param name="condition">Callback.</param>
         public static TweenClass setResumeOn(this TweenClass stween, Func<bool> condition)
         {
-            (stween as ISlimRegister).RegisterOnUpdate(()=> condition.Invoke());
+            (stween as ISlimRegister).RegisterOnUpdate(() => condition.Invoke());
             return stween;
         }
         /// <summary>
@@ -234,10 +234,10 @@ namespace Breadnone
         /// <param name="stween">The tween instance.</param>
         /// <param name="from">Reposition the target object.</param>
         public static TweenClass setFrom(this TweenClass stween, Vector3 from)
-        {   
+        {
             stween.Pause();
             ISlimTween sr = stween as ISlimTween;
-            
+
             var valsr = (sr as ISlimTween).FromTo;
             sr.FromTo = (from, valsr.to);
             stween.Resume();
@@ -250,40 +250,36 @@ namespace Breadnone
         /// <param name="transform">Target transform to look at.</param>
         public static TweenClass setLookAt(this SlimTransform stween, Transform transform)
         {
-            if(transform == null)
+            if (transform == null)
             {
                 return stween;
             }
 
-            (stween as ISlimRegister).RegisterOnUpdate(()=>
+            (stween as ISlimRegister).RegisterOnUpdate(() =>
             {
                 stween.GetTransform.LookAt(transform);
             });
 
             return stween;
         }
-        /// <summary>
-        /// Focus on a target rectTransform while tweening.
-        /// </summary>
+        /// <summary>Focus on a target rectTransform while tweening.</summary>
         /// <param name="stween">The tween instance.</param>
         /// <param name="rect">Target rectTransform to look at.</param>
         public static TweenClass setLookAt(this SlimRect stween, RectTransform rect)
         {
-            if(rect == null)
+            if (rect == null)
             {
                 return stween;
             }
 
-            (stween as ISlimRegister).RegisterOnUpdate(()=>
+            (stween as ISlimRegister).RegisterOnUpdate(() =>
             {
                 stween.GetTransform.LookAt(rect);
             });
 
             return stween;
         }
-        /// <summary>
-        /// Continues the execution of the paused tweening.
-        /// </summary>
+        /// <summary>Continues the execution of the paused tweening.</summary>
         /// <param name="stween">The tween instance.</param>
         /// <param name="updateTransform">Reposition the initial position.</param>
         public static TweenClass Resume(this ISlimTween stween, bool updateTransform = false)
@@ -291,6 +287,97 @@ namespace Breadnone
             var st = stween as TweenClass;
             st.Resume(updateTransform);
             return st;
+        }
+        /// <summary>It's similar to frame-skipping in animation.</summary>
+        /// <param name="stween"></param>
+        /// <param name="skipEveryNSeconds"></param>
+        /// <returns></returns>
+        public static TweenClass setSkip(this ISlimTween stween, float skipEveryNSeconds)
+        {
+            var st = stween as TweenClass;
+
+            st.setOnUpdate(x =>
+            {
+                if (st.state == TweenState.Tweening && (st as ISlimRegister).GetSetRunningTime + skipEveryNSeconds < (st as ISlimRegister).GetSetDuration)
+                    (st as ISlimRegister).GetSetRunningTime += skipEveryNSeconds;
+            });
+
+            return st;
+        }
+        /// <summary>
+        /// Sets the active state of the gameobject upon completion.
+        /// </summary>
+        /// <param name="tclass"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static TweenClass setActiveOnComplete(this TweenClass tclass, bool state)
+        {
+            (tclass as ISlimRegister).RegisterLastOnComplete(() =>
+            {
+                if (tclass is SlimTransform sf)
+                {
+                    sf.GetTransform.gameObject.SetActive(state);
+                }
+                else if (tclass is SlimRect sr)
+                {
+                    sr.GetTransform.gameObject.SetActive(state);
+                }
+            });
+
+            return tclass;
+        }
+        /// <summary>
+        /// Sets the active state of a gameobject on startup.
+        /// </summary>
+        /// <param name="tclass"></param>
+        /// <returns></returns>
+        public static TweenClass setActiveOnStart(this TweenClass tclass)
+        {
+            if (tclass is SlimTransform sf)
+            {
+                sf.GetTransform.gameObject.SetActive(true);
+            }
+            else if (tclass is SlimRect sr)
+            {
+                sr.GetTransform.gameObject.SetActive(true);
+            }
+
+            return tclass;
+        }
+        /// <summary>
+        /// Plays an audio on startup.
+        /// </summary>
+        /// <param name="tclass"></param>
+        /// <param name="audioSource"></param>
+        /// <param name="stopOnComplete"></param>
+        /// <returns></returns>
+        public static TweenClass setAudioOnStart(this TweenClass tclass, AudioSource audioSource, bool stopOnComplete)
+        {
+            audioSource.Play();
+
+            if (stopOnComplete)
+            {
+                (tclass as ISlimRegister).RegisterLastOnComplete(() =>
+                {
+                    audioSource.Stop();
+                });
+            }
+            return tclass;
+        }
+        /// <summary>
+        /// Plays an audio on completion.
+        /// </summary>
+        /// <param name="tclass"></param>
+        /// <param name="audioSource"></param>
+        /// <returns></returns>
+        public static TweenClass setAudioOnComplete(this TweenClass tclass, AudioSource audioSource)
+        {
+            (tclass as ISlimRegister).RegisterLastOnComplete(() =>
+            {
+                audioSource.Play();
+            });
+
+            return tclass;
         }
     }
 }

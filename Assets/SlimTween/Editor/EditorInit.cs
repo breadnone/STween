@@ -108,12 +108,7 @@ namespace EditorDelta
 
                         var tween = TweenManager.mono.tweens[i];
                         var reg = (Breadnone.Extension.ISlimRegister)tween;
-                        reg.ReRegisterDeltaTick();
                         tween.UpdateFrame();
-                        if (tween is ISlimTween sr)
-                        {
-                            sr.RebaseInit();
-                        }
                         TweenManager.activeTweens.Add(tween);
                     }
                 }
@@ -129,7 +124,6 @@ namespace EditorDelta
 
                         var tween = TweenManager.mono.unused[i];
                         var reg = (Breadnone.Extension.ISlimRegister)tween;
-                        reg.ReRegisterDeltaTick();
                         TweenManager.unusedTweens[i] = tween;
                     }
                 }
@@ -178,7 +172,6 @@ namespace EditorDelta
                     {
                         TweenLoop.TweenPlayerLoop.tweenLoop.UnregisterUpdate(TweenManager.TweenWorkerUpdate);
                     }
-
                 }
             }
         }

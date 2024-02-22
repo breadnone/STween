@@ -130,6 +130,10 @@ STween.value(0f, 10f, 5f, tick => Debug.Log("Test1"))
 var tform = gameObject.transform.position;
 STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tform.z), new Vector3(tform,x + 100, tform.y, tform,z), 3f);
 
+/// Bezier curves : Move along bezier corves
+var arr = new List<Vector3>{target.position, fromTarget.position, lastTarget.position, moveRectTransform.position};
+STween.bezier(obj.transform, arr, duration * 3f);
+
 /// Queue : Chaining multiple tweens
 STween.scaleX(gameObject, 2f, 4f)
 .next(STween.scaleY(gameObject, 3f, 4f))

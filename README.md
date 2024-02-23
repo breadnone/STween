@@ -310,7 +310,11 @@ Extensions : can be chained to both main and helper apis.
 - lerpAngleAxis : Quaternion AngleAxis based rotation.
 - lerpFromToRotation : Creates a rotation which rotates from fromDirection to toDirection. 
 - lerpEulerAngles : Quaternion euler based rotation.
-- lerpRotateTowards : Rotates a rotation from towards to.  
+- lerpRotateTowards : Rotates a rotation from towards to.
+
+**Works In Edit-mode (Non-PlayMode)**  
+![pylUFJ20Mv](https://github.com/breadnone/STween/assets/64100867/624de2e1-6891-4f58-979d-2a83b1d5d9b9)
+
   
 There are lots more APIs that aren't too common internally but they're exposed and ready to use so you can just take a peek at the written code documentations/summaries in the scripts.  
   

@@ -288,6 +288,44 @@ namespace Breadnone
             if (val > 1f) return 1f;
             return val < 0.5f ? 8f * val * val * val : (1f - 8f * (val - 1f) * (val - 1f) * 1.70158f * ((val - 0.5f) * (val - 0.75f)));
         }
+        public static float Bezier1D(float val)
+        {
+            float min = 0f;
+            float max = 1f;
+            float c = Mathf.Sin(0.5f * val);
+            
+            return clamp1(((1 - val) * (1 - val) * min) + (2 * val * (1 - val) * c) + (val * val * max));
+        }
+        public static float Bezier2DEaseFloatIn(float val)
+        {
+            float start = 0f;
+            float end = 1f;
+            float startMid = 0.25f * val;
+            float endMid = 0.75f * -val;
+            return clamp1(((1 - val) * (1 - val) * (1 - val) * start) + (3 * (1 - val) * (1 - val) * val * startMid) + (3 * (1 - val) * val * val * endMid) + (val * val * val * end));           
+        }
+        public static float Bezier2DEaseFloatOut(float val)
+        {
+            return clamp1(1f - Bezier2DEaseFloatIn(1f - val));
+        }
+        public static float Bezier2DEaseFloatInOut(float val)
+        {
+            return val < 0.5001f
+            ? (1f - Bezier2DEaseFloatOut(1f - 2f * val)) * 0.5f
+            : (1f + Bezier2DEaseFloatOut(2f * val - 1f)) * 0.5f;
+        }
+        public static float Bezier2DEaseBrakeInOut(float val)
+        {
+            return val < 0.5001f
+            ? (1f - Bezier2DEaseFloatIn(1f - 2f * val)) * 0.5f
+            : (1f + Bezier2DEaseFloatIn(2f * val - 1f)) * 0.5f;
+        }
+        public static float Bezier2DEaseTESTInOut(float val)
+        {
+            return val < 0.5001f
+            ? ((1f * val) - Bezier2DEaseFloatIn(1f - 2f * val * val)) * 0.5f * val * val
+            : ((1f * val) + Bezier2DEaseFloatIn(2f * val * val - (1f * val))) * 0.5f * val * val;
+        }
         /// <summary>
         /// Upperbound clamping.
         /// </summary>
@@ -396,6 +434,18 @@ namespace Breadnone
                     return EaseInWeightedOut(tick);
                 case Ease.EaseInWeightedReboundOut:
                     return EaseInWeightedReboundOut(tick);
+                case Ease.Bezier1D:
+                    return Bezier1D(tick);
+                case Ease.Bezier2DEaseFloatIn :
+                    return Bezier2DEaseFloatIn(tick);
+                case Ease.Bezier2DEaseFloatOut:
+                    return Bezier2DEaseFloatOut(tick);
+                case Ease.Bezier2DEaseFloatInOut:
+                    return Bezier2DEaseFloatInOut(tick);
+                case Ease.Bezier2DEaseBrakeInOut :
+                    return Bezier2DEaseBrakeInOut(tick);
+                case Ease.BezierTest:
+                    return Bezier2DEaseTESTInOut(tick);
             }
             return 0;
         }
@@ -441,6 +491,12 @@ namespace Breadnone
         EaseOutElastic,
         EaseInOutElastic,
         EaseInWeightedOut,
-        EaseInWeightedReboundOut
+        EaseInWeightedReboundOut,
+        Bezier1D,
+        Bezier2DEaseFloatIn,
+        Bezier2DEaseFloatOut,
+        Bezier2DEaseFloatInOut,
+        Bezier2DEaseBrakeInOut,
+        BezierTest
     }
 }

@@ -288,7 +288,7 @@ namespace Breadnone
             st.Resume(updateTransform);
             return st;
         }
-        /// <summary>It's similar to frame-skipping in animation.</summary>
+        /// <summary>Experimental: Frame-skips ever n seconds.</summary>
         /// <param name="stween"></param>
         /// <param name="skipEveryNSeconds"></param>
         /// <returns></returns>

@@ -857,10 +857,6 @@ namespace Breadnone.Editor
             {
                 t.Play();
             };
-            root.pause.clicked += ()=>
-            {
-                t.Pause();
-            };
             root.cancel.clicked += ()=>
             {
                 t.Stop();

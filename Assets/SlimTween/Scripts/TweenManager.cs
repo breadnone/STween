@@ -436,6 +436,22 @@ namespace Breadnone.Extension
                     yield return TweenManager.activeTweens.array[i];
             }
         }
+        public static bool GetTween(int id, out TweenClass tween)
+        {
+            for (int i = 0; i < TweenManager.activeTweens.Count; i++)
+            {
+                var tw = TweenManager.activeTweens.array[i];
+
+                if (tw.IsTweening && tw.tprops.id == id)
+                {
+                    tween = tw;
+                    return true;
+                }
+            }
+
+            tween = null;
+            return false;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool FindTween(int id, out TweenClass tween, Type type = null)
         {

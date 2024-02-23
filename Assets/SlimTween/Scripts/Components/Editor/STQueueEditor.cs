@@ -255,11 +255,9 @@ namespace Breadnone.Extension
             var root = VTweenTemplate.PlayControl();
             root.root.style.justifyContent = Justify.FlexStart;
             root.play.style.width = new Length(40/3, LengthUnit.Percent);
-            root.pause.style.width = new Length(40/3, LengthUnit.Percent);
             root.cancel.style.width = new Length(40/3, LengthUnit.Percent);
 
             root.play.text = "play";
-            root.pause.text = "pause";
             root.cancel.text = "cancel";
 
             //var tplay = CreateTexture2D();
@@ -272,19 +270,10 @@ namespace Breadnone.Extension
             {
                 t.Play();
             };
-            root.pause.clicked += ()=>
-            {
-                if(root.pause.text == "PAUSE")
-                {
-                    t.Pause();
-                }
-                else
-                {
-                    t.Resume();
-                }
-            };
+
             root.cancel.clicked += ()=>
             {
+                t.Cancel();
             };
 
             return root.root;

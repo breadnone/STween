@@ -115,36 +115,28 @@ namespace Breadnone.Editor
             return (root, drop, lbl);
         }
         ///<summary>Float field.</summary>
-        public static (VisualElement root, Button play, Button pause, Button cancel) PlayControl()
+        public static (VisualElement root, Button play, Button cancel) PlayControl()
         {
             var root = new VisualElement();
             root.style.flexDirection = FlexDirection.Row;
+            root.style.justifyContent = Justify.FlexStart;
             root.style.width = new StyleLength(new Length(100, LengthUnit.Percent));
             
             var lbl = new Button();
             lbl.style.backgroundColor = Color.blue;
-            lbl.text = "PLAY";
+            lbl.text = "play";
             lbl.style.width = new StyleLength(new Length(100/3, LengthUnit.Percent));
             lbl.style.height = 15;
 
-            var lblPause = new Button();
-            lblPause.style.backgroundColor = Color.grey;
-            lblPause.text = "PAUSE";
-            lblPause.style.width = new StyleLength(new Length(100/3, LengthUnit.Percent));
-            lblPause.style.height = 15;
-
             var lblCancel = new Button();
             lblCancel.style.backgroundColor = Color.red;
-            lblCancel.text = "CANCEL";
+            lblCancel.text = "cancel";
             lblCancel.style.width = new StyleLength(new Length(100/3, LengthUnit.Percent));
             lblCancel.style.height = 15;
 
             root.Add(lbl);
-            root.Add(lblPause);
             root.Add(lblCancel);
-
-            root.style.justifyContent = Justify.SpaceBetween;
-            return (root, lbl, lblPause, lblCancel);
+            return (root, lbl, lblCancel);
         }
 
         ///<summary>Float field.</summary>

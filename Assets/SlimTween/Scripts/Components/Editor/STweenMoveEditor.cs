@@ -75,6 +75,7 @@ namespace Breadnone.Editor
             }
             return roots;
         }
+
         ///<summary>Draws enum object.</summary>
         private VisualElement DrawEnumIsGameObject(STweenMove t)
         {
@@ -89,7 +90,14 @@ namespace Breadnone.Editor
             var vis = new DropdownField();
             vis.style.width = new StyleLength(new Length(60, LengthUnit.Percent));
             vis.choices = new List<string> { "GameObject", "UIElement", "RectTransform" };
-
+            
+            if(t.isGameObject)
+            vis.value = "GameObject";
+            else if(t.isRectTransform)
+            vis.value = "RectTransform";
+            else if(t.isUIelement)
+            vis.value = "UIElement";
+            
             if (t.isGameObject)
             {
                 vis.value = "GameObject";
@@ -174,6 +182,8 @@ namespace Breadnone.Editor
                 vis.RegisterValueChangedCallback(s =>
                 {
                     t.objectToMove = s.newValue as GameObject;
+                    t.rectTransformToMove = null;
+                    t.visualElement = null;
                 });
 
                 var visRootTwo = new VisualElement();
@@ -229,6 +239,8 @@ namespace Breadnone.Editor
                 vis.RegisterValueChangedCallback(s =>
                 {
                     t.visualElement = s.newValue as UIDocument;
+                    t.objectToMove = null;
+                    t.rectTransformToMove = null;
                 });
 
                 var visRootTwo = new VisualElement();
@@ -253,6 +265,8 @@ namespace Breadnone.Editor
                 visSub.RegisterValueChangedCallback(s =>
                 {
                     t.targetVisualElement = s.newValue as UIDocument;
+                    t.rectTransformToMove = null;
+                    t.objectToMove = null;
                 });
 
                 root.Add(visRootOne);
@@ -274,7 +288,6 @@ namespace Breadnone.Editor
                 vis.style.width = new StyleLength(new Length(60, LengthUnit.Percent));
                 vis.style.height = 20;
                 vis.objectType = typeof(RectTransform);
-                vis.value = t.rectTransformToMove;
                 visRootOne.Add(lbl);
                 visRootOne.Add(vis);
                 vis.SetValueWithoutNotify(t.rectTransformToMove);
@@ -282,6 +295,9 @@ namespace Breadnone.Editor
                 vis.RegisterValueChangedCallback(s =>
                 {
                     t.rectTransformToMove = s.newValue as RectTransform;
+                    t.targetVisualElement = null;
+                    t.visualElement= null;
+                    t.objectToMove = null;
                 });
 
                 var visRootTwo = new VisualElement();
@@ -988,17 +1004,6 @@ namespace Breadnone.Editor
             root.play.clicked += ()=>
             {
                 t.Play();
-            };
-            root.pause.clicked += ()=>
-            {
-                if(root.pause.text == "PAUSE")
-                {
-                    t.Pause();
-                }
-                else
-                {
-                    t.Resume();
-                }
             };
             root.cancel.clicked += ()=>
             {

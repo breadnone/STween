@@ -88,7 +88,7 @@ namespace Breadnone.Extension
             {
                 frameIn = TweenManager.editorFrameCount.Invoke() + 2;
                 return;
-            }
+            } 
 #endif
 
             frameIn = Time.frameCount + 1;
@@ -289,6 +289,11 @@ namespace Breadnone.Extension
                 oncomplete?.Invoke();
             }
 
+            if (this is ISlimTween islim)
+            {
+                islim.DisableLerps(false);
+            }
+
             Clear();
         }
 
@@ -437,213 +442,6 @@ namespace Breadnone.Extension
         /// <summary>Registers on update.</summary>
         void ISlimRegister.RegisterOnUpdate(Action func) { update += func; }
     }
-    public sealed class STSplines
-    {
-        public STSplines(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time)
-        {
-            Vector3 from = transform.position;
-            var sfloat = new STFloat();
-            (sfloat as ISlimRegister).GetSetDuration = time;
-            Multiple(transform, new List<Vector3> { start, middle, end, start, middle, end }, sfloat, time);
-        }
-        void Three(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time, STFloat sfloat)
-        {
-            // Calculate control points for cubic Bezier curve
-            Vector3 controlStart = start + 2f * (middle - start) / 3f;
-            Vector3 controlEnd = end + 2f * (middle - end) / 3f;
-
-            sfloat.SetBase(0f, 1f, time, tick =>
-            {
-                // Calculate position on the Bezier curve using cubic formula
-                float t = Mathf.LerpUnclamped(0f, 1f, tick);
-                float t2 = t * t;
-                float t3 = t2 * t;
-                float oneMinusT = 1f - t;
-                float oneMinusT2 = oneMinusT * oneMinusT;
-                float oneMinusT3 = oneMinusT2 * oneMinusT;
-
-                Vector3 position =
-                    oneMinusT3 * start +
-                    3f * oneMinusT2 * t * controlStart +
-                    3f * oneMinusT * t2 * controlEnd +
-                    t3 * end;
-
-                transform.position = position;
-            });
-        }
-        void Four(Transform transform, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, STFloat sfloat, float time)
-        {
-            // Calculate control points for cubic Bezier curve
-            Vector3 p0p1 = p0 + 2f * (p1 - p0) / 3f;
-            Vector3 p1p2 = p1 + 2f * (p2 - p1) / 3f;
-            Vector3 p2p3 = p3 + 2f * (p2 - p3) / 3f;
-
-            sfloat.SetBase(0f, 1f, time, tick =>
-            {
-                // Calculate position on the Bezier curve using cubic formula
-                float t = Mathf.LerpUnclamped(0f, 1f, tick);
-                float t2 = t * t;
-                float t3 = t2 * t;
-                float oneMinusT = 1f - t;
-                float oneMinusT2 = oneMinusT * oneMinusT;
-                float oneMinusT3 = oneMinusT2 * oneMinusT;
-
-                Vector3 position =
-                    oneMinusT3 * p0 +
-                    3f * oneMinusT2 * t * p0p1 +
-                    3f * oneMinusT * t2 * p1p2 +
-                    t3 * p2p3;
-
-                transform.position = position;
-            });
-        }
-        void Multiple(Transform transform, List<Vector3> points, STFloat sfloat, float time)
-        {
-            List<(Vector3 p0, Vector3 p1, Vector3 pp0, Vector3 pp1, Vector3 pp2)> npoints = new();
-            points.Add(transform.position);
-
-            for (int i = 0; i <= points.Count - 2; i += 2)
-            {
-                npoints.Add((points[i] + 2f * (points[i + 1] - points[i]) / 3f,
-                points[i + 2] + 2f * (points[i + 1] - points[i + 2]) / 3f, points[i], points[i + 1], points[i + 2]));
-            }
-            sfloat.SetBase(0f, 1f, time, tick =>
-            {
-                // Ensure loop iterates within valid npoints range
-                for (int i = 0; i < npoints.Count; i++)
-                {
-                    var tmp = npoints[i];
-                    // Calculate position on the Bezier curve
-                    float t = Mathf.LerpUnclamped(0f, 1f, tick);
-                    float t2 = t * t;
-                    float t3 = t2 * t;
-                    float oneMinusT = 1f - t;
-                    float oneMinusT2 = oneMinusT * oneMinusT;
-                    float oneMinusT3 = oneMinusT2 * oneMinusT;
-
-                    Vector3 position =
-                        oneMinusT3 * tmp.pp0 +
-                        3f * oneMinusT2 * t * tmp.p0 +
-                        3f * oneMinusT * t2 * tmp.p1 +
-                        t3 * tmp.pp2;
-
-                    // Use the calculated position (assuming it's for transform)
-                    transform.position = position;
-                }
-            });
-        }
-    }
-    public sealed class STBezier
-    {
-        // ... existing variables and methods ...
-        List<Vector3> controlPoints;
-        List<Vector3> points;
-        public STBezier(Transform transform, List<Vector3> points, float duration)
-        {
-            Vector3 from = transform.position;
-            var sfloat = new STFloat();
-            (sfloat as ISlimRegister).GetSetDuration = duration;
-            this.points = points;
-
-            // Initialize control points based on evenly spaced segments
-            controlPoints = new List<Vector3>();
-
-            for (int i = 1; i < points.Count - 2; i++)
-            {
-                Vector3 middle = points[i];
-                controlPoints.Add(2f * middle / 3f - points[i - 1] / 3f);
-                controlPoints.Add(2f * middle / 3f - points[i + 1] / 3f);
-            }
-
-            // Set base function based on interpolation choice
-            sfloat.SetBase(0f, 1f, duration, tick =>
-            {
-                transform.position = GetBezierSegmentProgress(tick);
-            });
-        }
-        /// <summary>
-        /// Interpolates bezier points.
-        /// </summary>
-        /// <param name="tick"></param>
-        private Vector3 GetBezierSegmentProgress(float tick)
-        {
-            // Calculate segment index and interpolation factor within that segment
-            int segmentIndex = Mathf.Clamp(Mathf.FloorToInt(tick * (controlPoints.Count - 1)), 0, controlPoints.Count * 2);
-            float segmentProgress = tick * (controlPoints.Count - 1) - segmentIndex;
-
-
-            // Extract points for the current segment
-            Vector3 p0 = controlPoints[segmentIndex];
-            Vector3 p1 = controlPoints[segmentIndex * 2];
-            Vector3 p2 = controlPoints[(segmentIndex + 1) * 2];
-            Vector3 p3 = controlPoints[segmentIndex + 1];
-
-            // Use cubic Bezier formula for position within the segment
-            float t = Mathf.LerpUnclamped(0f, 1f, segmentProgress);
-            float t2 = t * t;
-            float t3 = t2 * t;
-            float oneMinusT = 1f - t;
-            float oneMinusT2 = oneMinusT * oneMinusT;
-            float oneMinusT3 = oneMinusT2 * oneMinusT;
-
-            return oneMinusT3 * p0 + 3f * oneMinusT2 * t * p1 + 3f * oneMinusT * t2 * p2 + t3 * p3;
-        }
-
-    }
-    public sealed class Bezier
-    {
-        public void SetBase(Transform transform, Vector3[] points, int segments, float time)
-        {
-            for (int i = 0; i < points.Length; i++)
-            {
-                GetBezierCurvePoints(points, segments);
-            }
-        }
-        public List<Vector3> GetBezierCurvePoints(Vector3[] points, int segments)
-        {
-            if (points.Length < 2 || segments < 1)
-            {
-                throw new ArgumentException("Need at least 2 points and 1 segment");
-            }
-
-            List<Vector3> curvePoints = new List<Vector3>();
-
-            float t = 0f;
-            float dt = 1f / segments;
-
-            while (t <= 1f)
-            {
-                Vector3 point = Vector3.zero;
-
-                for (int i = 0; i < points.Length; i++)
-                {
-                    // Calculate binomial coefficient manually
-                    int n = points.Length - 1;
-                    int k = i;
-                    float binomial = Factorial(n) / (Factorial(k) * Factorial(n - k));
-
-                    float term = binomial * Mathf.Pow(t, i) * Mathf.Pow(1 - t, points.Length - 1 - i);
-                    point += points[i] * term;
-                }
-
-                curvePoints.Add(point);
-                t += dt;
-            }
-
-            return curvePoints;
-        }
-
-        // Helper function to calculate factorial
-        private int Factorial(int n)
-        {
-            int result = 1;
-            for (int i = 2; i <= n; i++)
-            {
-                result *= i;
-            }
-            return result;
-        }
-    }
     ///<summary>State of the tweening instance.</summary>
     public enum TweenState : byte
     {
@@ -767,13 +565,17 @@ namespace Breadnone.Extension
     /// <summary>STTransform class to handle all Transforms.</summary>
     public sealed class SlimTransform : TweenClass, ISlimTween
     {
+        public SlimTransform()
+        {
+            interp = new InterpolatorStruct();
+        }
         /// <summary>Previous assigned type.</summary>
         TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
         /// <summary>The transform.</summary>
         Transform transform;
         /// <summary>Starting value.</summary>
-        InterpolatorStruct fromto = default;
-        InterpolatorStruct ISlimTween.Interpolator {get => fromto;set => fromto = value;}
+        InterpolatorStruct interp = default;
+        InterpolatorStruct ISlimTween.Interpolator { get => interp; set => interp = value; }
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public Transform GetTransform => transform;
         /// <summary>Tween type.</summary>
@@ -806,7 +608,7 @@ namespace Breadnone.Extension
                 return;
             }
 
-            switch(type)
+            switch (type)
             {
                 case TransformType.Move:
                     if (!isLocal)
@@ -830,7 +632,7 @@ namespace Breadnone.Extension
         }
         void InvokeLerps(float tick)
         {
-            switch(type)
+            switch (type)
             {
                 case TransformType.Move:
                     if (!isLocal)
@@ -857,14 +659,14 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move || type == TransformType.Translate)
             {
-                fromto.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
             }
             else if (type == TransformType.Scale)
             {
-                fromto.SetFrom(transform.localScale);
+                interp.SetFrom(transform.localScale);
             }
         }
-        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (fromto.from(), fromto.to()); } set { fromto.SetFrom(value.from); fromto.SetTo(value.to); } }
+        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from(), interp.to()); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         /// <summary>Initialize transform base value.</summary>
         /// <param name="objectTransform">The transform.</param>
         /// <param name="from">Starting value</param>
@@ -876,7 +678,7 @@ namespace Breadnone.Extension
         {
             type = transformType;
             transform = objectTransform;
-            fromto.SetTo(to);
+            interp.SetTo(to);
             duration = time;
             isLocal = local;
 
@@ -884,11 +686,11 @@ namespace Breadnone.Extension
 
             if (transformType == TransformType.Move || transformType == TransformType.Translate)
             {
-                fromto.SetFrom(!local ? objectTransform.position : objectTransform.localPosition);
+                interp.SetFrom(!local ? objectTransform.position : objectTransform.localPosition);
             }
             else if (transformType == TransformType.Scale)
             {
-                fromto.SetFrom(objectTransform.localScale);
+                interp.SetFrom(objectTransform.localScale);
             }
 
             TweenManager.InsertToActiveTween(this);
@@ -910,7 +712,7 @@ namespace Breadnone.Extension
             isLocal = local;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
-            fromto.SetTo(axis);
+            interp.SetTo(axis);
             TweenManager.InsertToActiveTween(this);
         }
         public void InitRotateAround(Transform objectTransform, Vector3 point, Vector3 axis, float targetAngle, float time, TransformType transformType)
@@ -921,55 +723,59 @@ namespace Breadnone.Extension
             angle = targetAngle;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
-            fromto.Set(point, axis);
+            interp.Set(point, axis);
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary> Interpolates local position.</summary>
         void LerpPositionLocal(float value)
         {
-            transform.localPosition = fromto.Interpolate(value);
+            transform.localPosition = interp.Interpolate(value);
         }
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.position = fromto.Interpolate(value);
+            transform.position = interp.Interpolate(value);
         }
         /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
         {
-            transform.localScale = fromto.Interpolate(value);
+            transform.localScale = interp.Interpolate(value);
         }
         /// <summary>Interpolates local/world rotation.</summary>
         void LerpEuler(float value)
         {
             if (!isLocal)
             {
-                transform.rotation = Quaternion.Euler(fromto.to() * value);
+                transform.rotation = Quaternion.Euler(interp.to() * value);
             }
             else
-            { 
-                transform.localRotation = Quaternion.Euler(fromto.to() * value);
+            {
+                transform.localRotation = Quaternion.Euler(interp.to() * value);
             }
         }
         /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value, float angle)
         {
-            transform.RotateAround(fromto.from(), fromto.to(), angle * value);
+            transform.RotateAround(interp.from(), interp.to(), angle * value);
         }
         /// <summary>Rotates based on target point.</summary>
         void LerpTranslate(float value)
         {
-            transform.Translate(fromto.to() * value, !isLocal ? Space.World : Space.Self);
+            transform.Translate(interp.to() * value, !isLocal ? Space.World : Space.Self);
         }
     }
     /// <summary>The sub base class.</summary>
     public sealed class SlimRect : TweenClass, ISlimTween
     {
+        public SlimRect()
+        {
+            interp = new InterpolatorStruct();
+        }
         /// <summary>The transform.</summary>
         UnityEngine.RectTransform transform;
         /// <summary>Starting position to target value.</summary>
-        InterpolatorStruct fromto;
-        InterpolatorStruct ISlimTween.Interpolator{get => fromto; set => fromto = value;}
+        InterpolatorStruct interp;
+        InterpolatorStruct ISlimTween.Interpolator { get => interp; set => interp = value; }
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public UnityEngine.RectTransform GetTransform => transform;
         /// <summary>Tween type.</summary>
@@ -979,7 +785,7 @@ namespace Breadnone.Extension
         bool disableLerps;
         float angle;
         void ISlimTween.DisableLerps(bool state) { disableLerps = state; }
-        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (fromto.from(), fromto.to()); } set { fromto.SetFrom(value.from); fromto.SetTo(value.to); } }
+        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from(), interp.to()); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
         /// <summary>Previous assigned type.</summary>
         TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
@@ -994,25 +800,25 @@ namespace Breadnone.Extension
         {
             type = transformType;
             transform = objectTransform;
-            fromto.SetTo(to);
+            interp.SetTo(to);
             duration = time;
             isLocal = local;
 
             if (transformType == TransformType.Move)
             {
-                fromto.SetFrom(!isLocal ? objectTransform.anchoredPosition3D : objectTransform.anchoredPosition);
+                interp.SetFrom(!isLocal ? objectTransform.anchoredPosition3D : objectTransform.anchoredPosition);
             }
             else if (transformType == TransformType.Scale)
             {
-                fromto.SetFrom(objectTransform.localScale);
+                interp.SetFrom(objectTransform.localScale);
             }
             else if (transformType == TransformType.SizeDelta)
             {
-                fromto.SetFrom(objectTransform.sizeDelta);
+                interp.SetFrom(objectTransform.sizeDelta);
             }
-            else if(transformType == TransformType.SizeAnchored)
+            else if (transformType == TransformType.SizeAnchored)
             {
-                fromto.SetFrom(new Vector2(objectTransform.rect.width, objectTransform.rect.height));
+                interp.SetFrom(new Vector2(objectTransform.rect.width, objectTransform.rect.height));
             }
 
             TweenManager.InsertToActiveTween(this);
@@ -1032,7 +838,7 @@ namespace Breadnone.Extension
             transform = objectTransform;
             isLocal = local;
             angle = targetAngle;
-            fromto.Set(new Vector3(0f, angle, 0f), axis);
+            interp.Set(new Vector3(0f, angle, 0f), axis);
             TweenManager.InsertToActiveTween(this);
         }
         public void InitRotateAround(UnityEngine.RectTransform objectTransform, Vector3 point, Vector3 axis, float angle, float time, TransformType transformType)
@@ -1040,13 +846,14 @@ namespace Breadnone.Extension
             type = transformType;
             transform = objectTransform;
             duration = time;
-            fromto.Set(point, axis);
+            interp.Set(point, axis);
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
         protected override void InternalOnComplete()
         {
             InvokeLerps(tprops.pingpong ? 0f : 1f);
+            transform.ForceUpdateRectTransforms();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ///<summary>Resets properties shuffle from/to value.</summary>
@@ -1097,60 +904,60 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move)
             {
-                fromto.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
             }
             else if (type == TransformType.Scale)
             {
-                fromto.SetFrom(transform.localScale);
+                interp.SetFrom(transform.localScale);
             }
             else if ((this as ISlimTween).GetTransformType == TransformType.SizeDelta)
             {
-                fromto.SetFrom(transform.sizeDelta);
+                interp.SetFrom(transform.sizeDelta);
             }
         }
         /// <summary>Interpolates local position.</summary>
         void LerpPositionLocal(float value)
         {
-            transform.anchoredPosition = fromto.Interpolate(value);
+            transform.anchoredPosition = interp.Interpolate(value);
         }
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.anchoredPosition3D = fromto.Interpolate(value);
+            transform.anchoredPosition3D = interp.Interpolate(value);
         }
         /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
         {
-            transform.localScale = fromto.Interpolate(value);
+            transform.localScale = interp.Interpolate(value);
         }
         /// <summary>Interpolates local/world rotation.</summary>
         void LerpEuler(float value)
         {
             if (!isLocal)
             {
-                transform.rotation = Quaternion.Euler(fromto.to() * value);
+                transform.rotation = Quaternion.Euler(interp.to() * value);
             }
             else
             {
-                transform.localRotation = Quaternion.Euler(fromto.to() * value);
+                transform.localRotation = Quaternion.Euler(interp.to() * value);
             }
         }
         /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value, float angle)
         {
-            transform.RotateAround(fromto.from(), fromto.to(), angle * value);
+            transform.RotateAround(interp.from(), interp.to(), angle * value);
         }
         /// <summary>Interpolate delta value.</summary>
         void LerpSizeDelta(float value)
         {
-            transform.sizeDelta = fromto.Interpolate(value);
+            transform.sizeDelta = interp.Interpolate(value);
         }
         void LerpSizeAnchored(float value)
         {
             Vector2 myPrevPivot = transform.pivot;
-            var to = fromto.to();
-            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,  Mathf.Lerp(transform.rect.width, to.x, value));
-            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,  Mathf.Lerp(transform.rect.height, to.y, value));
+            var to = interp.to();
+            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Lerp(transform.rect.width, to.x, value));
+            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(transform.rect.height, to.y, value));
             transform.pivot = myPrevPivot;
             transform.ForceUpdateRectTransforms();
         }
@@ -1164,7 +971,7 @@ namespace Breadnone.Extension
         public void UpdateTransform();
         /// <summary>Access to the starting and target value.</summary>
         public (Vector3 from, Vector3 to) FromTo { get; set; }
-        public InterpolatorStruct Interpolator {get;set;}
+        public InterpolatorStruct Interpolator { get; set; }
     }
     /// <summary>
     /// Delegate to pass easeing refs
@@ -1187,7 +994,7 @@ namespace Breadnone.Extension
     }
 
     [Serializable]
-    public struct InterpolatorStruct
+    public sealed class InterpolatorStruct
     {
         float x;
         float a;
@@ -1196,30 +1003,29 @@ namespace Breadnone.Extension
         float z;
         float c;
         static Vector3 vec;
-        public ref Vector3 from() 
+        public Vector3 from()
         {
-            vec.Set(a, b, c);
-            return ref vec;
+            return new Vector3(a, b, c);
         }
 
-        public ref Vector3 to()
+        public Vector3 to()
         {
-            vec.Set(x, y, z);
-            return ref vec;
+            return new Vector3(x, y, z);
         }
-        
+
         public void Set(Vector3 from, Vector3 to)
         {
             SetFrom(from);
             SetTo(to);
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetFrom(Vector3 from)
         {
             a = from.x;
             b = from.y;
             c = from.z;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetTo(Vector3 to)
         {
             x = to.x;
@@ -1229,12 +1035,38 @@ namespace Breadnone.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 Interpolate(float tick)
         {
-                vec.Set(
-                a + (x - a) * tick,
-                b + (y - b) * tick,
-                c + (z - c) * tick);
+            vec.Set(
+            a + (x - a) * tick,
+            b + (y - b) * tick,
+            c + (z - c) * tick);
+            return vec;
+        }
+    }
+    public struct TFloat6
+    {
+        readonly float _x;
+        readonly float _a;
+        readonly float _y;
+        readonly float _b;
+        readonly float _z;
+        readonly float _c;
 
-            return vec; 
+        public TFloat6(Vector3 from, Vector3 to)
+        {
+            _a = from.x;
+            _b = from.y;
+            _c = from.z;
+
+            _x = to.x;
+            _y = to.y;
+            _z = to.z;
+        }
+
+        public Vector3 a => new Vector3(_a, _b, _c);
+        public Vector3 b => new Vector3(_x, _y, _z);
+        public (Vector3 a, Vector3 b) Get()
+        {
+            return (new Vector3(_a, _b, _c), new Vector3(_x, _y, _z));
         }
     }
     public struct TimeStruct

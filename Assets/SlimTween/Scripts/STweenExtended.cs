@@ -16,25 +16,37 @@ namespace Breadnone
     {
         /// <summary>Moves the gameObject to target position.</summary>
         /// <param name="transform">The transform to move.</param>
-        /// <param name="target">Target position.</param>
+        /// <param name="to">Target position.</param>
         /// <param name="duration">Duration of the tween to reach the position.</param>
-        public static SlimTransform moveThis<T>(this T transform, Vector3 target, float duration) where T : Transform
+        public static SlimTransform lerpPosition(this Transform transform, Vector3 to, float duration)
         {
-            return move(transform, target, duration);
+            return move(transform, to, duration);
+        }
+        /// <summary>Moves the gameObject in localSpace to target position.</summary>
+        /// <param name="transform">The transform to move.</param>
+        /// <param name="to">Target position.</param>
+        /// <param name="duration">Duration of the tween to reach the position.</param>
+        public static SlimTransform lerpPositionLocal(this Transform transform, Vector3 to, float duration)
+        {
+            return moveLocal(transform, to, duration);
         }
         /// <summary>Moves the gameObject to target position.</summary>
         /// <param name="transform">The transform.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">Duration of the tween to reach the position.</param>
-        public static SlimTransform moveThis<T>(this T transform, T target, float duration) where T : Transform
+        public static SlimTransform lerpPosition(this Transform transform, Transform target, float duration)
         {
             return move(transform, target, duration);
+        }
+        public static SlimTransform lerpPositionLocal(this Transform transform, Transform target, float duration)
+        {
+            return moveLocal(transform, target, duration);
         }
         /// <summary>Moves the gameObject to target position.</summary>
         /// <param name="gameObject">The transform.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">Duration of the tween to reach the position.</param>
-        public static SlimTransform moveThis<T>(this GameObject gameObject, GameObject target, float duration)
+        public static SlimTransform lerpPosition(this GameObject gameObject, GameObject target, float duration)
         {
             return move(gameObject, target.transform, duration);
         }
@@ -42,7 +54,7 @@ namespace Breadnone
         /// <param name="transform">The transform.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">Duration of the tween.</param>
-        public static SlimTransform scaleThis<T>(this T transform, Vector3 target, float duration) where T : Transform
+        public static SlimTransform lerpScale(this Transform transform, Vector3 target, float duration)
         {
             return scale(transform, target, duration);
         }
@@ -50,7 +62,7 @@ namespace Breadnone
         /// <param name="transform">The transform.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">Duration of the tween.</param>
-        public static SlimTransform scaleThis<T>(this T transform, T target, float duration) where T : Transform
+        public static SlimTransform lerpScale(this Transform transform, Transform target, float duration)
         {
             return scale(transform, target, duration);
         }
@@ -59,23 +71,33 @@ namespace Breadnone
         /// <param name="angle"></param>
         /// <param name="direction"></param>
         /// <param name="duration"></param>
-        public static SlimTransform rotateThis<T>(this T transform, Vector3 direction, float duration) where T : Transform
+        public static SlimTransform lerpRotation(this Transform transform, Vector3 direction, float duration)
         {
             return rotate(transform, direction, duration);
+        }
+        /// <summary>Rotates the transform in localSpace to target value.</summary>
+        /// <param name="transform"></param>
+        /// <param name="angle"></param>
+        /// <param name="direction"></param>
+        /// <param name="duration"></param>
+        public static SlimTransform lerpRotationLocal(this Transform transform, Vector3 direction, float duration)
+        {
+            return rotateLocal(transform, direction, duration);
         }
         /// <summary>Moves visualElement to target position.</summary>
         /// <param name="visualElement">The visualElement to move.</param>
         /// <param name="target">Target position.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector3 moveThis(this VisualElement visualElement, Vector3 target, float duration)
+        public static STVector3 lerpPosition(this VisualElement visualElement, Vector3 target, float duration)
         {
             return move(visualElement, target, duration);
         }
+
         /// <summary>Scales the visualElement to target scale value.</summary>
         /// <param name="visualElement">The visualElement to scale.</param>
         /// <param name="target">Target scale value.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector3 scaleThis(this VisualElement visualElement, Vector3 target, float duration)
+        public static STVector3 lerpScale(this VisualElement visualElement, Vector3 target, float duration)
         {
             return scale(visualElement, target, duration);
         }
@@ -83,7 +105,7 @@ namespace Breadnone
         /// <param name="visualElement">The visualElement</param>
         /// <param name="to">Target size.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector2 sizeThis(this VisualElement visualElement, Vector2 to, float duration)
+        public static STVector2 lerpSize(this VisualElement visualElement, Vector2 to, float duration)
         {
             return size(visualElement, to, duration);
         }
@@ -91,7 +113,7 @@ namespace Breadnone
         /// <param name="visualElement">The visualElement.</param>
         /// <param name="to">Target size.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector2 sizeThis(this VisualElement visualElement, float to, float duration)
+        public static STVector2 lerpSize(this VisualElement visualElement, float to, float duration)
         {
             return size(visualElement, to, duration);
         }
@@ -100,7 +122,7 @@ namespace Breadnone
         /// <param name="angle">Angle value.</param>
         /// <param name="direction">Direction of the rotation.</param>
         /// <param name="duration">Duration.</param>
-        public static STFloat rotateThis(this VisualElement visualElement, float angle, float duration)
+        public static STFloat lerpRotation(this VisualElement visualElement, float angle, float duration)
         {
             return rotate(visualElement, angle, duration);
         }
@@ -110,7 +132,7 @@ namespace Breadnone
         /// <param name="to">To target value.</param>
         /// <param name="duration">Duration</param>
         /// <param name="isPercent">Percent based or pixel.</param>
-        public static STFloat widthThis(this VisualElement visualElement, float from, float to, float duration, bool isPercent)
+        public static STFloat lerpWidth(this VisualElement visualElement, float from, float to, float duration, bool isPercent)
         {
             if (isPercent)
             {
@@ -140,7 +162,7 @@ namespace Breadnone
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
         /// <param name="isPercent">Percent or pixel based. True = Percent.</param>
-        public static STFloat heightThis(this VisualElement visualElement, float from, float to, float duration, bool isPercent)
+        public static STFloat lerpHeight(this VisualElement visualElement, float from, float to, float duration, bool isPercent)
         {
             if (isPercent)
             {
@@ -168,7 +190,7 @@ namespace Breadnone
         /// <param name="visualElement">Target visualElement.</param>
         /// <param name="to">Target color.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector3 colorThis(this VisualElement visualElement, Color to, float duration)
+        public static STVector3 lerpColor(this VisualElement visualElement, Color to, float duration)
         {
             var ins = STPool.GetInstance<STVector3>(visualElement.GetHashCode());
             Color.RGBToHSV(visualElement.style.color.value, out var h, out var s, out var v);
@@ -449,7 +471,7 @@ namespace Breadnone
         /// <param name="tmp">TMP_Text component.</param>
         /// <param name="to">Target color.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector3 colorThis(TMPro.TMP_Text tmp, Color to, float duration)
+        public static STVector3 lerpColor(TMPro.TMP_Text tmp, Color to, float duration)
         {
             if (tmp is null)
             {
@@ -474,7 +496,7 @@ namespace Breadnone
         /// <param name="slider">The slider component.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STFloat sliderUI(UnityEngine.UI.Slider slider, float to, float duration)
+        public static STFloat lerpSlider(UnityEngine.UI.Slider slider, float to, float duration)
         {
             var instance = STPool.GetInstance<STFloat>(slider.GetInstanceID());
 
@@ -502,7 +524,7 @@ namespace Breadnone
         /// <param name="rectTransform">The rectTransform component.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static SlimRect scaleThis(this RectTransform rectTransform, Vector3 to, float duration)
+        public static SlimRect lerpScale(this RectTransform rectTransform, Vector3 to, float duration)
         {
             return scale(rectTransform, to, duration);
         }
@@ -510,7 +532,7 @@ namespace Breadnone
         /// <param name="rectTransform">The rectTransform component.</param>
         /// <param name="to">Target size.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector2 sizeThis(this RectTransform rectTransform, Vector2 to, float duration)
+        public static STVector2 lerpSize(this RectTransform rectTransform, Vector2 to, float duration)
         {
             var ins = STPool.GetInstance<STVector2>(rectTransform.GetInstanceID());
 
@@ -527,7 +549,7 @@ namespace Breadnone
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
         /// <param name="format">Decimal format.</param>
-        public static STFloat lerpThis(this TextField textField, float from, float to, float duration, string format = "")
+        public static STFloat lerpFloat(this TextField textField, float from, float to, float duration, string format = "")
         {
             var ins = STPool.GetInstance<STFloat>(textField.GetHashCode());
 
@@ -550,7 +572,7 @@ namespace Breadnone
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STInt lerpThis(this IntegerField integerField, int from, int to, float duration)
+        public static STInt lerpInt(this IntegerField integerField, int from, int to, float duration)
         {
             var ins = STPool.GetInstance<STInt>(integerField.GetHashCode());
 
@@ -566,7 +588,7 @@ namespace Breadnone
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector2 lerpThis(this Vector2Field vector2Field, Vector2 from, Vector2 to, float duration)
+        public static STVector2 lerpVector2(this Vector2Field vector2Field, Vector2 from, Vector2 to, float duration)
         {
             var ins = STPool.GetInstance<STVector2>(vector2Field.GetHashCode());
 
@@ -582,7 +604,7 @@ namespace Breadnone
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector3 lerpThis(this Vector3Field vector3Field, Vector3 from, Vector3 to, float duration)
+        public static STVector3 lerpVector3(this Vector3Field vector3Field, Vector3 from, Vector3 to, float duration)
         {
             var ins = STPool.GetInstance<STVector3>(vector3Field.GetHashCode());
 
@@ -598,7 +620,7 @@ namespace Breadnone
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector4 lerpThis(this Vector4Field vector4Field, Vector4 from, Vector4 to, float duration)
+        public static STVector4 lerpVector4(this Vector4Field vector4Field, Vector4 from, Vector4 to, float duration)
         {
             var ins = STPool.GetInstance<STVector4>(vector4Field.GetHashCode());
 
@@ -614,7 +636,7 @@ namespace Breadnone
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STFloat lerpThis(this TMPro.TMP_Text textField, float from, float to, float duration, string format = "")
+        public static STFloat lerpFloat(this TMPro.TMP_Text textField, float from, float to, float duration, string format = "")
         {
             var ins = STPool.GetInstance<STFloat>(textField.GetHashCode());
 
@@ -637,7 +659,7 @@ namespace Breadnone
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STInt lerpThis(this TMPro.TMP_Text textField, int from, int to, float duration)
+        public static STInt lerpInt(this TMPro.TMP_Text textField, int from, int to, float duration)
         {
             var ins = STPool.GetInstance<STInt>(textField.GetHashCode());
 
@@ -649,7 +671,7 @@ namespace Breadnone
             return ins;
         }
 
-        public static void punchThis(this GameObject stween, float punchFactor, float punchSize, float duration)
+        public static void lerpPunch(this GameObject stween, float punchFactor, float punchSize, float duration)
         {
             if(stween.transform != null)
             {
@@ -659,12 +681,12 @@ namespace Breadnone
                 float tmp = punchSize * 0.5f;
 
                 Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
-                var main = stween.transform.scaleThis(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
-                var sub = stween.transform.rotateThis(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
+                var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
+                var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
                 (sub as ISlimRegister).RegisterLastOnComplete(()=> 
                 {
                     stween.transform.rotation = defrotation;
-                    var t = stween.transform.rotateThis(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
+                    var t = stween.transform.lerpRotation(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
                     (t as ISlimRegister).RegisterLastOnComplete(()=>
                     {
                         stween.transform.rotation = defrotation;
@@ -681,11 +703,10 @@ namespace Breadnone
                 float tmp = punchSize * 0.5f;
 
                 Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
-                var main = stween.transform.scaleThis(new Vector3(punchSize, punchSize, punchSize), duration);
-                var sub = stween.transform.rotateThis(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutElastic);
-                (sub as ISlimRegister).RegisterLastOnComplete(()=> stween.transform.rotateThis(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutElastic));
+                var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration);
+                var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutElastic);
+                (sub as ISlimRegister).RegisterLastOnComplete(()=> stween.transform.lerpRotation(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutElastic));
             }
         }
-
     }
 }

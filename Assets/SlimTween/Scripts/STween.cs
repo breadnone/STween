@@ -741,7 +741,7 @@ namespace Breadnone
             instance.InitRotation(transform, direction, duration, false, TransformType.Rotate);
             return instance;
         }
-        
+
         ///<summary>Rotates around target.</summary>
         /// <param name="transform">The transform to rotate.</param>
         /// <param name="angle">Target angle value.</param>
@@ -1167,7 +1167,7 @@ namespace Breadnone
         /// <exception cref="STweenException"></exception>
         public static SlimTransform translate(Transform transform, Vector3 direction, float duration)
         {
-            if(transform is null)
+            if (transform is null)
             {
                 throw new STweenException("Transform can't be null.");
             }
@@ -1185,7 +1185,7 @@ namespace Breadnone
         /// <exception cref="STweenException"></exception>
         public static SlimTransform translateLocal(Transform transform, Vector3 direction, float duration)
         {
-            if(transform is null)
+            if (transform is null)
             {
                 throw new STweenException("Transform can't be null.");
             }
@@ -1203,7 +1203,7 @@ namespace Breadnone
         /// <exception cref="STweenException"></exception>
         public static SlimTransform translate(GameObject gameObject, Vector3 direction, float duration)
         {
-            if(gameObject is null)
+            if (gameObject is null)
             {
                 throw new STweenException("GameObject can't be null.");
             }
@@ -1221,7 +1221,7 @@ namespace Breadnone
         /// <exception cref="STweenException"></exception>
         public static SlimTransform translateLocal(GameObject gameObject, Vector3 direction, float duration)
         {
-            if(gameObject is null)
+            if (gameObject is null)
             {
                 throw new STweenException("Transform can't be null.");
             }
@@ -1240,10 +1240,78 @@ namespace Breadnone
         /// <param name="middle">Middle point.</param>
         /// <param name="end">End point.</param>
         /// <param name="duration">Duration.</param>
-        public static STSplines spline(Transform transform, Vector3 middle, Vector3 end, float duration)
+        public static STFloat spline(Transform transform, Vector3 middle, Vector3 end, float duration)
         {
             var instance = new STSplines(transform, transform.position, middle, end, duration);
-            return instance;
+            return instance.sfloat;
+        }
+        /// <summary>
+        /// Moves a gameObject along splines.
+        /// </summary>
+        /// <param name="transform">Transform to move.</param>
+        /// <param name="start">Stars from</param>
+        /// <param name="middle">Middle point</param>
+        /// <param name="end">End point.</param>
+        /// <param name="duration"></param>
+        /// <returns></returns>/
+        public static STFloat splineFrom(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float duration)
+        {
+            var instance = new STSplines(transform, start, middle, end, duration);
+            return instance.sfloat;
+        }
+        /// <summary>
+        /// Moves a gameObject along bezier curves.
+        /// </summary>
+        /// <param name="transform">The transform.</param>
+        /// <param name="points">Points.</param>
+        /// <param name="duration">Duration.</param>
+        /// <returns></returns>
+        public static STFloat bezier(Transform transform, List<Vector3> points, float duration)
+        {
+            var instance = new STBezier(transform, duration, points);
+            return instance.sfloat;
+        }
+        /// <summary>
+        /// Parabolic shape curves.
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="direction"></param>
+        /// <param name="to"></param>
+        /// <param name="height"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public static STFloat parabolic(Transform transform, Vector3 direction, Vector3 to, float height, float duration)
+        {
+            var instance = new STParabolic(transform, direction, to, height, duration);
+            return instance.sfloat;
+        }
+        /// <summary>
+        /// Sine wave shape curves.
+        /// </summary>
+        /// <param name="transform">Transform</param>
+        /// <param name="direction">Duration</param>
+        /// <param name="to">Direction</param>
+        /// <param name="amplitude">Power/amplitude.</param>
+        /// <param name="duration">Duration</param>
+        /// <returns></returns>
+        public static STFloat sine(Transform transform, Vector3 direction, Vector3 to, float amplitude, float duration)
+        {
+            var instance = new STSine(transform, direction, to, amplitude, duration);
+            return instance.sfloat;
+        }
+        /// <summary>
+        /// Spiral wave shape curves.
+        /// </summary>
+        /// <param name="transform">Transform</param>
+        /// <param name="to">Direction</param>
+        /// <param name="radius">Radius</param>
+        /// <param name="exponent">Power/amplitude</param>
+        /// <param name="duration">Duration</param>
+        /// <returns></returns>
+        public static STFloat spiral(Transform transform, Vector3 to, float radius, float exponent, float duration)
+        {
+            var instance = new STSpiral(transform, to, radius, exponent, duration);
+            return instance.sfloat;
         }
         #endregion
 
@@ -1394,11 +1462,11 @@ namespace Breadnone
         /// <param name="stween">Tween instance.</param>
         public static TweenClass queue(int id, TweenClass stween)
         {
-            if(TweenExtension.FindTween(id, out var tween))
+            if (TweenExtension.FindTween(id, out var tween))
             {
-                if(tween.state != TweenState.Tweening)
+                if (tween.state != TweenState.Tweening)
                 {
-                    (tween as ISlimRegister).RegisterLastOnComplete(()=>
+                    (tween as ISlimRegister).RegisterLastOnComplete(() =>
                     {
                         stween.Resume(true);
                     });
@@ -1434,7 +1502,7 @@ namespace Breadnone
 
             return instance;
         }
-        
+
         #endregion
 
         #region Color
@@ -1611,7 +1679,7 @@ namespace Breadnone
         #region  Utility
 
         /// <summary>
-        /// Seqeuntially moves to multiple points in linear progression. Note: Easing is not supported. 
+        /// Seqentially moves to multiple points in linear progression. Note: Easing is not supported. 
         /// </summary>
         /// <param name="gameObject">The gamObject.</param>
         /// <param name="points">The target points array.</param>
@@ -1638,7 +1706,7 @@ namespace Breadnone
         /// <param name="duration">Duration.</param>
         public static SlimTransform angle2D(GameObject gameObject, float angle, float duration)
         {
-            if(gameObject == null)
+            if (gameObject == null)
             {
                 throw new STweenException("GameObject can't be null.");
             }
@@ -1653,11 +1721,11 @@ namespace Breadnone
         /// <param name="duration">Duration.</param>
         public static SlimTransform angle3D(GameObject gameObject, float angle, float duration)
         {
-            if(gameObject == null)
+            if (gameObject == null)
             {
                 throw new STweenException("GameObject can't be null.");
             }
-            
+
             return rotateAround(gameObject, gameObject.transform.position, Vector3.right, angle, duration);
         }
         public static int ActiveCount
@@ -1736,21 +1804,18 @@ namespace Breadnone
         }
         ///<summary>Checks if an instance is tweening.</summary>
         public static bool IsTweening(TweenClass vtween) { return vtween.IsTweening; }
+        public static bool IsPaused(TweenClass vtween) { return vtween.IsPaused;}
+        public static bool IsPaused(int id)
+        {
+            return TweenExtension.GetTween(id, out var tw) && tw.IsPaused;
+        }
         ///<summary>Check if tween instance is tweening.</summary>
         public static bool IsTweening(int customId)
         {
-            for (int i = 0; i < TweenManager.activeTweens.Count; i++)
-            {                
-                var val = TweenManager.activeTweens.array[i];
-
-                if (val is object && val.tprops.id == customId)
-                    return true;
-            }
-
-            return false;
+            return TweenExtension.GetTween(customId, out var tw) && tw.IsTweening;
         }
         ///<summary>Reinitialize the max tweens.</summary>
-        public static void Init(int newSize) { TweenManager.InitSize(newSize);}
+        public static void Init(int newSize) { TweenManager.InitSize(newSize); }
         #endregion
     }
 

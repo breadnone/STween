@@ -323,11 +323,25 @@ namespace Breadnone
         /// <param name="func">Delegate</param>
         /// 
         /// USAGE:
-        /// STween.value(0, 1f, value =>{Debug.Log(value)}).nextValue(value =>{Debug.Log(value)});
+        /// STween.value(0, 1f, value =>{Debug.Log(value)}).value(value =>{Debug.Log(value)});
         public static ICoreValue<float> value(this ICoreValue<float> stween, Action<float> func)
         {
             stween.callback += func;
             (stween as ISlimRegister).RegisterLastOnComplete(()=> (stween as IValueFinalizer).Dispose());
+            return stween;
+        }
+        /// <summary>
+        /// Queues float values that derives from ICoreValue.<float>.
+        /// </summary>
+        /// <param name="stween">The STFloat class.</param>
+        /// <param name="func">Delegate</param>
+        /// 
+        /// USAGE:
+        /// STween.value(0, 1f, value =>{Debug.Log(value)}).qvalue(value =>{Debug.Log(value)});
+        public static ICoreValue<float> qvalue(this ICoreValue<float> stween, float from, float to, float time, Action<float> func)
+        {
+            stween.callback += func;
+            (stween as ISlimRegister).RegisterLastOnComplete(()=> value(from, to, time, func));
             return stween;
         }
         /// <summary>
@@ -390,6 +404,7 @@ namespace Breadnone
                 return moveLocal(gameObject, target, duration);
             }
         }
+
         /// <summary>
         /// Schedule to wait for a tween to finish then execute the delegate.
         /// </summary>
@@ -499,6 +514,125 @@ namespace Breadnone
             var iface = tclass as ICoreValue<int>;
             iface.callback += value;
             return tclass;
+        }
+        /// <summary>
+        /// Euler based rotation via Quaternion.Euler.
+        /// </summary>
+        /// <param name="gameObject">Gameobject.</param>
+        /// <param name="angleDirection">Vector direction.</param>
+        /// <param name="duration">Duration.</param>
+        /// <param name="isLocal">Locality.</param>
+        /// <returns></returns>
+        public static STFloat lerpEuler(this GameObject gameObject, Vector3 angleDirection, float duration)
+        {
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            ins.SetBase(0, 1, duration, tick =>
+            {
+                gameObject.transform.rotation = Quaternion.Euler(angleDirection * tick);
+            });
+
+            return ins;
+        }
+        /// <summary>
+        /// Euler based rotation via Quaternion.Euler.
+        /// </summary>
+        /// <param name="gameObject">Gameobject.</param>
+        /// <param name="angleDirection">Vector direction.</param>
+        /// <param name="duration">Duration.</param>
+        /// <param name="isLocal">Locality.</param>
+        /// <returns></returns>
+        public static STFloat lerpEulerLocal(this GameObject gameObject, Vector3 angleDirection, float duration)
+        {
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            ins.SetBase(0, 1, duration, tick =>
+            {
+                gameObject.transform.localRotation = Quaternion.Euler(angleDirection * tick);
+            });
+
+            return ins;
+        }
+        /// <summary>
+        /// Gimbal lock free angle axis rotation via Quaternion.AngleAxis.
+        /// </summary>
+        /// <param name="gameObject">GameObject</param>
+        /// <param name="angle">Degree angle will be converted to radian.</param>
+        /// <param name="axisDirection">Vector direction.</param>
+        /// <param name="duration">Duration.</param>
+        /// <param name="isLocal">Locality</param>
+        /// <returns></returns>
+        public static STFloat lerpAngleAxis(this GameObject gameObject, float angle, Vector3 axisDirection, float duration, bool isLocal = false)
+        {
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            ins.SetBase(0, 1, duration, tick =>
+            {
+                if(!isLocal)
+                {
+                    gameObject.transform.rotation = Quaternion.AngleAxis(angle * Mathf.Deg2Rad * tick, axisDirection);
+                }
+                else
+                {
+                    gameObject.transform.localRotation = Quaternion.AngleAxis(angle * Mathf.Deg2Rad * tick, axisDirection);
+                }
+            });
+
+            return ins;
+        }
+        public static STFloat lerpFromToRotation(this GameObject gameObject, Vector3 fromDirection, Vector3 toDirection, float duration, bool isLocal = false)
+        {
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            ins.SetBase(0, 1, duration, tick =>
+            {
+                if(!isLocal)
+                {
+                    gameObject.transform.rotation = Quaternion.FromToRotation(fromDirection, toDirection);
+                }
+                else
+                {
+                    gameObject.transform.localRotation = Quaternion.FromToRotation(fromDirection, toDirection);
+                }
+            });
+
+            return ins;
+        }
+        public static STFloat lerpEulerAngles(this GameObject gameObject, Vector3 euler, float duration, bool isLocal = false)
+        {
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            ins.SetBase(0, 1, duration, tick =>
+            {
+                if(!isLocal)
+                {
+                    gameObject.transform.eulerAngles = Vector3.Slerp(gameObject.transform.eulerAngles, euler, tick);
+                }
+                else
+                {
+                    gameObject.transform.localEulerAngles = Vector3.Slerp(gameObject.transform.eulerAngles, euler, tick);
+                }
+            });
+
+            return ins;
+        }
+        public static STFloat lerpRotateTowards(this GameObject gameObject, Quaternion to , float duration, bool isLocal = false)
+        {
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            ins.SetBase(0, 1, duration, tick =>
+            {
+                if(!isLocal)
+                {
+                    gameObject.transform.rotation = Quaternion.RotateTowards(gameObject.transform.rotation, to, duration * Mathf.Clamp01(tick));
+                }
+                else
+                {
+                    gameObject.transform.localRotation = Quaternion.RotateTowards(gameObject.transform.localRotation, to, duration * Mathf.Clamp01(tick));
+                }
+            });
+
+            return ins;
         }
     }
 }

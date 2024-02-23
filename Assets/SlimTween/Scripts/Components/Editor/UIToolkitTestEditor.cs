@@ -61,7 +61,7 @@ public class UIToolkitTestEditor : Editor
     {
         if(state)
         {
-            vis.widthThis(20, percent, duration, isPercent : true).setLoop(4).setPingPong(0);
+            vis.lerpWidth(20, percent, duration, isPercent : true).setLoop(4).setPingPong(0);
         }   
         else
         {

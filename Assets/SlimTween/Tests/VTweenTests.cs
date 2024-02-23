@@ -181,33 +181,6 @@ public class VTweenTests : MonoBehaviour
     {
         if (obj is object)
         {
-            Vector3 vecDir = Vector3.left;
-
-            if (direction == VectorDirection.Vector3Up)
-            {
-                vecDir = Vector3.up;
-            }
-            else if (direction == VectorDirection.Vector3Down)
-            {
-                vecDir = Vector3.down;
-            }
-            else if (direction == VectorDirection.Vector3Left)
-            {
-                vecDir = Vector3.left;
-            }
-            else if (direction == VectorDirection.Vector3Right)
-            {
-                vecDir = Vector3.right;
-            }
-            else if (direction == VectorDirection.Vector3Forward)
-            {
-                vecDir = Vector3.forward;
-            }
-            else if (direction == VectorDirection.Vector3Back)
-            {
-                vecDir = Vector3.back;
-            }
-
             var t = new Stopwatch();
 
             if (enableStopwatch)
@@ -227,33 +200,7 @@ public class VTweenTests : MonoBehaviour
     {
         if (obj is object)
         {
-            Vector3 vecDir = Vector3.left;
-
-            if (direction == VectorDirection.Vector3Up)
-            {
-                vecDir = Vector3.up;
-            }
-            else if (direction == VectorDirection.Vector3Down)
-            {
-                vecDir = Vector3.down;
-            }
-            else if (direction == VectorDirection.Vector3Left)
-            {
-                vecDir = Vector3.left;
-            }
-            else if (direction == VectorDirection.Vector3Right)
-            {
-                vecDir = Vector3.right;
-            }
-            else if (direction == VectorDirection.Vector3Forward)
-            {
-                vecDir = Vector3.forward;
-            }
-            else if (direction == VectorDirection.Vector3Back)
-            {
-                vecDir = Vector3.back;
-            }
-
+        
             var t = new Stopwatch();
 
             if (enableStopwatch)
@@ -386,6 +333,26 @@ public class VTweenTests : MonoBehaviour
             .combine(STween.moveY(obj, obj.transform.position.y + 300f, duration/2f).setOnCompleteRepeat(true).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong));
         }
     }
+    public void MoveAndJumpAndScale()
+    {
+        if (obj is object)
+        {
+            obj.transform.position = defaultPos;
+            var t = new Stopwatch();
+
+            if (enableStopwatch)
+                t.Start();
+
+            obj.transform.SetParent(parent.transform, false);
+
+            var a = obj.transform.position;
+            var b = target.transform.position;
+            
+            STween.move(obj, target.transform.position, duration).setOnCompleteRepeat(true).setEase(easeTest)
+            .combine(STween.moveY(obj, obj.transform.position.y + 300f, duration/2f).setOnCompleteRepeat(true).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong))
+            .combine(STween.scale(obj, new Vector3(2f, 2f, 2f), duration).setPingPong(1));
+        }
+    }
     public void MoveX()
     {
         if (obj is object)
@@ -499,6 +466,19 @@ public class VTweenTests : MonoBehaviour
             })).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong);
         }
     }
+    public void TestValueInt()
+    {
+        if (textVal is object)
+        {
+            textVal.SetText(string.Empty);
+
+            STween.value((int)floatVecJoinTest.x, (int)floatVecJoinTest.y, duration, new System.Action<int>(x =>
+            {
+                textVal.SetText("Integer value test : " + x.ToString("0.00"));
+
+            })).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong);
+        }
+    }
 
     public void TestValueVector()
     {
@@ -561,18 +541,33 @@ public class VTweenTests : MonoBehaviour
         }
         
     }
-    Vector3 objdefpos;
     public void SplineTest()
     {
         obj.transform.position = defaultPos;
         var arr = new Vector3[]{target.position, fromTarget.position, lastTarget.position};
         STween.spline(obj.transform, fromTarget.position, lastTarget.position ,duration);
     }
+
     public void BezierTest()
     {
         obj.transform.position = defaultPos;
-        var lis = new List<Vector3>{target.position, fromTarget.position, lastTarget.position, moveRectTransform.gameObject.transform.position, target.position, fromTarget.position, lastTarget.position, moveRectTransform.gameObject.transform.position};
-        STween.bezier(obj.transform, lis ,duration);
+        var arr = new List<Vector3>{target.position, fromTarget.position, lastTarget.position, moveRectTransform.position};
+        STween.bezier(obj.transform, arr, duration * 3f);
+    }
+    public void ParabolicTest()
+    {
+        obj.transform.position = defaultPos;
+        STween.parabolic(obj.transform, Vector3.left, fromTarget.position, 500, duration * 3f);
+    }
+    public void SinCurveTesst()
+    {
+        obj.transform.position = defaultPos;
+        STween.sine(obj.transform, Vector3.left, fromTarget.position, 1000, duration * 2f);
+    }
+    public void SpiralCurveTest()
+    {
+        obj.transform.position = defaultPos;
+        STween.spiral(obj.transform, fromTarget.position, 22, 50, 10f);
     }
     public void TestShakeCamera()
     {
@@ -588,11 +583,20 @@ public class VTweenTests : MonoBehaviour
         STween.rotate(rotateArObject.gameObject, new Vector3(0, 0, 90f), duration).setPingPong(pingPong);
         //TweenShake.Punch(obj.transform, shakeDuration, exponentShake);
     }
+    public void TestPunch()
+    {
+        obj.lerpPunch(4, 4, 0.5f);
+    }
     public void TestRotateAndScaleRectObject()
     {
         STween.scale(rotateArObject, new Vector3(1.5f, 1.5f, 1), duration).setEase(Ease.EaseInOutQuad).setPingPong(pingPong);
         STween.rotate(rotateArObject, new Vector3(0, 0, 90f), duration).setPingPong(pingPong);
         //TweenShake.Punch(obj.transform, shakeDuration, exponentShake);
+    }
+    public void TestRotateAndScaleCombineObject()
+    {
+        STween.combine(STween.scale(rotateArObject, new Vector3(1.5f, 1.5f, 1), duration).setEase(Ease.EaseInOutQuad).setPingPong(pingPong),
+        STween.rotate(rotateArObject, new Vector3(0, 0, 90f), duration).setPingPong(pingPong));
     }
     public void TestWaitCoroutine()
     {

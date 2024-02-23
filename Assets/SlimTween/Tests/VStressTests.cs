@@ -370,8 +370,6 @@ public class VStressTests : MonoBehaviour
                 labelCounter.SetText("TOTAL ENTITY : " + spawnCounter);
             }
 
-
-
             if (useLimit)
             {
                 if (spawnCycleAmount == 0)

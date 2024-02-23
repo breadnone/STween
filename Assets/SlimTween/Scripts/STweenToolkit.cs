@@ -312,13 +312,13 @@ namespace Breadnone
         /// Find any public property and interpolate the value. Reflection based, and will always be cached.\nThe allocation only happens on the very 1st time and will not allocate after that.
         /// </summary>
         /// <param name="visualElement">The visualElement.</param>
-        /// <param name="styleName">The public property name in the IStyle interface of a visuaLElement.</param>
+        /// <param name="stylePropertyName">The public property name in the IStyle interface of a visuaLElement.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STFloat styleLerp(VisualElement visualElement, string styleName, float from, float to, float duration)
+        public static STFloat styleLerp(VisualElement visualElement, string stylePropertyName, float from, float to, float duration)
         {
-            if(GetPropertyInfo(visualElement.style, styleName, out var prop))
+            if(GetPropertyInfo(visualElement.style, stylePropertyName, out var prop))
             {
                 if(prop.PropertyType != typeof(float))
                 {
@@ -342,13 +342,13 @@ namespace Breadnone
         /// Find any public property and interpolate the value. Reflection based, and will always be cached.\nThe allocation only happens on the very 1st time and will not allocate after that.
         /// </summary>
         /// <param name="visualElement">The visualElement.</param>
-        /// <param name="styleName">The public property name in the IStyle interface of a visuaLElement.</param>
+        /// <param name="stylePropertyName">The public property name in the IStyle interface of a visuaLElement.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static STVector3 styleLerp(VisualElement visualElement, string styleName, Vector3 from, Vector3 to, float duration)
+        public static STVector3 styleLerp(VisualElement visualElement, string stylePropertyName, Vector3 from, Vector3 to, float duration)
         {
-            if(GetPropertyInfo(visualElement.style, styleName, out var prop))
+            if(GetPropertyInfo(visualElement.style, stylePropertyName, out var prop))
             {
                 if(prop.PropertyType != typeof(Vector3))
                 {

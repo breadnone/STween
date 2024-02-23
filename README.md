@@ -193,36 +193,41 @@ You can get zero allocation all the time as long as you're accessing via STween 
 
 Main APIs : Can be chained with helper apis
 
-- STween.move
-- STween.moveLocal
-- STween.rotate
-- STween.rotateLocal
-- STween.rotateAround
-- STween.scale
-- STween.size
-- STween.spline
-- STween.value (float, int, Vector2, Vector3, Vector4, Matrix4x4, Quaternion, Rect)
-- STween.combine
-- STween.create
-- STween.queue
-- STween.Cancel
-- STween.Resume
-- STween.Pause
-- STween.alpha
-- STween.color
-- 
-- STween.slider
-- STween.sliderInt
-- STween.shaderFloat
-- STween.shaderVector2
-- STween.shaderVector3
-- STween.shaderVector4
-- STween.shaderInt
-- STween.vfxFloat //VFX extensions are disabled by default. 
-- STween.vfxInt
-- STween.vfxVector2
-- STween.vfxVector3
-- STween.vfxVector4
+- STween.move : Moves gameObject in worldSpace : input : GameObject, Transform, RectTransform, VisualElement, Vector3, Vector2
+- STween.moveLocal : Moves gameObject in localSpace : input : GameObject, Transform, RectTransform, VisualElement, Vector3, Vector2
+- STween.rotate : Rotates gameObject in worldSpace : input : GameObject, Transform, RectTransform, Quaternion, VisualElement, Vector3, float
+- STween.rotateLocal : Rotate gameObject in localSpace : input : GameObject, Transform, RectTransform, VisualElement, Vector3, Vector2, float
+- STween.rotateAround : Rotates around gameObject in worldSpace : input : GameObject, Transform, RectTransform, Vector3, Vector2
+- STWeen.rotateAroundLocal : Rotatesaround gameObject in localSpace : input : GameObject, Transform, RectTransform, Vector3, Vector2 
+- STween.scale : Manipulates localScale of a gameObject : input : GameObject, Transform, RectTransform, Vector3, Vector2
+- STween.size : Manipulates rectangle bounds size of a UI/canvas element : input : RectTransform, VisualElement, Vector3, Vector2
+- STween.spline : Moves along spline paths : input : GameObject, Vector3
+- STween.bezier : Moves along bezier paths : input : GameObject, Transform, List<Vector3>
+- STween.parabolic : Moves gameObject in parabolic paths : input : GameObject, Transform, Vector3, Vector2
+- STween.sine : Moves gameObject in sine waves : input : GameObject, Transform, Vector3, Vector2
+- STween.value : Value intepolator supports : float, int, Vector2, Vector3, Vector4, Matrix4x4, Quaternion, Rect
+- STween.combine : Combines multiple tweens into one : input : TweenClass, ISlimTween, SlimTransform, SlimRect
+- STween.create : Create custom tween to interpolate any public properties. This is still EXPERIMENTAL
+- STween.queue : Lazily queue multiple tweens in succession.
+- STween.Cancel : Cancels single tween : input : (optional)GameObject, (optional)int
+- STween.Resume : Resumes a paused tween : input : (optional)GameObject, (optional)int
+- STween.ResumeAll : Resumes all paused tweens(if any).
+- STween.Pause : Pauses a tween : input : (optional)GameObject, (optional)int
+- STween.PauseAll : Pause all tweens(if any).
+- STween.alpha : Interpolates the level of opacity : input : Canvas, Image, VisualElement
+- STween.color : Hue-shifting between two colors : input : GameObject, VisualElement, Color
+- STween.slider : Interpolates the float value property of a slider : input : Slider
+- STween.sliderInt : Interpolates the float value property of a slider : input : Slider
+- STween.shaderFloat : Interpolates a float shader property of a material : input : Material, float
+- STween.shaderVector2 : Interpolates a Vector2 shader property of a material : input : Material, Vector2
+- STween.shaderVector3 : Interpolates a Vector3 shader property of a material : input : Material, Vector3
+- STween.shaderVector4 : Interpolates a Vector4 shader property of a material : input : Material, Vector4
+- STween.shaderInt : Interpolates a integer shader property of a material : input : Material, int
+- STween.vfxFloat : Interpolates a float property of a vfxgraph component : input : Material, float
+- STween.vfxInt : Interpolates a integer property of a vfxgraph component : input : Material, int
+- STween.vfxVector2 : Interpolates a Vector2 property of a vfxgraph component : input : Material, Vector2
+- STween.vfxVector3 : Interpolates a Vector3 property of a vfxgraph component : input : Material, Vector3
+- STween.vfxVector4 : Interpolates a Vector4 property of a vfxgraph component : input : Material, Vector4
 
 Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).setLoop(2);
 
@@ -256,14 +261,20 @@ Extensions : can be chained to both main and helper apis.
 - next : Tween chaining via fluent interface.
 - delay : Adds a delay to a queue.
 - styleLerp : Interpolates the IStyle (.style) interface members of a visualElement.
-- lerpThis (float, int, Vectors, Quats, Matrix4x4, Rect) : Directly interpolates a value of certain types.
-- moveThis : Moves a gameobject/visualElement/ui
-- scaleThis : Directly scales a gameOobject/visualElement/ui.
-- rotateThis : Rotates a gameObject.
-- widthThis : Sets the width of a visualElement(uitoolkit)
-- heightThis : Sets the height of a visualElement(uitoolkit)
-- sizeThis : Sets the delta size of a RectTransform
-- colorThis : Interpolates the color of a gameobject/visualElement/ui
+- lerpFloat : supported components => TextMeshPro, UIToolkit textElement/fields.
+- lerpVector2 : supported components => TextMeshPro, UIToolkit textElement/fields.
+- lerpVector3 : supported components => TextMeshPro, UIToolkit textElement/fields.
+- lerpVector4 : supported components => TextMeshPro, UIToolkit textElement/fields.
+- lerpMatrix4 : supported components => TextMeshPro, UIToolkit textElement/fields.
+- lerpPosition : Moves a gameobject/visualElement/ui
+- lerpPositionLocal : Moves a gameObject in localSpace.
+- lerpScale : Directly scales a gameOobject/visualElement/ui.
+- lerpRotation : Rotates a gameObject in worldSpace.
+- lerpRotationLocal : Rotate an object in localSpace.
+- lerpWidth : Sets the width of a visualElement(uitoolkit).
+- lerpHeight : Sets the height of a visualElement(uitoolkit).
+- lerpSize : Sets the delta size of a RectTransform.
+- lerpColor : Interpolates the color of a gameobject/visualElement/ui
 - moveByTag : Moves a gameobject after finding it in the scane by it's tag.
 - scaleByTag : Scales a gameobject after finding it in the scane by it's tag.
 - rotateByTag : Rotates a gameobject after finding it in the scane by it's tag.
@@ -273,11 +284,12 @@ Extensions : can be chained to both main and helper apis.
 - audioFadeGlobalIn : Fades in effect for the static singleton AudioListener.
 - audioFadeGlobalOut : Fades out effect for the static AudioListener.
 - sliderUI : Interpolates the slider value.
-- eulerThis : Euler angle based rotation
-- angleAxisThis : Quaternion AngleAxis based rotation
-- fromToRotationThis : Creates a rotation which rotates from fromDirection to toDirection. 
-- eulerAnglesThis : Quaternion euler based rotation
-- rotateTowardsThis : Rotates a rotation from towards to  
+- lerpEuler : Euler angle based rotation in worldSpace.
+- lerpEulerLocal : Euler angle based rotation in localSpace.
+- lerpAngleAxis : Quaternion AngleAxis based rotation.
+- lerpFromToRotation : Creates a rotation which rotates from fromDirection to toDirection. 
+- lerpEulerAngles : Quaternion euler based rotation.
+- lerpRotateTowards : Rotates a rotation from towards to.  
   
 There are lots more APIs that aren't too common internally but they're exposed and ready to use so you can just take a peek at the written code documentations/summaries in the scripts.  
   

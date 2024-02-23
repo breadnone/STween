@@ -30,37 +30,19 @@ A deltatime simulation is needed for the duration-based interpolators to work pr
 **Syntaxes**
 ```cs
 
-//Add the namespace
+//First add the namespace
 using Breadnone;
+```
 
-
+```cs
 /// Move :
 STween.move(gameObject, new Vector3(50, 0, 0), 5f).setEase(Ease.EaseInOutQuad).setLoop(2);
 
 //Repositioning on start
 STween.move(gameObject, new Vector3(80, 0, 0), 3f).setEase(Ease.EaseInQuad).setLoop(2).setFrom(new Vector3(20, 0, 0)).setId(12);
-//Cancelling
-STween.Cancel(gameObject);
-// OR
-STween.Cancel(12); // Cancels via the assigne custom id. 
 
 //Not affected by Time.timeScale.
 STween.move(gameObject, new Vector3(0, 90, 0), 2f).setUnscaledTime(true).setId(12);
-//Pause
-STween.Pause(gameObject);
-//Resume
-STween.Resume(gameObject);
-//OR
-STween.Resume(12); //Resumes via the assigned custom id
-
-// To cancel all
-STween.CancelAll();
-
-//To resume all paused tweens
-STween.ResumeAll();
-
-///To pause all cancelled tweens
-STween.PauseAll();
 
 //Move to another gameObject as target position
 STween.move(gameObject, target.transform, 2f);
@@ -79,6 +61,7 @@ STween.moveLocal(gameObject, new Vector3(12, 43, 34), 4f);
 STween.moveLocalX(gameObject, 22, 2f);
 STween.moveLocalY(gameObject, 40, 2f);
 STween.moveLocalZ(gameObject, 120, 10f);
+
 
 /// Rotate :
 //Speed based rotation that takes a degree angle with pingpong-like movement/cycle
@@ -107,7 +90,38 @@ STween.scaleZ(gameObject, 2, 4f);
 STween.translate(gameObject, new Vector3(30, 0, 0), 6f);
 STween.translateLocal(gameObject, new Vector3(30, 0, 0), 6f); // LocalSpace translation.
 
-/// Value
+// Move along path :
+var destinations = new Vector3[]{new Vector3(10, 10, 10), new Vector3(30, 10, 10), new Vector3(30, 10, 50), 5f};
+STween.moveToPoints(gameObject, destinations, 8f);
+
+```
+
+**Pause, Resume, Cancel**
+```cs
+//Cancelling
+STween.Cancel(gameObject);
+
+// OR
+STween.Cancel(12); // Cancels via the assigne custom id. 
+
+//Pause
+STween.Pause(gameObject);
+//Resume
+STween.Resume(gameObject);
+//OR
+STween.Resume(12); //Resumes via the assigned custom id
+
+// To cancel all
+STween.CancelAll();
+
+//To resume all paused tweens
+STween.ResumeAll();
+
+///To pause all cancelled tweens
+STween.PauseAll();
+```
+**Value based interpolation**
+```cs
 STween.value(0, 100, value =>{Debug.Log(value);});
 STween.value(Vector3.zero, new Vector3(120, 200, 300), value =>{Debug.Log(value);});
 STween.value(Vector2.zero, new Vector2(120, 200), value =>{Debug.Log(value);});
@@ -125,7 +139,10 @@ STween.value(0f, 10f, 5f, tick => Debug.Log("Test1"))
 .qvalue(0f, 15f, tick => Debug.Log("Test2"))
 .qvalue(0f, 15f, tick => Debug.Log("Test3"))
 .qvalue(0f, 15f, tick => Debug.Log("Test4"));
+```
 
+**Curves (spline, bezier, parabolic, sine)**
+```cs
 /// Spline : Quadratic curve based interpolation.
 var tform = gameObject.transform.position;
 STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tform.z), new Vector3(tform,x + 100, tform.y, tform,z), 3f);
@@ -133,30 +150,29 @@ STween.spline(gameObject.transform, new Vector3(tform.x + 50, tform.y + 100, tfo
 /// Bezier curves : Move along bezier corves
 var arr = new List<Vector3>{target.position, fromTarget.position, lastTarget.position, moveRectTransform.position};
 STween.bezier(obj.transform, arr, duration * 3f);
+```
 
-/// Queue : Chaining multiple tweens
+**Scheduling or Tween Sequence**
+```cs
 STween.scaleX(gameObject, 2f, 4f)
 .next(STween.scaleY(gameObject, 3f, 4f))
 .next(STween.scaleY(gameObject, 4f, 4f));
 
-// Custom Id : Custom id
-STween.scaleY(gameObject, 45, 4f).setId(12);
-STween.Cancel(12);
-
-// Callbacks :
-STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnComplete(()=> Debug.Log("Was completed")); //Executed on complete
-STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnUpdate(x=> Debug.Log(x)); //Executed every frame with the value as it's event args
-
 //Scheduling a delegate to be executed later.
 STween.execLater(5f, ()=> {Debug.Log("will be executed later in 5 seconds");});
 
-// Move along path :
-var destinations = new Vector3[]{new Vector3(10, 10, 10), new Vector3(30, 10, 10), new Vector3(30, 10, 50), 5f};
-STween.moveToPoints(gameObject, destinations, 8f);
-
 // Lazy queue : Lazily queueing on already running tween. Wll run after the targeted tween finishes.
 STween.queue(id :2, STween.scale(gameObject, new Vector3(2f, 2f, 2f), 5f));
+```
 
+**Callbacks**
+```cs
+STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnComplete(()=> Debug.Log("Was completed")); //Executed on complete
+STween.move(gameObject, new Vector3(0, 90, 0), 2f).setOnUpdate(x=> Debug.Log(x)); //Executed every frame with the value as it's event args
+```
+
+**Asynchronous Tweening**
+```cs
 ///Asynchoronous awaiting : Asynchonously awaiting a tween instance to finished via async/await.
 async Task AwaitAsTask()
 {

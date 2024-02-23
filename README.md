@@ -27,13 +27,14 @@ Internally, STween heavily utilizes object pooling and with weakReferences as a 
 
 A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
 
-**Syntaxes**
+**////Syntaxes////**
 ```cs
 
 //First add the namespace
 using Breadnone;
 ```
 
+**Move, Rotate, Scale, Translation**
 ```cs
 /// Move :
 STween.move(gameObject, new Vector3(50, 0, 0), 5f).setEase(Ease.EaseInOutQuad).setLoop(2);
@@ -61,7 +62,6 @@ STween.moveLocal(gameObject, new Vector3(12, 43, 34), 4f);
 STween.moveLocalX(gameObject, 22, 2f);
 STween.moveLocalY(gameObject, 40, 2f);
 STween.moveLocalZ(gameObject, 120, 10f);
-
 
 /// Rotate :
 //Speed based rotation that takes a degree angle with pingpong-like movement/cycle
@@ -120,7 +120,8 @@ STween.ResumeAll();
 ///To pause all cancelled tweens
 STween.PauseAll();
 ```
-**Value based interpolation**
+
+**Value Based Interpolation**
 ```cs
 STween.value(0, 100, value =>{Debug.Log(value);});
 STween.value(Vector3.zero, new Vector3(120, 200, 300), value =>{Debug.Log(value);});
@@ -199,8 +200,8 @@ STween is a one powerful tweening library and highly extendable. You can make yo
 - STQuaternion : Quaternion interpolator
 
 **PlayerLoop & Execution Order**  
-STween uses it's own custom Update timing that gets triggered before any script Updates via the undocumented managed update PlayerLoop api in Unity3D.  
-So the order is like this : GetTween => SendToUpdatePool => Queued for the nextfame => All MonoBehaviors Script Updates next.  
+STween uses it's own custom Update timing that gets triggered before any script Updates via PlayerLoop api in Unity3D.  
+So the order is like this : GetTween => SendToUpdatePool => Queued for the nextfame => All MonoBehaviors Script.  
 
 **Zero-Allocation**  
 You can get zero allocation all the time as long as you're accessing via STween apis. There are exceptions, such as custom interpolators other than STFloat might resulted in 128 bytes allocation, this is due to extra delegate instantiation assigned to them internally. 128 bytes is like nothing and much much less compared to the more popular nextdoor neighbor :) 

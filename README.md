@@ -220,6 +220,7 @@ Main APIs : Can be chained with helper apis
 
 - STween.move : Moves gameObject in worldSpace : input : GameObject, Transform, RectTransform, VisualElement, Vector3, Vector2
 - STween.moveLocal : Moves gameObject in localSpace : input : GameObject, Transform, RectTransform, VisualElement, Vector3, Vector2
+- STween.moveToNearest : Moves to the closes point.
 - STween.rotate : Rotates gameObject in worldSpace : input : GameObject, Transform, RectTransform, Quaternion, VisualElement, Vector3, float
 - STween.rotateLocal : Rotate gameObject in localSpace : input : GameObject, Transform, RectTransform, VisualElement, Vector3, Vector2, float
 - STween.rotateAround : Rotates around gameObject in worldSpace : input : GameObject, Transform, RectTransform, Vector3, Vector2
@@ -253,7 +254,9 @@ Main APIs : Can be chained with helper apis
 - STween.vfxVector2 : Interpolates a Vector2 property of a vfxgraph component : input : Material, Vector2
 - STween.vfxVector3 : Interpolates a Vector3 property of a vfxgraph component : input : Material, Vector3
 - STween.vfxVector4 : Interpolates a Vector4 property of a vfxgraph component : input : Material, Vector4
-
+- STween.punch
+- STween.updateMoe : (Experimental)Attampts to update the moving tween.
+ 
 Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).setLoop(2);
 
 - setLoop : Set the loop count.
@@ -282,6 +285,11 @@ Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).se
 - setCancelToken : Cancellation via CancellationTokenSource.
 - getLoopCount : Callback to get the running loopCount.
 - getTime : Callback to get the running time.
+- next : Sequential queuing.
+- delay : Delay the tween queue.
+- waitFor : Waits for a tween to finished.
+- waitUntil : Wait until condition to be met.
+- waitAll : Wait all active tweens to be finished (if any).
 
 Extensions : can be chained to both main and helper apis.
 
@@ -329,6 +337,7 @@ STween.dispatchDelay : Dispatching a delayed time.
 STween.dispatchLoop : Dispatching a loop count.
 STween.dispatchInvokeRepeat : Dispatching the repeat cycle.
 STween.dispatchInvokeResetLoop : Dispatching the reset timing.  
+STween.flushEvents : Clearing all assigned delegates.
 
 
 **Works In Edit-mode (Non-PlayMode)**  

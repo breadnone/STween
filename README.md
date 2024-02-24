@@ -4,8 +4,6 @@ A lightweight, thread-safe, zero allocation tweening library that works for both
 
 ![pMuDBXEPMA](https://github.com/breadnone/STween/assets/64100867/5eb2859d-7fd8-4faf-881d-0908ddc19ecb)
 
-![0ottrgagco](https://github.com/breadnone/STween/assets/64100867/ea8a95da-0c45-4cda-885c-04d8b383dd87)
-
 Features:
 - Move
 - Rotation (Quats, Eulers etc)
@@ -31,7 +29,7 @@ Internally, STween heavily utilizes object pooling and with weakReferences as a 
 
 A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
 
-![PwhkZdrrdi](https://github.com/breadnone/STween/assets/64100867/5dcda513-a39f-40c9-bd67-c81027248ac4)
+![0ottrgagco](https://github.com/breadnone/STween/assets/64100867/ea8a95da-0c45-4cda-885c-04d8b383dd87)
 
 **////Syntaxes////**
 ```cs

@@ -1,6 +1,10 @@
-![2024-02-24-STween](https://github.com/breadnone/STween/assets/64100867/57a928d7-9c26-4cd7-81c1-5c30deb4253d)  
+
+![2024-02-24-STween-ezgif com-crop(1)](https://github.com/breadnone/STween/assets/64100867/b7572eee-bc4c-4b6e-9b69-6e3da6fe22d5)
+
 **STween - Zero allocation tweening library for Unity3D.**  
 Zero allocation tweening library that works for both runtime and edit-mode (editor).
+
+![ZYFXLQ5Zrf](https://github.com/breadnone/STween/assets/64100867/9c418ea0-4f05-46cf-9642-461a012efe41)  
 
 Features:
 - Move
@@ -26,7 +30,6 @@ Features:
 Internally, STween heavily utilizes object pooling and with weakReferences as a fallback when there's not enough resources can be taken from the pool.
 
 A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
-![ZYFXLQ5Zrf](https://github.com/breadnone/STween/assets/64100867/9c418ea0-4f05-46cf-9642-461a012efe41)  
 
 **////Syntaxes////**
 ```cs

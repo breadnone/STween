@@ -1,14 +1,12 @@
-**STween - Zero allocation tweening library for Unity3D.**
-
-A lightweight, thread-safe, zero allocation tweening library that works for both runtime and edit-mode (editor).      
-
-![pMuDBXEPMA](https://github.com/breadnone/STween/assets/64100867/5eb2859d-7fd8-4faf-881d-0908ddc19ecb)
+![2024-02-24-STween](https://github.com/breadnone/STween/assets/64100867/57a928d7-9c26-4cd7-81c1-5c30deb4253d)  
+**STween - Zero allocation tweening library for Unity3D.**  
+Zero allocation tweening library that works for both runtime and edit-mode (editor).
 
 Features:
 - Move
 - Rotation (Quats, Eulers etc)
 - Scale
-- Quadratic Splines
+- Curve based tweening (splines, bezier, parabolic, sine, spiral)
 - Easings
 - AnimationCurve
 - Can be async-awaited (as Task<T>)
@@ -28,8 +26,7 @@ Features:
 Internally, STween heavily utilizes object pooling and with weakReferences as a fallback when there's not enough resources can be taken from the pool.
 
 A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
-
-![0ottrgagco](https://github.com/breadnone/STween/assets/64100867/ea8a95da-0c45-4cda-885c-04d8b383dd87)
+![ZYFXLQ5Zrf](https://github.com/breadnone/STween/assets/64100867/9c418ea0-4f05-46cf-9642-461a012efe41)  
 
 **////Syntaxes////**
 ```cs
@@ -146,7 +143,8 @@ STween.value(0f, 10f, 5f, tick => Debug.Log("Test1"))
 .qvalue(0f, 15f, tick => Debug.Log("Test4"));
 ```
 
-**Curves (spline, bezier, parabolic, sine)**
+**Curves (spline, bezier, parabolic, sine)**  
+![pMuDBXEPMA](https://github.com/breadnone/STween/assets/64100867/5eb2859d-7fd8-4faf-881d-0908ddc19ecb)
 ```cs
 /// Spline : Quadratic curve based interpolation.
 var tform = gameObject.transform.position;

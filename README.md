@@ -106,7 +106,10 @@ STween.moveToPoints(gameObject, destinations, 8f);
 STween.Cancel(gameObject);
 
 // OR
-STween.Cancel(12); // Cancels via the assigne custom id. 
+STween.Cancel(12); // Cancels via the assigne custom id.
+
+// Cancel via token
+STween.moveX(gameObject, 20f, 2f).setCancelToken(myCancellationTokenSource);
 
 //Pause
 STween.Pause(gameObject);
@@ -270,11 +273,15 @@ Helper apis : can be chained to main api, e.g : STween.move(go, to, duration).se
 - setResumeOn : Resuming based on a condition/predicate.
 - setFrom : Re-positioning on startup.
 - setLookAt : Focuses on the target's transform.
+- setOnInit : Callback on initialization (startup).
 - setActiveOnComplete : Set the active state of a gameObject on completion.
 - setActiveOnStart : Set the active state of a gameObject on startup.
 - setAudioOnStart : Play audioSource on startup.
 - setAudioOnComplete : Play audioSource on completion.
 - setSkip : Frame skipping effect (Experimental).
+- setCancelToken : Cancellation via CancellationTokenSource.
+- getLoopCount : Callback to get the running loopCount.
+- getTime : Callback to get the running time.
 
 Extensions : can be chained to both main and helper apis.
 
@@ -312,6 +319,17 @@ Extensions : can be chained to both main and helper apis.
 - lerpFromToRotation : Creates a rotation which rotates from fromDirection to toDirection. 
 - lerpEulerAngles : Quaternion euler based rotation.
 - lerpRotateTowards : Rotates a rotation from towards to.
+
+//Dispatch api : Note "dispatching" is quite a risky move. Use it as neede only.
+STween.dispatchTime : Dispatching the already assigned time/duration.
+STween.dispatchTarget : Dispatching a new target.
+STween.dispatchFrom : Dispatching the start of tween.
+STween.dispatchSpeed : Dispatching a speed value.
+STween.dispatchDelay : Dispatching a delayed time.
+STween.dispatchLoop : Dispatching a loop count.
+STween.dispatchInvokeRepeat : Dispatching the repeat cycle.
+STween.dispatchInvokeResetLoop : Dispatching the reset timing.  
+
 
 **Works In Edit-mode (Non-PlayMode)**  
 ![pylUFJ20Mv](https://github.com/breadnone/STween/assets/64100867/624de2e1-6891-4f58-979d-2a83b1d5d9b9)

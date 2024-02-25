@@ -47,19 +47,20 @@ namespace Breadnone.Extension
         /// <summary>The tween state of this instance.</summary>
         public TweenState state = TweenState.None;
         /// <summary>The on update function.</summary>
-        protected Action update;
-        /// <summary>The on complete function.</summary>
-        protected Action oncomplete;
+        protected Action<bool> update;
         /// <summary>The total duration of this instance when tweening.</summary>
         protected float duration;
         /// <summary>The internal running time of this tween instance.</summary>
         protected float runningTime = 0.00012f;
+        protected bool unscaledTime;
         /// <summary>The frameCount when it 1st initialized.</summary>
         protected int frameIn;
         /// <summary>Gets and sets the duration.</summary>
         float ISlimRegister.GetSetDuration { get => duration; set => duration = value; }
         /// <summary>Gets and sets the runningTime.</summary>
         float ISlimRegister.GetSetRunningTime { get => runningTime; set => runningTime = value; }
+        /// <summary>Unscaled or scaled Time.delta.</summary>
+        bool ISlimRegister.UnscaledTimeIs {get => unscaledTime; set => unscaledTime = value;}
         /// <summary>Flips the delta ticks</summary>
         protected void FlipTick()
         {
@@ -88,7 +89,7 @@ namespace Breadnone.Extension
             {
                 frameIn = TweenManager.editorFrameCount.Invoke() + 2;
                 return;
-            } 
+            }
 #endif
 
             frameIn = Time.frameCount + 1;
@@ -114,115 +115,94 @@ namespace Breadnone.Extension
         }
         /// <summary>Executed on the very last.</summary> 
         protected virtual void InternalOnComplete() { }
-        /// <summary>Registers the delta timing of edit-mode and runtime. Edit-mode will be simulated.</summary>
-        protected void InternalTick()
-        {
+        /// <summary>Executed every frame. Note : Base must be called at the very beginning when overriding.</summary>
+        protected virtual void InternalOnUpdate() 
+        { 
 #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)
             {
-                EditorDelta();
+                if (tprops.delayedTime > 0)
+                {
+                    tprops.delayedTime -= TweenManager.editorDelta.Invoke();
+                    return;
+                }
+                
+                if (!flipTick)
+                {
+                    runningTime += TweenManager.editorDelta.Invoke();
+                }
+                else
+                {
+                    runningTime -= TweenManager.editorDelta.Invoke();
+                }
+
                 return;
             }
 #endif
 
-            if (!tprops.unscaledTime)
+            if (!unscaledTime)
             {
                 if (tprops.delayedTime > 0)
                 {
-                    ScaledDeltaDelayed();
+                    if (tprops.delayedTime > 0)
+                    {
+                        tprops.delayedTime -= Time.deltaTime;
+                        return;
+                    }
+
+                    if (!flipTick)
+                    {
+                        runningTime += Time.deltaTime;
+                    }
+                    else
+                    {
+                        runningTime -= Time.deltaTime;
+                    }
                 }
                 else
                 {
-                    ScaledDelta();
+                    if (!flipTick)
+                    {
+                        runningTime += Time.deltaTime;
+                    }
+                    else
+                    {
+                        runningTime -= Time.deltaTime;
+                    }
                 }
             }
             else
             {
                 if (tprops.delayedTime > 0)
                 {
-                    UnscaledDelta();
+                    if (!flipTick)
+                    {
+                        runningTime += Time.unscaledDeltaTime;
+                    }
+                    else
+                    {
+                        runningTime -= Time.unscaledDeltaTime;
+                    }
                 }
                 else
                 {
-                    UnscaledDeltaDelayed();
+                    if (tprops.delayedTime > 0)
+                    {
+                        tprops.delayedTime -= Time.unscaledDeltaTime;
+                        return;
+                    }
+
+                    if (!flipTick)
+                    {
+                        runningTime += Time.unscaledDeltaTime;
+                    }
+                    else
+                    {
+                        runningTime -= Time.unscaledDeltaTime;
+                    }
                 }
-            }
+            } 
         }
-        void EditorDelta()
-        {
-            if (tprops.delayedTime > 0)
-            {
-                tprops.delayedTime -= TweenManager.editorDelta.Invoke();
-                return;
-            }
-
-            if (!flipTick)
-            {
-                runningTime += TweenManager.editorDelta.Invoke();
-            }
-            else
-            {
-                runningTime -= TweenManager.editorDelta.Invoke();
-            }
-        }
-        void ScaledDelta()
-        {
-            if (!flipTick)
-            {
-                runningTime += Time.deltaTime;
-            }
-            else
-            {
-                runningTime -= Time.deltaTime;
-            }
-        }
-        void ScaledDeltaDelayed()
-        {
-            if (tprops.delayedTime > 0)
-            {
-                tprops.delayedTime -= Time.deltaTime;
-                return;
-            }
-
-            if (!flipTick)
-            {
-                runningTime += Time.deltaTime;
-            }
-            else
-            {
-                runningTime -= Time.deltaTime;
-            }
-        }
-        void UnscaledDelta()
-        {
-            if (!flipTick)
-            {
-                runningTime += Time.unscaledDeltaTime;
-            }
-            else
-            {
-                runningTime -= Time.unscaledDeltaTime;
-            }
-        }
-        void UnscaledDeltaDelayed()
-        {
-            if (tprops.delayedTime > 0)
-            {
-                tprops.delayedTime -= Time.unscaledDeltaTime;
-                return;
-            }
-
-            if (!flipTick)
-            {
-                runningTime += Time.unscaledDeltaTime;
-            }
-            else
-            {
-                runningTime -= Time.unscaledDeltaTime;
-            }
-        }
-        /// <summary>Executed every frame. Note : Base must be called at the very beginning when overriding.</summary>
-        protected virtual void InternalOnUpdate() { InternalTick(); }
         /// <summary>Resets the loop.</summary>
         protected virtual void ResetLoop() { }
         ///<summary>Will be executed every frame. Use this if you want to use your own custom timing.</summary>
@@ -274,7 +254,7 @@ namespace Breadnone.Extension
             }
 
             InternalOnUpdate();
-            update?.Invoke();
+            update?.Invoke(true);
         }
         ///<summary>Cancels the tween, returns to pool.</summary>
         //Note : This will not trigger the last oncomplete due to it won't do state = TweenState.None.
@@ -286,7 +266,7 @@ namespace Breadnone.Extension
 
             if (executeOnComplete)
             {
-                oncomplete?.Invoke();
+                update?.Invoke(false);
             }
 
             if (this is ISlimTween islim)
@@ -311,13 +291,14 @@ namespace Breadnone.Extension
             state = TweenState.None;
             InternalOnComplete();
             //set the state twice, here and on Clear to indicate that this is the last oncomplete call.
-            oncomplete?.Invoke();
+            update?.Invoke(false);
             Clear();
             return true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected bool InvokeRepeat()
         {
+            /*
             if (tprops.loopCounter < 0)
             {
                 ResetLoop();
@@ -334,51 +315,81 @@ namespace Breadnone.Extension
 
                 return true;
             }
-
-            tprops.loopCounter++;
-
-            if (!tprops.pingpong)
-            {
-                if (tprops.loopCounter == tprops.loopAmount)
-                    return false;
-            }
-            else
-            {
-                if (tprops.loopCounter == tprops.loopAmount * 2)
-                    return false;
-            }
-
-            ResetLoop();
+            */
 
             if (tprops.pingpong)
             {
+                if (checkInfinitePingPong())
+                {
+                    return true;
+                }
+
+                tprops.loopCounter++;
+
+                if (tprops.loopCounter == tprops.loopAmount * 2)
+                    return false;
+
+                ResetLoop();
                 FlipTick();
 
                 if (tprops.oncompleteRepeat && (tprops.loopCounter & 1) == 0)
                 {
-                    oncomplete?.Invoke();
+                    update?.Invoke(false);
                 }
 
                 return true;
             }
             else
             {
+                if (checkInfiniteClamp())
+                {
+                    return true;
+                }
+
+                tprops.loopCounter++;
+
+                if (tprops.loopCounter == tprops.loopAmount)
+                    return false;
+
+                ResetLoop();
                 runningTime = 0.00013f;
                 tprops.runningFloat = 0.00013f;
 
                 if (tprops.oncompleteRepeat)
                 {
-                    oncomplete?.Invoke();
+                    update?.Invoke(false);
                 }
 
                 return tprops.loopCounter != tprops.loopAmount;
             }
         }
+        bool checkInfinitePingPong()
+        {
+            if (tprops.loopCounter < 0)
+            {
+                ResetLoop();
+                FlipTick();
+                return true;
+            }
 
+            return false;
+        }
+
+        bool checkInfiniteClamp()
+        {
+            if (tprops.loopCounter < 0)
+            {
+                ResetLoop();
+                runningTime = 0.00013f;
+                tprops.runningFloat = 0.00013f;
+                return true;
+            }
+
+            return false;
+        }
         ///<summary>Set common properties to default value.</summary>
         protected void Clear()
         {
-            oncomplete = null;
             update = null;
             flipTick = false;
             runningTime = 0.00012f;
@@ -423,24 +434,28 @@ namespace Breadnone.Extension
         /// <param name="func"></param>
         void ISlimRegister.RegisterLastOnComplete(Action func)
         {
-            oncomplete += () =>
+            update += x =>
             {
-                if (state == TweenState.None)
+                if(!x)
                 {
-                    func.Invoke();
+                    if (state == TweenState.None)
+                    {
+                        func.Invoke();
+                    }
                 }
             };
         }
         /// <summary>Clears all events. Will make the tween stop functioning unless ResubmitBaseValue is triggered. Use this with caustions.</summary>
         void ISlimRegister.ClearEvents()
         {
-            oncomplete = null;
             update = null;
         }
         /// <summary>Registers on complete.</summary>
-        void ISlimRegister.RegisterOnComplete(Action func) { oncomplete += func; }
+        void ISlimRegister.RegisterOnComplete(Action func) { update += x=> {if (!x) func.Invoke();}; }
         /// <summary>Registers on update.</summary>
-        void ISlimRegister.RegisterOnUpdate(Action func) { update += func; }
+        void ISlimRegister.RegisterOnUpdate(Action func) { update += x=> {if (x) func.Invoke();}; }
+        void ISlimRegister.ForceInvokeRepeat() { InvokeRepeat(); }
+        void ISlimRegister.ForceInvokeResetLoop() { ResetLoop(); }
     }
     ///<summary>State of the tweening instance.</summary>
     public enum TweenState : byte
@@ -518,8 +533,6 @@ namespace Breadnone.Extension
         public float speed = -1f;
         /// <summary>Easing types.</summary>
         public Ease easeType = Ease.Linear;
-        /// <summary>Unscaled or scaled delta time.</summary>
-        public bool unscaledTime = false;
         /// <summary>AnimationCurves</summary>
         public AnimationCurve animationCurve;
         ///<summary>Sets to default value to be reused in a pool. If not then will be normally disposed.</summary>
@@ -532,7 +545,6 @@ namespace Breadnone.Extension
             speed = -1f;
             animationCurve = null;
             easeType = Ease.Linear;
-            unscaledTime = false;
             delayedTime = -1;
             runningFloat = 0.00012f;
         }
@@ -558,9 +570,15 @@ namespace Breadnone.Extension
         public void RegisterOnUpdate(Action func);
         /// <summary>This will make the tween instance to stop working/tweening completely unless ResubmitBaseValue being triggered.</summary>
         public void ClearEvents();
+        /// <summary>Gets and sets the internal/base duration.</summary>
         public float GetSetDuration { get; set; }
         /// <summary>Gets and sets the runningTime field.</summary>
         public float GetSetRunningTime { get; set; }
+        /// <summary>Forces the internal repeat switch. WARNING: It may resulted on weird errors if not used at the correct timing.</summary>
+        public void ForceInvokeRepeat();
+        /// <summary>Forces the internal resetLoop function to get triggered. WARNING: Avoid using this at all cost.</summary>
+        public void ForceInvokeResetLoop();
+        public bool UnscaledTimeIs {get;set;}
     }
     /// <summary>STTransform class to handle all Transforms.</summary>
     public sealed class SlimTransform : TweenClass, ISlimTween
@@ -575,7 +593,6 @@ namespace Breadnone.Extension
         Transform transform;
         /// <summary>Starting value.</summary>
         InterpolatorStruct interp = default;
-        InterpolatorStruct ISlimTween.Interpolator { get => interp; set => interp = value; }
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public Transform GetTransform => transform;
         /// <summary>Tween type.</summary>
@@ -611,10 +628,7 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move:
-                    if (!isLocal)
-                        LerpPosition(this.FloatLerp(tick));
-                    else
-                        LerpPositionLocal(this.FloatLerp(tick));
+                    LerpPosition(this.FloatLerp(tick));
                     break;
                 case TransformType.Scale:
                     LerpScale(this.FloatLerp(tick));
@@ -623,7 +637,7 @@ namespace Breadnone.Extension
                     LerpEuler(this.FloatLerp(tick));
                     break;
                 case TransformType.RotateAround:
-                    LerpRotateAround(this.FloatLerp(tick), angle);
+                    LerpRotateAround(this.FloatLerp(tick));
                     break;
                 case TransformType.Translate:
                     LerpTranslate(this.FloatLerp(tick));
@@ -635,10 +649,7 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move:
-                    if (!isLocal)
-                        LerpPosition(this.FloatLerp(tick));
-                    else
-                        LerpPositionLocal(this.FloatLerp(tick));
+                    LerpPosition(this.FloatLerp(tick));
                     break;
                 case TransformType.Scale:
                     LerpScale(this.FloatLerp(tick));
@@ -647,7 +658,7 @@ namespace Breadnone.Extension
                     LerpEuler(this.FloatLerp(tick));
                     break;
                 case TransformType.RotateAround:
-                    LerpRotateAround(this.FloatLerp(tick), angle);
+                    LerpRotateAround(this.FloatLerp(tick));
                     break;
                 case TransformType.Translate:
                     LerpTranslate(this.FloatLerp(tick));
@@ -726,15 +737,17 @@ namespace Breadnone.Extension
             interp.Set(point, axis);
             TweenManager.InsertToActiveTween(this);
         }
-        /// <summary> Interpolates local position.</summary>
-        void LerpPositionLocal(float value)
-        {
-            transform.localPosition = interp.Interpolate(value);
-        }
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.position = interp.Interpolate(value);
+            if(!isLocal)
+            {
+                transform.position = interp.Interpolate(value);
+            }
+            else
+            {
+                transform.localPosition = interp.Interpolate(value);
+            }
         }
         /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
@@ -754,7 +767,7 @@ namespace Breadnone.Extension
             }
         }
         /// <summary>Rotates based on target point.</summary>
-        void LerpRotateAround(float value, float angle)
+        void LerpRotateAround(float value)
         {
             transform.RotateAround(interp.from(), interp.to(), angle * value);
         }
@@ -775,7 +788,6 @@ namespace Breadnone.Extension
         UnityEngine.RectTransform transform;
         /// <summary>Starting position to target value.</summary>
         InterpolatorStruct interp;
-        InterpolatorStruct ISlimTween.Interpolator { get => interp; set => interp = value; }
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
         public UnityEngine.RectTransform GetTransform => transform;
         /// <summary>Tween type.</summary>
@@ -878,10 +890,7 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move:
-                    if (!isLocal)
-                        LerpPosition(this.FloatLerp(tick));
-                    else
-                        LerpPositionLocal(this.FloatLerp(tick));
+                    LerpPosition(this.FloatLerp(tick));
                     break;
                 case TransformType.Scale:
                     LerpScale(this.FloatLerp(tick));
@@ -890,7 +899,7 @@ namespace Breadnone.Extension
                     LerpEuler(this.FloatLerp(tick));
                     break;
                 case TransformType.RotateAround:
-                    LerpRotateAround(this.FloatLerp(tick), angle);
+                    LerpRotateAround(this.FloatLerp(tick));
                     break;
                 case TransformType.SizeDelta:
                     LerpSizeDelta(this.FloatLerp(tick));
@@ -915,15 +924,17 @@ namespace Breadnone.Extension
                 interp.SetFrom(transform.sizeDelta);
             }
         }
-        /// <summary>Interpolates local position.</summary>
-        void LerpPositionLocal(float value)
-        {
-            transform.anchoredPosition = interp.Interpolate(value);
-        }
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
-            transform.anchoredPosition3D = interp.Interpolate(value);
+            if(!isLocal)
+            {            
+                transform.anchoredPosition3D = interp.Interpolate(value);
+            }
+            else
+            {
+                transform.anchoredPosition = interp.Interpolate(value);
+            }
         }
         /// <summary>Interpolates the scale.</summary>
         void LerpScale(float value)
@@ -943,7 +954,7 @@ namespace Breadnone.Extension
             }
         }
         /// <summary>Rotates based on target point.</summary>
-        void LerpRotateAround(float value, float angle)
+        void LerpRotateAround(float value)
         {
             transform.RotateAround(interp.from(), interp.to(), angle * value);
         }
@@ -971,7 +982,6 @@ namespace Breadnone.Extension
         public void UpdateTransform();
         /// <summary>Access to the starting and target value.</summary>
         public (Vector3 from, Vector3 to) FromTo { get; set; }
-        public InterpolatorStruct Interpolator { get; set; }
     }
     /// <summary>
     /// Delegate to pass easeing refs
@@ -994,7 +1004,7 @@ namespace Breadnone.Extension
     }
 
     [Serializable]
-    public sealed class InterpolatorStruct
+    public struct InterpolatorStruct
     {
         float x;
         float a;
@@ -1003,14 +1013,15 @@ namespace Breadnone.Extension
         float z;
         float c;
         static Vector3 vec;
-        public Vector3 from()
+        public ref Vector3 from()
         {
-            return new Vector3(a, b, c);
+            vec.Set(a, b, c);
+            return ref vec;
         }
-
-        public Vector3 to()
+        public ref Vector3 to()
         {
-            return new Vector3(x, y, z);
+            vec.Set(x, y, z);
+            return ref vec;
         }
 
         public void Set(Vector3 from, Vector3 to)
@@ -1033,13 +1044,13 @@ namespace Breadnone.Extension
             z = to.z;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3 Interpolate(float tick)
+        public ref Vector3 Interpolate(float tick)
         {
             vec.Set(
             a + (x - a) * tick,
             b + (y - b) * tick,
             c + (z - c) * tick);
-            return vec;
+            return ref vec;
         }
     }
     public struct TFloat6
@@ -1069,25 +1080,48 @@ namespace Breadnone.Extension
             return (new Vector3(_a, _b, _c), new Vector3(_x, _y, _z));
         }
     }
-    public struct TimeStruct
+
+    [Serializable]
+    public sealed class STFollow : TweenClass
     {
-        float _runningTime;
-        float _duration;
-        public float runningTime => _runningTime;
-        public float duration => _duration;
-        public float tick => _runningTime / _duration;
-        public TimeStruct(float defaultRunTime = 0.00012f, float defaultDuration = 0f)
+        /// <summary>The transform.</summary>
+        Transform transform;
+        Transform[] followers;
+        bool isMoving;
+        Vector3 lastpos;
+        float closeDistance = 100;
+        float speed;
+        /// <summary>Starting position to target value.</summary>
+        public void Init(Transform transform, Transform[] followers, float closeDistance, float speed)
         {
-            _runningTime = defaultRunTime;
-            _duration = defaultDuration;
+            this.transform = transform;
+            this.followers = followers;
+            this.duration = float.PositiveInfinity;
+            lastpos = transform.position;
+            this.closeDistance = closeDistance;
+            this.speed = speed;
+            TweenManager.InsertToActiveTween(this);
         }
-        public void SetTime(float time)
+        protected override void InternalOnUpdate()
         {
-            _runningTime = time;
-        }
-        public void SetDuration(float time)
-        {
-            _duration = time;
+            base.InternalOnUpdate();
+
+            isMoving = Vector3.Distance(lastpos, transform.position) > 0.001f;
+
+            for (int i = 0; i < followers.Length; i++)
+            {
+                var distance = Vector3.Distance(followers[i].position, transform.position);
+                var spd = speed;
+
+                if (distance < closeDistance)
+                {
+                    float normal = distance / closeDistance;
+                    spd = speed * this.FloatLerp(normal);
+                }
+
+                followers[i].transform.position = Vector3.LerpUnclamped(followers[i].position, transform.position, spd);
+            }
+
         }
     }
 }

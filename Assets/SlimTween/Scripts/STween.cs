@@ -1234,7 +1234,7 @@ namespace Breadnone
 
         #region Curves
         /// <summary>
-        /// Move a gameObject along splines.
+        /// Move a gameObject along splines. Note : All curves can't be chained.
         /// </summary>
         /// <param name="transform">The transform to move.</param>
         /// <param name="middle">Middle point.</param>
@@ -1246,7 +1246,7 @@ namespace Breadnone
             return instance.sfloat;
         }
         /// <summary>
-        /// Moves a gameObject along splines.
+        /// Moves a gameObject along splines. This version would teleport to a starting point instead of using the transform position.  Note : All curves can't be chained.
         /// </summary>
         /// <param name="transform">Transform to move.</param>
         /// <param name="start">Stars from</param>
@@ -1272,7 +1272,7 @@ namespace Breadnone
             return instance.sfloat;
         }
         /// <summary>
-        /// Parabolic shape curves.
+        /// Parabolic shape curves. Note : All curves can't be chained.
         /// </summary>
         /// <param name="transform"></param>
         /// <param name="direction"></param>
@@ -1286,7 +1286,7 @@ namespace Breadnone
             return instance.sfloat;
         }
         /// <summary>
-        /// Sine wave shape curves.
+        /// Sine wave shape curves. Note : All curves can't be chained.
         /// </summary>
         /// <param name="transform">Transform</param>
         /// <param name="direction">Duration</param>
@@ -1300,7 +1300,7 @@ namespace Breadnone
             return instance.sfloat;
         }
         /// <summary>
-        /// Spiral wave shape curves.
+        /// Spiral wave shape curves. Note : All curves can't be chained.
         /// </summary>
         /// <param name="transform">Transform</param>
         /// <param name="to">Direction</param>
@@ -1727,6 +1727,12 @@ namespace Breadnone
             }
 
             return rotateAround(gameObject, gameObject.transform.position, Vector3.right, angle, duration);
+        }
+        public static STFollow follow(GameObject gameObject, Transform[] followers, float minDistance, float speed)
+        {
+            var instance = STPool.GetInstance<STFollow>(gameObject.GetInstanceID());
+            instance.Init(gameObject.transform, followers, minDistance, speed);
+            return instance;
         }
         public static int ActiveCount
         {

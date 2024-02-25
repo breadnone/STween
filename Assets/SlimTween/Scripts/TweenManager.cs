@@ -43,7 +43,7 @@ namespace Breadnone.Extension
         public static TProps[] unusedTprops { get; set; }
         static TweenClass[] removeList = new TweenClass[30];
         public static int removeCount { get; private set; }
-        public static int poolsLength { get; private set; } = 100;
+        public static int poolsLength { get; private set; } = 50;
 
         public static int mainPoolLength { get; private set; } = 300;
         ///<summary>Fast worker loop.</summary>
@@ -88,12 +88,12 @@ namespace Breadnone.Extension
             {
                 unusedTprops[i] = new TProps();
 
-                if (i < 51)
+                if (i < 20)
                 {
                     var sform = new SlimTransform();
                     unusedTweens[i] = sform;
                 }
-                else if (i < 91)
+                else if (i < 15)
                 {
                     var srect = new SlimRect();
                     unusedTweens[i] = srect;

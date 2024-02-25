@@ -253,4 +253,29 @@ namespace Breadnone.Extension
             return Vector3.zero;
         }
     }
+    public static class STShake
+    {
+        public static STFloat Camera(Camera camera, float power, float exponent, float duration)
+        {
+            var sfloat = STPool.GetInstance<STFloat>(camera.GetInstanceID());
+            
+            sfloat.SetBase(0, 1f, duration, x=>
+            {
+
+            });
+
+            return sfloat;
+        }
+        public static STFloat Object(GameObject gameObject, float power, float exponent, float duration)
+        {
+            var sfloat = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+
+            sfloat.SetBase(0, 1f, duration, x=>
+            {
+
+            });
+
+            return sfloat;
+        }
+    }
 }

@@ -50,7 +50,7 @@ namespace Breadnone.Extension
             else
             {
                 ISlimRegister islim = tclass;
-                tclass.tprops.runningFloat = Mathf.MoveTowards(tclass.tprops.runningFloat, !islim.FlipTickIs ? 1f : 0f, tclass.tprops.speed / 3f * (!tclass.tprops.unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime));
+                tclass.tprops.runningFloat = Mathf.MoveTowards(tclass.tprops.runningFloat, !islim.FlipTickIs ? 1f : 0f, tclass.tprops.speed / 3f * (!islim.UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime));
                 return tclass.tprops.runningFloat; //TODO: if tprops.runningFloat won't work, rever it back to runningTime
             }
         }
@@ -304,6 +304,10 @@ namespace Breadnone.Extension
             }
 
             return fluent;
+        }
+        public static void ObjectFollow(Transform targetToFollow, Transform[] followers)
+        {
+
         }
     }
 }

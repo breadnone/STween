@@ -284,6 +284,18 @@ public class VTweenTests : MonoBehaviour
                 }
             }).setOnCompleteRepeat(true).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong);
     }
+    public void TestFollow()
+    {
+        Transform[] fol = new Transform[5];
+
+        for(int i = 0; i < 5; i++)
+        {
+            fol[i] = GameObject.Instantiate(obj, obj.transform.position, obj.transform.rotation).transform;
+            fol[i].SetParent(parent.transform, false);
+        }
+
+        STween.follow(gameObject, fol, 50, 100);
+    }
     /// EXPERIMENTAL
     public void NewMoveToTarget()
     {

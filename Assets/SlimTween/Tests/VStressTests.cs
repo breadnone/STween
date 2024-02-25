@@ -47,6 +47,12 @@ public class VStressTests : MonoBehaviour
         STween.CancelAll();
         StartCoroutine(StartStressTest());
     }
+    public void StartStressTestingBAREBONES()
+    {
+        cancelled = false;
+        STween.CancelAll();
+        StartCoroutine(StartStressTestBareBones());
+    }
     public void StartCurveStressTesting()
     {
         cancelled = false;
@@ -142,6 +148,61 @@ public class VStressTests : MonoBehaviour
                 if (spawnCycleAmount == 0)
                     yield break;
             }
+        }
+    }
+    /// <summary>
+    /// Testing for mockup only NOT STRESS TEST
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator StartStressTestBareBones()
+    {
+        WaitForSeconds ns = new WaitForSeconds(0.015f);
+        int counter = 5;
+
+        while (counter > 0)
+        {
+            spawnCycleAmount--;
+
+            for (int i = 0; i < xTopObjects.Count; i++)
+            {
+                var go = Instantiate(xTopObjects[i], xTopObjects[i].transform.position, xTopObjects[i].transform.rotation);
+                go.SetActive(true);
+                go.transform.SetParent(parent, true);
+                go.GetComponent<Image>().color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
+
+                var randOne = xBottomObjects[UnityEngine.Random.Range(0, xBottomObjects.Count - 1)];
+                var randTwo = UnityEngine.Random.Range(1f, 3f);
+
+                STween.move(go, randOne.transform, randTwo).setLoop(loopCount).setEase(ease).setPingPong(-1);
+
+                yield return ns;
+
+                if (cancelled)
+                    yield break;
+
+                for (int j = 0; j < xBottomObjects.Count; j++)
+                {
+                    var ggo = Instantiate(xBottomObjects[j], xBottomObjects[j].transform.position, xBottomObjects[j].transform.rotation);
+                    ggo.SetActive(true);
+                    ggo.transform.SetParent(parent, true);
+                    ggo.GetComponent<Image>().color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
+
+                    STween.move(ggo, xTopObjects[UnityEngine.Random.Range(0, xTopObjects.Count - 1)].transform, UnityEngine.Random.Range(1.5f, 3f)).setLoop(loopCount).setEase(ease).setPingPong(-1);
+
+                    yield return ns;
+
+                    if (cancelled)
+                        yield break;
+                }
+            }
+
+            if (useLimit)
+            {
+                if (spawnCycleAmount == 0)
+                    yield break;
+            }
+
+            counter--;
         }
     }
     private IEnumerator StartCurveStressTest()

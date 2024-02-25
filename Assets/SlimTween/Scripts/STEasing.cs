@@ -320,12 +320,6 @@ namespace Breadnone
             ? (1f - Bezier2DEaseFloatIn(1f - 2f * val)) * 0.5f
             : (1f + Bezier2DEaseFloatIn(2f * val - 1f)) * 0.5f;
         }
-        public static float Bezier2DEaseTESTInOut(float val)
-        {
-            return val < 0.5001f
-            ? ((1f * val) - Bezier2DEaseFloatIn(1f - 2f * val * val)) * 0.5f * val * val
-            : ((1f * val) + Bezier2DEaseFloatIn(2f * val * val - (1f * val))) * 0.5f * val * val;
-        }
         /// <summary>
         /// Upperbound clamping.
         /// </summary>
@@ -362,6 +356,8 @@ namespace Breadnone
         {
             switch (ease)
             {
+                case Ease.Linear:
+                    return Linear(tick);
                 case Ease.EaseInQuad:
                     return EaseInQuad(tick);
                 case Ease.EaseOutQuad:
@@ -404,8 +400,6 @@ namespace Breadnone
                     return EaseOutCirc(tick);
                 case Ease.EaseInOutCirc:
                     return EaseInOutCirc(tick);
-                case Ease.Linear:
-                    return Linear(tick);
                 case Ease.SpringIn:
                     return SpringIn(tick);
                 case Ease.SpringOut:
@@ -444,8 +438,6 @@ namespace Breadnone
                     return Bezier2DEaseFloatInOut(tick);
                 case Ease.Bezier2DEaseBrakeInOut :
                     return Bezier2DEaseBrakeInOut(tick);
-                case Ease.BezierTest:
-                    return Bezier2DEaseTESTInOut(tick);
             }
             return 0;
         }
@@ -497,6 +489,5 @@ namespace Breadnone
         Bezier2DEaseFloatOut,
         Bezier2DEaseFloatInOut,
         Bezier2DEaseBrakeInOut,
-        BezierTest
     }
 }

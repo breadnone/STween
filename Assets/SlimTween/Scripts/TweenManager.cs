@@ -18,10 +18,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
 using System.Runtime.CompilerServices;
 using NullSortCollections;
+using System.Collections;
+using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -41,8 +42,8 @@ namespace Breadnone.Extension
         ///<summary>Unused tweens.</summary>
         public static TweenClass[] unusedTweens { get; set; }
         public static TProps[] unusedTprops { get; set; }
-        static TweenClass[] removeList = new TweenClass[30];
-        public static int removeCount { get; private set; }
+        public static TweenClass[] removeList = new TweenClass[30];
+        public static int removeCount { get; set; }
         public static int poolsLength { get; private set; } = 50;
 
         public static int mainPoolLength { get; private set; } = 300;
@@ -52,6 +53,42 @@ namespace Breadnone.Extension
         public static bool isPlayMode { get; set; }
         ///<summary>Singleton mono component</summary>
         public static TweenMono mono { get; set; }
+        public static List<TweenClass> temporary = new(12);
+        /// <summary>
+        /// This basically to avoid deep nested branches being unnecessarily iterated every frame.
+        /// </summary>/
+        public static void TweenBagCache()
+        {
+            for (int i = temporary.Count; i-- > 0;)
+            {
+                if (temporary[i].IsValid)
+                {
+#if UNITY_EDITOR
+                    if (!EditorApplication.isPlaying)
+                    {
+                        if (temporary[i].tprops.delayedTime > 0)
+                        {
+                            temporary[i].tprops.delayedTime -= editorDelta.Invoke();
+                            continue;
+                        }
+
+                        activeTweens.Add(temporary[i]);
+                        temporary.Remove(temporary[i]);
+                        continue;
+                    }
+#endif
+
+                    if (temporary[i].tprops.delayedTime > 0)
+                    {
+                        temporary[i].tprops.delayedTime -= !(temporary[i] as ISlimRegister).UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime;
+                        continue;
+                    }
+
+                    activeTweens.Add(temporary[i]);
+                    temporary.Remove(temporary[i]);
+                }
+            }
+        }
         public static void InitSize(int mainPoolSize)
         {
             if (mainPoolSize < activeTweens.Count)
@@ -68,7 +105,8 @@ namespace Breadnone.Extension
         /// <param name="len">Pool </param>
         public static void InitPool(int len)
         {
-            activeTweens = new();
+            temporary = new List<TweenClass>(12);
+            activeTweens = new ArrayNullSort();
             activeTweens.Create(mainPoolLength);
             poolsLength = len;
             unusedTweens = new TweenClass[len];
@@ -88,12 +126,12 @@ namespace Breadnone.Extension
             {
                 unusedTprops[i] = new TProps();
 
-                if (i < 20)
+                if (i < 21)
                 {
                     var sform = new SlimTransform();
                     unusedTweens[i] = sform;
                 }
-                else if (i < 15)
+                else if (i < 36)
                 {
                     var srect = new SlimRect();
                     unusedTweens[i] = srect;
@@ -148,13 +186,56 @@ namespace Breadnone.Extension
 
             removeCount = 0;
         }
+        public static void ClearLists()
+        {            
+            temporary.Clear();
+            
+            if(removeList != null)
+            {            
+                for(int i = 0; i < removeList.Length; i++)
+                {
+                    var lis = removeList[i];
+                    
+                    if(lis != null)
+                    {
+                        (removeList[i] as ISlimRegister).ClearEvents();
+                    }
+                    
+                    removeList[i] = null;
+                }
+
+                removeCount = 0;
+            }
+
+            if(activeTweens != null)
+            {
+                for(int i = 0; i < activeTweens.Count; i++)
+                {
+                    if(activeTweens.array[i] != null)
+                    {
+                        (activeTweens.array[i] as ISlimRegister).ClearEvents();
+                    }
+                }
+
+                activeTweens.Empty();
+            }
+        }
 
         ///<summary>Adds to active list.</summary>
         public static void InsertToActiveTween(TweenClass tween)
         {
             tween.UpdateFrame();
             tween.state = TweenState.Tweening;
-            activeTweens.Add(tween);
+
+            #if UNITY_EDITOR
+            if(!EditorApplication.isPlaying)
+            {
+                activeTweens.Add(tween);
+                return;
+            }
+            #endif
+
+            temporary.Add(tween);
         }
         ///<summary>Removes from active list.</summary>
         public static void RemoveFromActiveTween(TweenClass tween)
@@ -227,6 +308,11 @@ namespace Breadnone.Extension
             }
 #endif
 
+            if (temporary.Count > 0)
+            {
+                TweenBagCache();
+            }
+
             if (activeTweens.Count == 0)
                 return;
 
@@ -249,12 +335,6 @@ namespace Breadnone.Extension
                 }
 #endif
                 var tween = activeTweens.array[i];
-
-                if (!tween.IsValid)
-                {
-                    continue;
-                }
-
                 tween.RunUpdate();
             }
 

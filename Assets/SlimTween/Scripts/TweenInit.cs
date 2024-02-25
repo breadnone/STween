@@ -23,7 +23,7 @@ namespace Breadnone.Extension
 {
     class TweeInitClass
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void OnRuntimeMethodLoad()
         {
             AttachVComponent();

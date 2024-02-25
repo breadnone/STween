@@ -22,9 +22,7 @@ using Breadnone.Extension;
 using UnityEngine.UIElements;
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Breadnone

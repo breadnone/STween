@@ -32,6 +32,10 @@ namespace Breadnone.Extension
         {
             cache = new();
         }
+        /// <summary>
+        /// Clears caches (if any)
+        /// </summary>
+        public static void ClearCache()=> cache.ClearCaches();
         ///<summary>VTween object pooling. Default is 5.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetInstance<T>(int vid) where T : TweenClass, new()
@@ -137,6 +141,10 @@ namespace Breadnone.Extension
             }
 
             list.Add(tween, new WeakReference<T>(tween));
+        }
+        public void ClearCaches()
+        {
+            list.Clear();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>

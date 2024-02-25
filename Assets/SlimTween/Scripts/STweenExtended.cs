@@ -2,11 +2,6 @@ using UnityEngine;
 using Breadnone.Extension;
 using UnityEngine.UIElements;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 //using UnityEngine.VFX;
 using TMPro;
 

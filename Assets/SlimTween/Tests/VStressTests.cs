@@ -20,9 +20,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using System;
 using Breadnone;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using System.Collections;

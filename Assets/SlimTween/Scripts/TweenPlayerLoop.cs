@@ -18,11 +18,11 @@ namespace TweenLoop
 
         public void RegisterUpdate(Action update)
         {
-            Update += update;
+            Update = update;
         }
-        public void UnregisterUpdate(Action update)
+        public void UnregisterUpdate()
         {
-            Update -= update;
+            Update = null;
         }
 
         public TweenPlayerLoop()

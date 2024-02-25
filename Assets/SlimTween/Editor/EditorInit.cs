@@ -17,12 +17,12 @@ namespace EditorDelta
         [InitializeOnLoadMethod]
         static void OnProjectLoadedInEditor()
         {
-            EditorWorker.initRun = true;
             AssemblyReloadEvents.beforeAssemblyReload += () => TweenManager.editorPaused = true;
             AssemblyReloadEvents.afterAssemblyReload += () => TweenManager.editorPaused = false;
 
             //AssemblyReloadEvents.beforeAssemblyReload += () => CopyRuntimeClasses();
             //AssemblyReloadEvents.afterAssemblyReload += () => ReturnRuntimeClasses();
+            //AssemblyReloadEvents.afterAssemblyReload += TweenPlayerLoop.RetriggerUpdateLoop;
         }
         static void CreatePersistentListener(UnityEvent uevent, UnityAction act)
         {
@@ -170,7 +170,7 @@ namespace EditorDelta
 
                     if (TweenLoop.TweenPlayerLoop.tweenLoop != null)
                     {
-                        TweenLoop.TweenPlayerLoop.tweenLoop.UnregisterUpdate(TweenManager.TweenWorkerUpdate);
+                        TweenLoop.TweenPlayerLoop.tweenLoop.UnregisterUpdate();
                     }
                 }
             }

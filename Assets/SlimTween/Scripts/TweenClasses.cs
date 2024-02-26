@@ -25,6 +25,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using UnityEngine;
 using System;
 using System.Runtime.CompilerServices;
+using System.Collections.Specialized;
+using System.Collections;
+using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -50,30 +53,36 @@ namespace Breadnone.Extension
         protected bool unscaledTime;
         /// <summary>The frameCount when it 1st initialized.</summary>
         protected int frameIn;
-        public int ease {get; private set;}
+        public int ease { get; private set; }
         /// <summary>Gets and sets the duration.</summary>
         float ISlimRegister.GetSetDuration { get => duration; set => duration = value; }
         /// <summary>Gets and sets the runningTime.</summary>
         float ISlimRegister.GetSetRunningTime { get => runningTime; set => runningTime = value; }
         /// <summary>Unscaled or scaled Time.delta.</summary>
         bool ISlimRegister.UnscaledTimeIs { get => unscaledTime; set => unscaledTime = value; }
-        void ISlimRegister.SetEase(Ease easeType)=> ease = (int)easeType;
-        void ISlimRegister.SetState(TweenState stateType)=> state = (int)stateType;
+        void ISlimRegister.SetEase(Ease easeType) => ease = (int)easeType;
+        void ISlimRegister.SetState(TweenState stateType) => state = (int)stateType;
+        void ISlimRegister.SetEstimationTime()=> EstimateDuration(0, 1f, tprops.speed);
         /// <summary>Flips the delta ticks</summary>
         protected void FlipTick()
         {
-            if (flipTick)
-            {
-                tprops.runningFloat = 1f;
-                tprops.runningFloat -= 0.00013f;
-            }
-            else
-            {
-                tprops.runningFloat = 0f;
-                tprops.runningFloat += 0.00013f;
-            }
+                if (flipTick)
+                {
+                    tprops.runningFloat = 1f;
+                }
+                else
+                {
+                    tprops.runningFloat = 0f;
+                }
+            
 
             flipTick = !flipTick;
+            
+            //2 = speed based here
+            if(tprops.lerptype != 2)
+            {
+                tprops.updatecondition += flipTick ? 1 : -1;
+            }
         }
         protected bool flipTick = false;
         bool ISlimRegister.FlipTickIs => flipTick;
@@ -164,28 +173,25 @@ namespace Breadnone.Extension
             if (state < 2)
                 return;
 
-            if(tprops.lerptype > 2)
+            if (tprops.updatecondition == 3)
             {
-                if (!flipTick)
+                if (runningTime > duration && CheckIfFinished())
                 {
-                    if (runningTime > duration && CheckIfFinished())
-                    {
-                        return;
-                    }
+                    return;
                 }
-                else
+            }
+            else if (tprops.updatecondition == 4)
+            {
+                if (runningTime < 0.0001f && CheckIfFinished())
                 {
-                    if (runningTime < 0.0001f && CheckIfFinished())
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
             else
             {
-                if ((tprops.loopCounter & 1) == 0)
+                if (!flipTick)
                 {
-                    if (!flipTick && tprops.runningFloat + 0.00013 > 1f || (!flipTick && tprops.runningFloat - 0.00015 < 0f && Mathf.Approximately(runningTime, duration)))
+                    if (tprops.runningSpeed + 0.0001f > 1f)
                     {
                         if (CheckIfFinished())
                         {
@@ -195,7 +201,7 @@ namespace Breadnone.Extension
                 }
                 else
                 {
-                    if (flipTick && tprops.runningFloat - 0.00015f < 0f)
+                    if (tprops.runningSpeed < 0.0001f)
                     {
                         if (CheckIfFinished())
                         {
@@ -250,25 +256,6 @@ namespace Breadnone.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected bool InvokeRepeat()
         {
-            /*
-            if (tprops.loopCounter < 0)
-            {
-                ResetLoop();
-
-                if (tprops.pingpong)
-                {
-                    FlipTick();
-                }
-                else
-                {
-                    runningTime = 0.00013f;
-                    tprops.runningFloat = 0.00013f;
-                }
-
-                return true;
-            }
-            */
-
             if (tprops.pingpong)
             {
                 if (checkInfinitePingPong())
@@ -349,6 +336,17 @@ namespace Breadnone.Extension
             state = 0;
             ease = 0;
             TweenManager.RemoveFromActiveTween(this);
+        }
+        public float EstimateDuration(float current, float target, float speed)
+        {
+            float deltaTime = !unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime;
+            
+            // Calculate the distance between current and target value
+            float distance = Mathf.Abs(target - current);
+            
+            // Calculate the time duration to reach the target value
+            float duration = distance / (speed / 3f * deltaTime);
+            return duration;
         }
         ///<summary>Checks if tweening. Paused tween will also mean tweening.</summary>
         public bool IsTweening => state != 0;
@@ -466,6 +464,7 @@ namespace Breadnone.Extension
     [Serializable]
     public sealed class TProps
     {
+        public float runningSpeed;
         /// <summary>The running underlying tick value;</summary>
         public float runningFloat = 0.00012f;
         /// <summary>Instance id</summary>
@@ -486,8 +485,9 @@ namespace Breadnone.Extension
         public float speed = -1f;
         /// <summary>AnimationCurves</summary>
         public AnimationCurve animationCurve;
-        /// <summary>1 speed, 2 curve, 3 regular.</summary>
+        /// <summary>1 curve, 2 speed, 3 regular.</summary>
         public int lerptype = 0;
+        public int updatecondition;
         ///<summary>Sets to default value to be reused in a pool. If not then will be normally disposed.</summary>
         public void SetDefault()
         {
@@ -508,20 +508,23 @@ namespace Breadnone.Extension
         /// <summary>Sets the lerptype.</summary>
         public void SetLerpType()
         {
-            if(speed < 0)
+            if (speed < 0)
             {
-                if(animationCurve == null)
+                if (animationCurve == null)
                 {
                     lerptype = 3;
+                    updatecondition = 3;
                 }
                 else
                 {
                     lerptype = 1;
+                    updatecondition = 1;
                 }
             }
             else
             {
                 lerptype = 2;
+                updatecondition = 2;
             }
         }
     }
@@ -553,6 +556,7 @@ namespace Breadnone.Extension
         public bool UnscaledTimeIs { get; set; }
         public void SetEase(Ease easeType);
         public void SetState(TweenState stateType);
+        public void SetEstimationTime();
     }
     /// <summary>STTransform class to handle all Transforms.</summary>
     public sealed class SlimTransform : TweenClass, ISlimTween
@@ -562,7 +566,7 @@ namespace Breadnone.Extension
             interp = new InterpolatorStruct();
         }
         /// <summary>Previous assigned type.</summary>
-        TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
+        TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
         /// <summary>The transform.</summary>
         Transform transform;
         /// <summary>Starting value.</summary>
@@ -601,19 +605,19 @@ namespace Breadnone.Extension
 
             switch (type)
             {
-                case TransformType.Move:
+                case TransformType.Move: //Move
                     LerpPosition(this.FloatInterp(tick));
                     break;
-                case TransformType.Scale:
+                case TransformType.Scale: //Scale
                     LerpScale(this.FloatInterp(tick));
                     break;
-                case TransformType.Rotate:
+                case TransformType.Rotate: //Rotate
                     LerpEuler(this.FloatInterp(tick));
                     break;
-                case TransformType.RotateAround:
+                case TransformType.RotateAround: //RotateAround
                     LerpRotateAround(this.FloatInterp(tick));
                     break;
-                case TransformType.Translate:
+                case TransformType.Translate: //Translate
                     LerpTranslate(this.FloatInterp(tick));
                     break;
             }
@@ -622,19 +626,19 @@ namespace Breadnone.Extension
         {
             switch (type)
             {
-                case TransformType.Move:
+                case TransformType.Move: //Move
                     LerpPosition(this.FloatInterp(tick));
                     break;
-                case TransformType.Scale:
+                case TransformType.Scale: //Scale
                     LerpScale(this.FloatInterp(tick));
                     break;
-                case TransformType.Rotate:
+                case TransformType.Rotate: //Rotate
                     LerpEuler(this.FloatInterp(tick));
                     break;
-                case TransformType.RotateAround:
+                case TransformType.RotateAround: //RotateAround
                     LerpRotateAround(this.FloatInterp(tick));
                     break;
-                case TransformType.Translate:
+                case TransformType.Translate: //Translate
                     LerpTranslate(this.FloatInterp(tick));
                     break;
             }
@@ -774,7 +778,7 @@ namespace Breadnone.Extension
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from(), interp.to()); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
         /// <summary>Previous assigned type.</summary>
-        TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
+        TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
         /// <summary>Initialize transform base value.</summary>
         /// <param name="objectTransform">The transform.</param>
         /// <param name="from">Starting value</param>
@@ -863,22 +867,22 @@ namespace Breadnone.Extension
         {
             switch (type)
             {
-                case TransformType.Move:
+                case TransformType.Move: //Move
                     LerpPosition(this.FloatInterp(tick));
                     break;
-                case TransformType.Scale:
+                case TransformType.Scale: //Scale
                     LerpScale(this.FloatInterp(tick));
                     break;
-                case TransformType.Rotate:
+                case TransformType.Rotate: //Rotate
                     LerpEuler(this.FloatInterp(tick));
                     break;
-                case TransformType.RotateAround:
+                case TransformType.RotateAround: //RotateAround
                     LerpRotateAround(this.FloatInterp(tick));
                     break;
-                case TransformType.SizeDelta:
+                case TransformType.SizeDelta: //SizeDelta
                     LerpSizeDelta(this.FloatInterp(tick));
                     break;
-                case TransformType.SizeAnchored:
+                case TransformType.SizeAnchored: //SizeAnchored
                     LerpSizeAnchored(this.FloatInterp(tick));
                     break;
             }
@@ -964,17 +968,16 @@ namespace Breadnone.Extension
     /// <param name="start"></param>
     /// <param name="end"></param>
     /// <param name="time"></param>
-    public enum TransformType : byte
+    public enum TransformType
     {
         None = 0,
         Move = 1,
         Scale = 2,
         Rotate = 3,
         RotateAround = 4,
-        Follow = 5,
-        SizeDelta = 6,
-        SizeAnchored = 7,
-        Translate = 8
+        SizeDelta = 5,
+        SizeAnchored = 6,
+        Translate = 7
     }
 
     [Serializable]
@@ -997,7 +1000,7 @@ namespace Breadnone.Extension
             vec.Set(x, y, z);
             return ref vec;
         }
-        public ref Vector3 GetRef(float tick)
+        public ref Vector3 UpdateRef(float tick)
         {
             vec.Set(
             a + (x - a) * tick,
@@ -1005,7 +1008,7 @@ namespace Breadnone.Extension
             c + (z - c) * tick);
             return ref vec;
         }
-        public ref Vector3 GetVector()=> ref vec;
+        public ref Vector3 GetVector() => ref vec;
 
         public void Set(Vector3 from, Vector3 to)
         {

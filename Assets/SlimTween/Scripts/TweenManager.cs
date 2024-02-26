@@ -90,6 +90,11 @@ namespace Breadnone.Extension
                     activeTweens.Add(tmp);
                     temporary.Remove(tmp);
                     tmp.tprops.SetLerpType();
+
+                    if(tmp.tprops.speed > 0)
+                    {
+                        (tmp as ISlimRegister).GetSetDuration = float.PositiveInfinity;
+                    }
                 }
             }
         }

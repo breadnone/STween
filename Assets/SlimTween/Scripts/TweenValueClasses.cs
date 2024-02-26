@@ -40,6 +40,7 @@ namespace Breadnone.Extension
         /// Target value.
         /// </summary>
         private float to;
+        private float runningFloat;
         /// <summary>
         /// Callback.
         /// </summary>
@@ -71,8 +72,8 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = from + this.FloatInterp(tick) * (to - from);
-            callback.Invoke(tprops.runningFloat);
+            runningFloat = from + this.FloatInterp(tick) * (to - from);
+            callback.Invoke(runningFloat);
         }
 
         ///<summary>Resets properties shuffle from/to value.</summary>
@@ -136,6 +137,7 @@ namespace Breadnone.Extension
     {
         private Vector2 from;
         private Vector2 to;
+        private float runningFloat;
         Action<Vector2> callback;
         Action<Vector2> ICoreValue<Vector2>.callback { get => callback; set => callback = value; }
         Vector2 ICoreValue<Vector2>.from { get => from; set => from = value; }
@@ -156,8 +158,8 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatInterp(tick);
-            callback.Invoke(Vector2.LerpUnclamped(from, to, tprops.runningFloat));
+            runningFloat = this.FloatInterp(tick);
+            callback.Invoke(Vector2.LerpUnclamped(from, to, runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -172,6 +174,7 @@ namespace Breadnone.Extension
     {
         private Vector3 from;
         private Vector3 to;
+        private float runningFloat;
         Action<Vector3> callback;
         Action<Vector3> ICoreValue<Vector3>.callback { get => callback; set => callback = value; }
         Vector3 ICoreValue<Vector3>.from { get => from; set => from = value; }
@@ -192,8 +195,8 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatInterp(tick);
-            callback.Invoke(Vector3.LerpUnclamped(from, to, tprops.runningFloat));
+            runningFloat = this.FloatInterp(tick);
+            callback.Invoke(Vector3.LerpUnclamped(from, to, runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -208,6 +211,7 @@ namespace Breadnone.Extension
     {
         private Vector4 from;
         private Vector4 to;
+        private float runningFloat;
         Action<Vector4> callback;
         Action<Vector4> ICoreValue<Vector4>.callback { get => callback; set => callback = value; }
         Vector4 ICoreValue<Vector4>.from { get => from; set => from = value; }
@@ -228,8 +232,8 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatInterp(tick);
-            callback.Invoke(Vector4.LerpUnclamped(from, to, tprops.runningFloat));
+            runningFloat = this.FloatInterp(tick);
+            callback.Invoke(Vector4.LerpUnclamped(from, to, runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -244,6 +248,7 @@ namespace Breadnone.Extension
     {
         private Rect from;
         private Rect to;
+        private float runningFloat;
         Action<Rect> callback;
         Action<Rect> ICoreValue<Rect>.callback { get => callback; set => callback = value; }
         Rect ICoreValue<Rect>.from { get => from; set => from = value; }
@@ -266,8 +271,8 @@ namespace Breadnone.Extension
             base.InternalOnUpdate();
             var vec4one = new Vector4(from.x, from.y, from.width, from.height);
             var vec4two = new Vector4(to.x, to.y, to.width, to.height);
-            tprops.runningFloat = this.FloatInterp(tick);
-            var value = Vector4.LerpUnclamped(vec4one, vec4two, tprops.runningFloat);
+            runningFloat = this.FloatInterp(tick);
+            var value = Vector4.LerpUnclamped(vec4one, vec4two, runningFloat);
             callback.Invoke(new Rect(value.x, value.y, value.z, value.w));
         }
         ///<summary>Resets properties shuffle the destination</summary>
@@ -320,6 +325,7 @@ namespace Breadnone.Extension
     {
         private Quaternion from;
         private Quaternion to;
+        private float runningFloat;
         Action<Quaternion> callback;
         Action<Quaternion> ICoreValue<Quaternion>.callback { get => callback; set => callback = value; }
         Quaternion ICoreValue<Quaternion>.from { get => from; set => from = value; }
@@ -340,8 +346,8 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatInterp(tick);
-            callback.Invoke(Quaternion.LerpUnclamped(from, to, tprops.runningFloat));
+            runningFloat = this.FloatInterp(tick);
+            callback.Invoke(Quaternion.LerpUnclamped(from, to, runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()

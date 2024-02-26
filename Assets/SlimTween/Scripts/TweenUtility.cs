@@ -61,6 +61,20 @@ namespace Breadnone.Extension
             else if(tclass.tprops.lerptype > 1)
             {
                 ISlimRegister islim = tclass;
+                
+                var to = 1f;
+
+                if(islim.FlipTickIs)
+                {
+                    to = 0f;
+                }
+
+                tclass.tprops.runningSpeed = Mathf.MoveTowards(tclass.tprops.runningSpeed, to, tclass.tprops.speed / 3f * (!islim.UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime));
+                return tclass.tprops.runningSpeed; //TODO: if tprops.runningFloat won't work, rever it back to runningTime
+            }
+            else
+            {
+                ISlimRegister islim = tclass;
                 var zero = 0f;
                 var one = 1f;
                 
@@ -71,12 +85,6 @@ namespace Breadnone.Extension
                 }
                 
                 return Mathf.LerpUnclamped(zero, one, tclass.tprops.animationCurve.Evaluate(time));
-            }
-            else
-            {
-                ISlimRegister islim = tclass;
-                tclass.tprops.runningFloat = Mathf.MoveTowards(tclass.tprops.runningFloat, !islim.FlipTickIs ? 1f : 0f, tclass.tprops.speed / 3f * (!islim.UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime));
-                return tclass.tprops.runningFloat; //TODO: if tprops.runningFloat won't work, rever it back to runningTime
             }
         }
         public static float LerpRefs(this TweenClass tclass, float time, ref Vector3 refs)

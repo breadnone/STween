@@ -94,7 +94,7 @@ namespace Breadnone.Extension
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            if (tween.state != TweenState.None)
+            if (!tween.IsNone)
             {
                 (tween as ISlimRegister).RegisterLastOnComplete(() => tcs.TrySetResult(true));
             }

@@ -71,7 +71,7 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = from + this.FloatLerp(tick) * (to - from);
+            tprops.runningFloat = from + this.FloatInterp(tick) * (to - from);
             callback.Invoke(tprops.runningFloat);
         }
 
@@ -121,7 +121,7 @@ namespace Breadnone.Extension
             base.InternalOnUpdate();
             float flfr = from;
             float flto = to;
-            callback.Invoke((int)Mathf.LerpUnclamped(from, to, this.FloatLerp(tick)));
+            callback.Invoke((int)Mathf.LerpUnclamped(from, to, this.FloatInterp(tick)));
         }
         ///<summary>Resets properties shuffle the destination</summary>
         protected override void ResetLoop()
@@ -156,7 +156,7 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatLerp(tick);
+            tprops.runningFloat = this.FloatInterp(tick);
             callback.Invoke(Vector2.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
@@ -192,7 +192,7 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatLerp(tick);
+            tprops.runningFloat = this.FloatInterp(tick);
             callback.Invoke(Vector3.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
@@ -228,7 +228,7 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatLerp(tick);
+            tprops.runningFloat = this.FloatInterp(tick);
             callback.Invoke(Vector4.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
@@ -266,7 +266,7 @@ namespace Breadnone.Extension
             base.InternalOnUpdate();
             var vec4one = new Vector4(from.x, from.y, from.width, from.height);
             var vec4two = new Vector4(to.x, to.y, to.width, to.height);
-            tprops.runningFloat = this.FloatLerp(tick);
+            tprops.runningFloat = this.FloatInterp(tick);
             var value = Vector4.LerpUnclamped(vec4one, vec4two, tprops.runningFloat);
             callback.Invoke(new Rect(value.x, value.y, value.z, value.w));
         }
@@ -304,7 +304,7 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            runningFloat = this.FloatLerp(tick);
+            runningFloat = this.FloatInterp(tick);
             callback.Invoke(UnsafeMath.FMatrixLerp(from, to, runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>
@@ -340,7 +340,7 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-            tprops.runningFloat = this.FloatLerp(tick);
+            tprops.runningFloat = this.FloatInterp(tick);
             callback.Invoke(Quaternion.LerpUnclamped(from, to, tprops.runningFloat));
         }
         ///<summary>Resets properties shuffle the destination</summary>

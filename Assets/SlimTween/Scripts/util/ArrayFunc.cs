@@ -95,6 +95,7 @@ namespace NullSortCollections
                 }
             }
         }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>
         /// Adds the item.

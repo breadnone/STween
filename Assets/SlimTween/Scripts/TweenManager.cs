@@ -45,7 +45,6 @@ namespace Breadnone.Extension
         public static TweenClass[] removeList = new TweenClass[30];
         public static int removeCount { get; set; }
         public static int poolsLength { get; private set; } = 50;
-
         public static int mainPoolLength { get; private set; } = 300;
         ///<summary>Fast worker loop.</summary>
         public static bool editorPaused { get; set; }
@@ -53,7 +52,9 @@ namespace Breadnone.Extension
         public static bool isPlayMode { get; set; }
         ///<summary>Singleton mono component</summary>
         public static TweenMono mono { get; set; }
-        public static List<TweenClass> temporary = new(12);
+        public static ArrayNullSort temporary {get;set;}
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>
         /// This basically to avoid deep nested branches being unnecessarily iterated every frame.
         /// </summary>/
@@ -61,31 +62,34 @@ namespace Breadnone.Extension
         {
             for (int i = temporary.Count; i-- > 0;)
             {
-                if (temporary[i].IsValid)
+                if (temporary.array[i].IsValid)
                 {
 #if UNITY_EDITOR
                     if (!EditorApplication.isPlaying)
                     {
-                        if (temporary[i].tprops.delayedTime > 0)
+                        if (temporary.array[i].tprops.delayedTime > 0)
                         {
-                            temporary[i].tprops.delayedTime -= editorDelta.Invoke();
+                            temporary.array[i].tprops.delayedTime -= editorDelta.Invoke();
                             continue;
                         }
 
-                        activeTweens.Add(temporary[i]);
-                        temporary.Remove(temporary[i]);
+                        activeTweens.Add(temporary.array[i]);
+                        temporary.Remove(temporary.array[i]);
                         continue;
                     }
 #endif
 
-                    if (temporary[i].tprops.delayedTime > 0)
+                    if (temporary.array[i].tprops.delayedTime > 0)
                     {
-                        temporary[i].tprops.delayedTime -= !(temporary[i] as ISlimRegister).UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime;
+                        temporary.array[i].tprops.delayedTime -= !(temporary.array[i] as ISlimRegister).UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime;
                         continue;
                     }
 
-                    activeTweens.Add(temporary[i]);
-                    temporary.Remove(temporary[i]);
+                    var tmp = temporary.array[i];
+
+                    activeTweens.Add(tmp);
+                    temporary.Remove(tmp);
+                    tmp.tprops.SetLerpType();
                 }
             }
         }
@@ -105,7 +109,8 @@ namespace Breadnone.Extension
         /// <param name="len">Pool </param>
         public static void InitPool(int len)
         {
-            temporary = new List<TweenClass>(12);
+            temporary  = new ArrayNullSort();
+            temporary.Create(12);
             activeTweens = new ArrayNullSort();
             activeTweens.Create(mainPoolLength);
             poolsLength = len;
@@ -188,7 +193,15 @@ namespace Breadnone.Extension
         }
         public static void ClearLists()
         {            
-            temporary.Clear();
+            if(temporary != null)
+            {
+                for(int i = 0; i < temporary.Count; i++)
+                {
+                    (temporary.array[i] as ISlimRegister).ClearEvents();
+                }
+
+                temporary.Empty();
+            }
             
             if(removeList != null)
             {            
@@ -225,7 +238,7 @@ namespace Breadnone.Extension
         public static void InsertToActiveTween(TweenClass tween)
         {
             tween.UpdateFrame();
-            tween.state = TweenState.Tweening;
+            (tween as ISlimRegister).SetState(TweenState.Tweening);
 
             #if UNITY_EDITOR
             if(!EditorApplication.isPlaying)
@@ -367,7 +380,7 @@ namespace Breadnone.Extension
         {
             if (!all)
             {
-                if (vtween.state == TweenState.None || vtween.state == TweenState.Paused)
+                if (vtween.IsNone || vtween.IsPaused)
                     return;
 
                 vtween.Pause();
@@ -378,7 +391,7 @@ namespace Breadnone.Extension
                 {
                     var t = TweenManager.activeTweens.array[i];
 
-                    if (t is null || t.state == TweenState.Paused || t.state == TweenState.None)
+                    if (t is null || t.IsPaused|| t.IsNone)
                         return;
 
                     t.Pause();
@@ -398,15 +411,15 @@ namespace Breadnone.Extension
 
                 if (pauseElseResume)
                 {
-                    if (t.state == TweenState.Paused || t.state == TweenState.None)
+                    if (t.IsPaused || t.IsNone)
                         return;
 
                     t.Pause();
                 }
                 else
                 {
-                    if (t.state == TweenState.Paused)
-                        t.Pause();
+                    if (t.IsPaused)
+                        t.Resume();
                 }
             }
         }
@@ -415,7 +428,7 @@ namespace Breadnone.Extension
         {
             if (!all)
             {
-                if (vtween.state != TweenState.Paused)
+                if (!vtween.IsPaused)
                     return;
 
                 vtween.Resume();
@@ -429,7 +442,7 @@ namespace Breadnone.Extension
                 {
                     var t = TweenManager.activeTweens.array[i];
 
-                    if (t.state != TweenState.Paused)
+                    if (!t.IsPaused)
                         continue;
 
                     t.Resume();
@@ -455,7 +468,7 @@ namespace Breadnone.Extension
 
                 var t = TweenManager.activeTweens.array[i];
 
-                if (t.state == TweenState.None)
+                if (t.IsNone)
                 {
                     return;
                 }
@@ -479,7 +492,7 @@ namespace Breadnone.Extension
         {
             if (!all)
             {
-                if (vtween.state != TweenState.None)
+                if (!vtween.IsNone)
                     vtween.Cancel();
             }
             else
@@ -493,7 +506,7 @@ namespace Breadnone.Extension
                 {
                     var t = TweenManager.activeTweens.array[i];
 
-                    if (t.state == TweenState.None)
+                    if (t.IsNone)
                     {
                         return;
                     }

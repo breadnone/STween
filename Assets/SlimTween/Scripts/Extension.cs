@@ -69,7 +69,7 @@ namespace Breadnone
         /// <param name="ease">Easing.</param>
         public static TweenClass setEase(this TweenClass stween, Ease ease)
         {
-            stween.tprops.easeType = ease;
+            (stween as ISlimRegister).SetEase(ease);
             return stween;
         }
         /// <summary>Amount of repetition for the tween to complete.</summary>
@@ -241,7 +241,7 @@ namespace Breadnone
 
             st.setOnUpdate(x =>
             {
-                if (st.state == TweenState.Tweening && (st as ISlimRegister).GetSetRunningTime + skipEveryNSeconds < (st as ISlimRegister).GetSetDuration)
+                if (st.IsTweening && (st as ISlimRegister).GetSetRunningTime + skipEveryNSeconds < (st as ISlimRegister).GetSetDuration)
                     (st as ISlimRegister).GetSetRunningTime += skipEveryNSeconds;
             });
 

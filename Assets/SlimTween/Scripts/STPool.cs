@@ -35,7 +35,7 @@ namespace Breadnone.Extension
         /// <summary>
         /// Clears caches (if any)
         /// </summary>
-        public static void ClearCache()=> cache.ClearCaches();
+        public static void ClearCache()=> cache?.ClearCaches();
         ///<summary>VTween object pooling. Default is 5.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetInstance<T>(int vid) where T : TweenClass, new()

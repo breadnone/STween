@@ -102,8 +102,15 @@ namespace Breadnone.Editor
 
                 var tween = TweenManager.activeTweens.array[i];
 
-                if (tween.IsValid)
-                    tween.RunUpdate();
+                if(tween.tprops.lerptype > 0)
+                {
+                    if (tween.IsValid)
+                        tween.RunUpdate();
+                }
+                else
+                {
+                    tween.tprops.SetLerpType();
+                }
             }
 
             if (TweenManager.removeCount > 0)
@@ -146,9 +153,9 @@ namespace Breadnone.Editor
             //AssemblyReloadEvents.afterAssemblyReload += SessionTest;
             SessionTest();
 
-            if(!SessionState.GetBool("STplaying", false))
+            //if(!SessionState.GetBool("STplaying", false))
             EditorWorker.InitEditor(); 
-        }
+        } 
         public static void SessionTest()
         {
             if(SessionState.GetBool("STplaying", true))
@@ -181,9 +188,13 @@ namespace Breadnone.Editor
                     TweenManager.isPlayMode = false;
                     STPool.ClearCache();
                     SessionState.SetBool("STplaying", false);
+                    RegisterFrame();
+                    RegisterDeltaTiming();
+                    RegisterFrame();
+                    EditorWorker.GetScreenRate();
                     EditorWorker.RegisterWorkerUpdate();
                 };
             }
-        }
+        } 
     }
 }

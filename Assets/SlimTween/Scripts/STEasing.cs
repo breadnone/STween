@@ -21,6 +21,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using Breadnone.Extension;
 
 namespace Breadnone
 {
@@ -442,11 +443,101 @@ namespace Breadnone
             return 0;
         }
 
+        public static float Easing(int ease, float tick)
+        {
+            switch (ease)
+            {
+                case 0:
+                    return Linear(tick);
+                case 1:
+                    return EaseInQuad(tick);
+                case 2:
+                    return EaseOutQuad(tick);
+                case 3:
+                    return EaseInOutQuad(tick);
+                case 4:
+                    return EaseInCubic(tick);
+                case 5:
+                    return EaseOutCubic(tick);
+                case 6:
+                    return EaseInOutCubic(tick);
+                case 7:
+                    return EaseInQuart(tick);
+                case 8:
+                    return EaseOutQuart(tick);
+                case 9:
+                    return EaseInOutQuart(tick);
+                case 10:
+                    return EaseInQuint(tick);
+                case 11:
+                    return EaseOutQuint(tick);
+                case 12:
+                    return EaseInOutQuint(tick);
+                case 13:
+                    return EaseInSine(tick);
+                case 14:
+                    return EaseOutSine(tick);
+                case 15:
+                    return EaseInOutSine(tick);
+                case 16:
+                    return EaseInExpo(tick);
+                case 17:
+                    return EaseOutExpo(tick);
+                case 18:
+                    return EaseInOutExpo(tick);
+                case 19:
+                    return EaseInCirc(tick);
+                case 20:
+                    return EaseOutCirc(tick);
+                case 21:
+                    return EaseInOutCirc(tick);
+                case 22:
+                    return SpringIn(tick);
+                case 23:
+                    return SpringOut(tick);
+                case 24:
+                    return SpringInOut(tick);
+                case 25:
+                    return EaseInBounce(tick);
+                case 26:
+                    return EaseOutBounce(tick);
+                case 27:
+                    return EaseInOutBounce(tick);
+                case 28:
+                    return EaseInBack(tick);
+                case 29:
+                    return EaseOutBack(tick);
+                case 30:
+                    return EaseInOutBack(tick);
+                case 31:
+                    return EaseInElastic(tick);
+                case 32:
+                    return EaseOutElastic(tick);
+                case 33:
+                    return EaseInOutElastic(tick);
+                case 34:
+                    return EaseInWeightedOut(tick);
+                case 35:
+                    return EaseInWeightedReboundOut(tick);
+                case 36:
+                    return Bezier1D(tick);
+                case 37 :
+                    return Bezier2DEaseFloatIn(tick);
+                case 38:
+                    return Bezier2DEaseFloatOut(tick);
+                case 39:
+                    return Bezier2DEaseFloatInOut(tick);
+                case 40 :
+                    return Bezier2DEaseBrakeInOut(tick);
+            }
+            return 0;
+        }
+
     }
     /// <summary>
     /// Easing functions.
     /// </summary>
-    public enum Ease : byte
+    public enum Ease
     {
         Linear = 0,
         EaseInQuad,
@@ -488,6 +579,6 @@ namespace Breadnone
         Bezier2DEaseFloatIn,
         Bezier2DEaseFloatOut,
         Bezier2DEaseFloatInOut,
-        Bezier2DEaseBrakeInOut,
+        Bezier2DEaseBrakeInOut
     }
 }

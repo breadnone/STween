@@ -1462,7 +1462,7 @@ namespace Breadnone
         {
             if (TweenExtension.FindTween(id, out var tween))
             {
-                if (tween.state != TweenState.Tweening)
+                if (!tween.IsTweening)
                 {
                     (tween as ISlimRegister).RegisterLastOnComplete(() =>
                     {

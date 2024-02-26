@@ -25,9 +25,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using UnityEngine;
 using System;
 using System.Runtime.CompilerServices;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Jobs;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -43,7 +40,7 @@ namespace Breadnone.Extension
         /// <summary>Internal use only.</summary>
         public TProps tprops;
         /// <summary>The tween state of this instance.</summary>
-        public TweenState state = TweenState.None;
+        protected int state;
         /// <summary>The on update function.</summary>
         protected Action<bool> update;
         /// <summary>The total duration of this instance when tweening.</summary>
@@ -53,24 +50,27 @@ namespace Breadnone.Extension
         protected bool unscaledTime;
         /// <summary>The frameCount when it 1st initialized.</summary>
         protected int frameIn;
+        public int ease {get; private set;}
         /// <summary>Gets and sets the duration.</summary>
         float ISlimRegister.GetSetDuration { get => duration; set => duration = value; }
         /// <summary>Gets and sets the runningTime.</summary>
         float ISlimRegister.GetSetRunningTime { get => runningTime; set => runningTime = value; }
         /// <summary>Unscaled or scaled Time.delta.</summary>
         bool ISlimRegister.UnscaledTimeIs { get => unscaledTime; set => unscaledTime = value; }
+        void ISlimRegister.SetEase(Ease easeType)=> ease = (int)easeType;
+        void ISlimRegister.SetState(TweenState stateType)=> state = (int)stateType;
         /// <summary>Flips the delta ticks</summary>
         protected void FlipTick()
         {
             if (flipTick)
             {
                 tprops.runningFloat = 1f;
-                tprops.runningFloat -= 0.00015f;
+                tprops.runningFloat -= 0.00013f;
             }
             else
             {
                 tprops.runningFloat = 0f;
-                tprops.runningFloat += 0.00015f;
+                tprops.runningFloat += 0.00013f;
             }
 
             flipTick = !flipTick;
@@ -141,7 +141,6 @@ namespace Breadnone.Extension
                 {
                     runningTime -= Time.deltaTime;
                 }
-
             }
             else
             {
@@ -161,10 +160,11 @@ namespace Breadnone.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RunUpdate()
         {
-            if (state != TweenState.Tweening)
+            //if Paused or or None. Stop!
+            if (state < 2)
                 return;
 
-            if (tprops.speed < 0)
+            if(tprops.lerptype > 2)
             {
                 if (!flipTick)
                 {
@@ -175,7 +175,7 @@ namespace Breadnone.Extension
                 }
                 else
                 {
-                    if (runningTime < 0f && CheckIfFinished())
+                    if (runningTime < 0.0001f && CheckIfFinished())
                     {
                         return;
                     }
@@ -213,7 +213,7 @@ namespace Breadnone.Extension
         //If there are bugs when an instance rely on the last state = TweenState.None. Check for this part right here
         public void Cancel(bool executeOnComplete = false)
         {
-            if (state == TweenState.None)
+            if (IsNone)
                 return;
 
             if (executeOnComplete)
@@ -240,7 +240,7 @@ namespace Breadnone.Extension
                 }
             }
 
-            state = TweenState.None;
+            state = 0;
             InternalOnComplete();
             //set the state twice, here and on Clear to indicate that this is the last oncomplete call.
             update?.Invoke(false);
@@ -346,26 +346,29 @@ namespace Breadnone.Extension
             flipTick = false;
             runningTime = 0.00012f;
             duration = 0f;
-            state = TweenState.None;
+            state = 0;
+            ease = 0;
             TweenManager.RemoveFromActiveTween(this);
         }
         ///<summary>Checks if tweening. Paused tween will also mean tweening.</summary>
-        public bool IsTweening => state != TweenState.None;
+        public bool IsTweening => state != 0;
         ///<summary>Checks if paused.</summary>
-        public bool IsPaused => state == TweenState.Paused;
+        public bool IsPaused => state == 1;
+        /// <summary>This can mean it's completed or not doing anything. Use IsTweening and IsPaused to check the states instead.</summary>
+        public bool IsNone => state == 0;
         ///<summary>Pauses the tweening.</summary>
         public void Pause()
         {
-            if (state != TweenState.Tweening)
+            if (!IsTweening || IsPaused)
                 return;
 
-            state = TweenState.Paused;
+            state = 1;
         }
         ///<summary>Resumes paused tween instances, if any.</summary>
         //The parameter updaterTransform this should be useful for re-scheduling purposes. e.g : Tween chaining.
         public void Resume(bool updateTransform = false)
         {
-            if (state != TweenState.Paused)
+            if (!IsPaused)
                 return;
 
             if (updateTransform)
@@ -378,7 +381,7 @@ namespace Breadnone.Extension
                 UpdateFrame();
             }
 
-            state = TweenState.Tweening;
+            state = 2;
         }
         /// <summary>
         /// Registers onComplete that will be executed at the very last of the tween (if successfully tweened). 
@@ -390,7 +393,7 @@ namespace Breadnone.Extension
             {
                 if (!x)
                 {
-                    if (state == TweenState.None)
+                    if (IsNone)
                     {
                         func.Invoke();
                     }
@@ -410,15 +413,13 @@ namespace Breadnone.Extension
         void ISlimRegister.ForceInvokeResetLoop() { ResetLoop(); }
     }
     ///<summary>State of the tweening instance.</summary>
-    public enum TweenState : byte
+    public enum TweenState
     {
-        Paused,
-        Tweening,
-        None
+        None = 0,
+        Paused = 1,
+        Tweening = 2
     }
-    /// <summary>
-    /// Value pair for value types.
-    /// </summary>
+    /// <summary>Value pair for value types.</summary>
     /// <typeparam name="T"></typeparam>
     public interface ICoreValue<T> where T : struct
     {
@@ -483,10 +484,10 @@ namespace Breadnone.Extension
         public bool oncompleteRepeat;
         /// <summary>Speed based value instead of time.</summary>
         public float speed = -1f;
-        /// <summary>Easing types.</summary>
-        public Ease easeType = Ease.Linear;
         /// <summary>AnimationCurves</summary>
         public AnimationCurve animationCurve;
+        /// <summary>1 speed, 2 curve, 3 regular.</summary>
+        public int lerptype = 0;
         ///<summary>Sets to default value to be reused in a pool. If not then will be normally disposed.</summary>
         public void SetDefault()
         {
@@ -496,13 +497,32 @@ namespace Breadnone.Extension
             oncompleteRepeat = false;
             speed = -1f;
             animationCurve = null;
-            easeType = Ease.Linear;
             delayedTime = -1;
+            lerptype = 0;
             runningFloat = 0.00012f;
         }
         public void ResetLoopProperties()
         {
             loopCounter = 0;
+        }
+        /// <summary>Sets the lerptype.</summary>
+        public void SetLerpType()
+        {
+            if(speed < 0)
+            {
+                if(animationCurve == null)
+                {
+                    lerptype = 3;
+                }
+                else
+                {
+                    lerptype = 1;
+                }
+            }
+            else
+            {
+                lerptype = 2;
+            }
         }
     }
 
@@ -531,6 +551,8 @@ namespace Breadnone.Extension
         /// <summary>Forces the internal resetLoop function to get triggered. WARNING: Avoid using this at all cost.</summary>
         public void ForceInvokeResetLoop();
         public bool UnscaledTimeIs { get; set; }
+        public void SetEase(Ease easeType);
+        public void SetState(TweenState stateType);
     }
     /// <summary>STTransform class to handle all Transforms.</summary>
     public sealed class SlimTransform : TweenClass, ISlimTween
@@ -580,19 +602,19 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move:
-                    LerpPosition(this.FloatLerp(tick));
+                    LerpPosition(this.FloatInterp(tick));
                     break;
                 case TransformType.Scale:
-                    LerpScale(this.FloatLerp(tick));
+                    LerpScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate:
-                    LerpEuler(this.FloatLerp(tick));
+                    LerpEuler(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround:
-                    LerpRotateAround(this.FloatLerp(tick));
+                    LerpRotateAround(this.FloatInterp(tick));
                     break;
                 case TransformType.Translate:
-                    LerpTranslate(this.FloatLerp(tick));
+                    LerpTranslate(this.FloatInterp(tick));
                     break;
             }
         }
@@ -601,19 +623,19 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move:
-                    LerpPosition(this.FloatLerp(tick));
+                    LerpPosition(this.FloatInterp(tick));
                     break;
                 case TransformType.Scale:
-                    LerpScale(this.FloatLerp(tick));
+                    LerpScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate:
-                    LerpEuler(this.FloatLerp(tick));
+                    LerpEuler(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround:
-                    LerpRotateAround(this.FloatLerp(tick));
+                    LerpRotateAround(this.FloatInterp(tick));
                     break;
                 case TransformType.Translate:
-                    LerpTranslate(this.FloatLerp(tick));
+                    LerpTranslate(this.FloatInterp(tick));
                     break;
             }
         }
@@ -842,22 +864,22 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move:
-                    LerpPosition(this.FloatLerp(tick));
+                    LerpPosition(this.FloatInterp(tick));
                     break;
                 case TransformType.Scale:
-                    LerpScale(this.FloatLerp(tick));
+                    LerpScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate:
-                    LerpEuler(this.FloatLerp(tick));
+                    LerpEuler(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround:
-                    LerpRotateAround(this.FloatLerp(tick));
+                    LerpRotateAround(this.FloatInterp(tick));
                     break;
                 case TransformType.SizeDelta:
-                    LerpSizeDelta(this.FloatLerp(tick));
+                    LerpSizeDelta(this.FloatInterp(tick));
                     break;
                 case TransformType.SizeAnchored:
-                    LerpSizeAnchored(this.FloatLerp(tick));
+                    LerpSizeAnchored(this.FloatInterp(tick));
                     break;
             }
         }
@@ -944,15 +966,15 @@ namespace Breadnone.Extension
     /// <param name="time"></param>
     public enum TransformType : byte
     {
-        Move,
-        Scale,
-        Rotate,
-        RotateAround,
-        Follow,
-        SizeDelta,
-        SizeAnchored,
-        Translate,
-        None
+        None = 0,
+        Move = 1,
+        Scale = 2,
+        Rotate = 3,
+        RotateAround = 4,
+        Follow = 5,
+        SizeDelta = 6,
+        SizeAnchored = 7,
+        Translate = 8
     }
 
     [Serializable]
@@ -975,6 +997,15 @@ namespace Breadnone.Extension
             vec.Set(x, y, z);
             return ref vec;
         }
+        public ref Vector3 GetRef(float tick)
+        {
+            vec.Set(
+            a + (x - a) * tick,
+            b + (y - b) * tick,
+            c + (z - c) * tick);
+            return ref vec;
+        }
+        public ref Vector3 GetVector()=> ref vec;
 
         public void Set(Vector3 from, Vector3 to)
         {
@@ -1068,7 +1099,7 @@ namespace Breadnone.Extension
                 if (distance < closeDistance)
                 {
                     float normal = distance / closeDistance;
-                    spd = speed * this.FloatLerp(normal);
+                    spd = speed * this.FloatInterp(normal);
                 }
 
                 followers[i].transform.position = Vector3.LerpUnclamped(followers[i].position, transform.position, spd);

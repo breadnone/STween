@@ -70,7 +70,7 @@ namespace Breadnone
                     continue;
                 }
 
-                if (tween[i].state == TweenState.Tweening || tween[i].state == TweenState.Paused)
+                if (tween[i].IsTweening || tween[i].IsPaused)
                 {
                     tween[i].Cancel();
                 }
@@ -128,7 +128,7 @@ namespace Breadnone
                     continue;
                 }
 
-                if (tween[i].state == TweenState.Tweening || tween[i].state == TweenState.Paused)
+                if (tween[i].IsTweening || tween[i].IsPaused)
                 {
                     tween[i].Cancel();
                 }
@@ -166,7 +166,7 @@ namespace Breadnone
             {
                 throw new STweenException("Next tween to be chained can't be null.");
             }
-            if (tween.state == TweenState.None)
+            if (!tween.IsTweening)
             {
                 return new STFluent<TweenClass>();
             }
@@ -182,7 +182,7 @@ namespace Breadnone
             {
                 reg.RegisterLastOnComplete(() =>
                 {
-                    if (nextTween.state == TweenState.Paused)
+                    if (nextTween.IsPaused)
                     {
                         nextTween.Resume(true);
                     }
@@ -219,7 +219,7 @@ namespace Breadnone
 
             var lastween = fluent.getLast;
 
-            if (lastween != null && (lastween.state == TweenState.Paused || lastween.state == TweenState.Tweening))
+            if (lastween != null && (lastween.IsPaused || lastween.IsTweening))
             {
                 nextTween.Pause();
             }
@@ -232,7 +232,7 @@ namespace Breadnone
 
                 reg.RegisterLastOnComplete(() =>
                 {
-                    if (nextTween.state == TweenState.Paused && nextTween.state != TweenState.None)
+                    if (nextTween.IsPaused && !nextTween.IsNone)
                     {
                         nextTween.Resume(true);
                     }

@@ -9,15 +9,15 @@ namespace Breadnone.Extension
     public sealed class STSplines
     {
         public STFloat sfloat;
-        public STSplines(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time)
+        public STSplines(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time, bool lookAtDirection, bool is2d)
         {
             Vector3 from = transform.position;
             sfloat = STPool.GetInstance<STFloat>(transform.gameObject.GetInstanceID());
             (sfloat as ISlimRegister).GetSetDuration = time;
             sfloat.setEase(Ease.Linear);
-            Three(transform, start, middle, end, time, sfloat);
+            Three(transform, start, middle, end, time, sfloat, lookAtDirection, is2d);
         }
-        void Three(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time, STFloat sfloat)
+        void Three(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float time, STFloat sfloat, bool lookAtDirection, bool is2d)
         {
             // Calculate control points for cubic Bezier curve
             Vector3 controlStart = start + 2f * (middle - start) / 3f;
@@ -39,7 +39,29 @@ namespace Breadnone.Extension
                     3f * oneMinusT * t2 * controlEnd +
                     t3 * end;
 
+                var dir = position;
+                var opos = transform.position;
                 transform.position = position;
+
+                // Calculate rotation to face the direction of movement
+                if(lookAtDirection)
+                {
+                        Vector3 direction = (dir - opos).normalized;
+
+                        if (direction != Vector3.zero)
+                        {
+                            if(is2d)
+                            {
+                                Quaternion targetRotation = Quaternion.LookRotation(Vector3.forward, direction);
+                                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, tick);
+                            }
+                            else
+                            {
+                                Quaternion targetRotation = Quaternion.LookRotation(Vector3.forward, direction);
+                                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, tick);
+                            }
+                        }
+                }
             });
         }
     }

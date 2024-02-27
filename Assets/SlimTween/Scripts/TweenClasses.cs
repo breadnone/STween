@@ -25,9 +25,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using UnityEngine;
 using System;
 using System.Runtime.CompilerServices;
-using System.Collections.Specialized;
-using System.Collections;
-using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -43,7 +40,7 @@ namespace Breadnone.Extension
         /// <summary>Internal use only.</summary>
         public TProps tprops;
         /// <summary>The tween state of this instance.</summary>
-        protected int state;
+        protected TweenState state = TweenState.None;
         /// <summary>The on update function.</summary>
         protected Action<bool> update;
         /// <summary>The total duration of this instance when tweening.</summary>
@@ -61,21 +58,11 @@ namespace Breadnone.Extension
         /// <summary>Unscaled or scaled Time.delta.</summary>
         bool ISlimRegister.UnscaledTimeIs { get => unscaledTime; set => unscaledTime = value; }
         void ISlimRegister.SetEase(Ease easeType) => ease = (int)easeType;
-        void ISlimRegister.SetState(TweenState stateType) => state = (int)stateType;
+        void ISlimRegister.SetState(TweenState stateType) => state = stateType;
         void ISlimRegister.SetEstimationTime()=> EstimateDuration(0, 1f, tprops.speed);
         /// <summary>Flips the delta ticks</summary>
         protected void FlipTick()
         {
-                if (flipTick)
-                {
-                    tprops.runningFloat = 1f;
-                }
-                else
-                {
-                    tprops.runningFloat = 0f;
-                }
-            
-
             flipTick = !flipTick;
             
             //2 = speed based here
@@ -140,6 +127,7 @@ namespace Breadnone.Extension
                 return;
             }
 #endif
+
             if (!unscaledTime)
             {
                 if (!flipTick)
@@ -170,7 +158,7 @@ namespace Breadnone.Extension
         public void RunUpdate()
         {
             //if Paused or or None. Stop!
-            if (state < 2)
+            if ((int)state < 2)
                 return;
 
             if (tprops.updatecondition == 3)
@@ -182,7 +170,7 @@ namespace Breadnone.Extension
             }
             else if (tprops.updatecondition == 4)
             {
-                if (runningTime < 0.0001f && CheckIfFinished())
+                if (runningTime < 0.001f && CheckIfFinished())
                 {
                     return;
                 }
@@ -292,7 +280,6 @@ namespace Breadnone.Extension
 
                 ResetLoop();
                 runningTime = 0.00013f;
-                tprops.runningFloat = 0.00013f;
 
                 if (tprops.oncompleteRepeat)
                 {
@@ -320,7 +307,6 @@ namespace Breadnone.Extension
             {
                 ResetLoop();
                 runningTime = 0.00013f;
-                tprops.runningFloat = 0.00013f;
                 return true;
             }
 
@@ -337,7 +323,11 @@ namespace Breadnone.Extension
             ease = 0;
             TweenManager.RemoveFromActiveTween(this);
         }
-        public float EstimateDuration(float current, float target, float speed)
+        /// <summary>Estimation based interpolation</summary>
+        /// <param name="current"></param>
+        /// <param name="target"></param>
+        /// <param name="speed"></param>
+        float EstimateDuration(float current, float target, float speed)
         {
             float deltaTime = !unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime;
             
@@ -345,22 +335,23 @@ namespace Breadnone.Extension
             float distance = Mathf.Abs(target - current);
             
             // Calculate the time duration to reach the target value
-            float duration = distance / (speed / 3f * deltaTime);
+            float duration = distance / (speed / 3f);
             return duration;
         }
         ///<summary>Checks if tweening. Paused tween will also mean tweening.</summary>
-        public bool IsTweening => state != 0;
+        public bool IsTweening => state != TweenState.None;
         ///<summary>Checks if paused.</summary>
-        public bool IsPaused => state == 1;
+        public bool IsPaused => state == TweenState.Paused;
         /// <summary>This can mean it's completed or not doing anything. Use IsTweening and IsPaused to check the states instead.</summary>
-        public bool IsNone => state == 0;
+        public bool IsNone => state == TweenState.None;
         ///<summary>Pauses the tweening.</summary>
         public void Pause()
         {
             if (!IsTweening || IsPaused)
                 return;
 
-            state = 1;
+            //1 = paused
+            state = TweenState.Paused;
         }
         ///<summary>Resumes paused tween instances, if any.</summary>
         //The parameter updaterTransform this should be useful for re-scheduling purposes. e.g : Tween chaining.
@@ -379,7 +370,8 @@ namespace Breadnone.Extension
                 UpdateFrame();
             }
 
-            state = 2;
+            //2 = resume
+            state = TweenState.Tweening;
         }
         /// <summary>
         /// Registers onComplete that will be executed at the very last of the tween (if successfully tweened). 
@@ -465,8 +457,6 @@ namespace Breadnone.Extension
     public sealed class TProps
     {
         public float runningSpeed;
-        /// <summary>The running underlying tick value;</summary>
-        public float runningFloat = 0.00012f;
         /// <summary>Instance id</summary>
         public int id = -1;
         /// <summary>Instance unique id based on the hashcode.</summary>
@@ -499,7 +489,8 @@ namespace Breadnone.Extension
             animationCurve = null;
             delayedTime = -1;
             lerptype = 0;
-            runningFloat = 0.00012f;
+            runningSpeed = 0;
+            updatecondition = 0;
         }
         public void ResetLoopProperties()
         {
@@ -655,7 +646,7 @@ namespace Breadnone.Extension
                 interp.SetFrom(transform.localScale);
             }
         }
-        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from(), interp.to()); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
+        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         /// <summary>Initialize transform base value.</summary>
         /// <param name="objectTransform">The transform.</param>
         /// <param name="from">Starting value</param>
@@ -737,22 +728,22 @@ namespace Breadnone.Extension
         {
             if (!isLocal)
             {
-                transform.rotation = Quaternion.Euler(interp.to() * value);
+                transform.rotation = Quaternion.Euler(interp.to * value);
             }
             else
             {
-                transform.localRotation = Quaternion.Euler(interp.to() * value);
+                transform.localRotation = Quaternion.Euler(interp.to * value);
             }
         }
         /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value)
         {
-            transform.RotateAround(interp.from(), interp.to(), angle * value);
+            transform.RotateAround(interp.from, interp.to, angle * value);
         }
         /// <summary>Rotates based on target point.</summary>
         void LerpTranslate(float value)
         {
-            transform.Translate(interp.to() * value, !isLocal ? Space.World : Space.Self);
+            transform.Translate(interp.to * value, !isLocal ? Space.World : Space.Self);
         }
     }
     /// <summary>The sub base class.</summary>
@@ -775,7 +766,7 @@ namespace Breadnone.Extension
         bool disableLerps;
         float angle;
         void ISlimTween.DisableLerps(bool state) { disableLerps = state; }
-        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from(), interp.to()); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
+        (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
         /// <summary>Previous assigned type.</summary>
         TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
@@ -924,17 +915,17 @@ namespace Breadnone.Extension
         {
             if (!isLocal)
             {
-                transform.rotation = Quaternion.Euler(interp.to() * value);
+                transform.rotation = Quaternion.Euler(interp.to * value);
             }
             else
             {
-                transform.localRotation = Quaternion.Euler(interp.to() * value);
+                transform.localRotation = Quaternion.Euler(interp.to * value);
             }
         }
         /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value)
         {
-            transform.RotateAround(interp.from(), interp.to(), angle * value);
+            transform.RotateAround(interp.from, interp.to, angle * value);
         }
         /// <summary>Interpolate delta value.</summary>
         void LerpSizeDelta(float value)
@@ -944,7 +935,7 @@ namespace Breadnone.Extension
         void LerpSizeAnchored(float value)
         {
             Vector2 myPrevPivot = transform.pivot;
-            var to = interp.to();
+            var to = interp.to;
             transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Lerp(transform.rect.width, to.x, value));
             transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(transform.rect.height, to.y, value));
             transform.pivot = myPrevPivot;
@@ -989,27 +980,10 @@ namespace Breadnone.Extension
         float b;
         float z;
         float c;
-        static Vector3 vec;
-        public ref Vector3 from()
-        {
-            vec.Set(a, b, c);
-            return ref vec;
-        }
-        public ref Vector3 to()
-        {
-            vec.Set(x, y, z);
-            return ref vec;
-        }
-        public ref Vector3 UpdateRef(float tick)
-        {
-            vec.Set(
-            a + (x - a) * tick,
-            b + (y - b) * tick,
-            c + (z - c) * tick);
-            return ref vec;
-        }
-        public ref Vector3 GetVector() => ref vec;
-
+        /// <summary>Starting value</summary>
+        public Vector3 from => new Vector3(a, b, c);
+        /// <summary>Target value</summary>
+        public Vector3 to => new Vector3(x, y, z);
         public void Set(Vector3 from, Vector3 to)
         {
             SetFrom(from);
@@ -1030,13 +1004,12 @@ namespace Breadnone.Extension
             z = to.z;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref Vector3 Interpolate(float tick)
+        public Vector3 Interpolate(float tick)
         {
-            vec.Set(
+            return new Vector3(
             a + (x - a) * tick,
             b + (y - b) * tick,
             c + (z - c) * tick);
-            return ref vec;
         }
     }
     public struct TFloat6
@@ -1091,7 +1064,6 @@ namespace Breadnone.Extension
         protected override void InternalOnUpdate()
         {
             base.InternalOnUpdate();
-
             isMoving = Vector3.Distance(lastpos, transform.position) > 0.001f;
 
             for (int i = 0; i < followers.Length; i++)

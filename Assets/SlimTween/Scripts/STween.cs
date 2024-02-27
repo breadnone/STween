@@ -1238,9 +1238,9 @@ namespace Breadnone
         /// <param name="middle">Middle point.</param>
         /// <param name="end">End point.</param>
         /// <param name="duration">Duration.</param>
-        public static STFloat spline(Transform transform, Vector3 middle, Vector3 end, float duration)
+        public static STFloat spline(Transform transform, Vector3 middle, Vector3 end, float duration, bool lookAtDirection, bool is2d)
         {
-            var instance = new STSplines(transform, transform.position, middle, end, duration);
+            var instance = new STSplines(transform, transform.position, middle, end, duration, lookAtDirection, is2d);
             return instance.sfloat;
         }
         /// <summary>
@@ -1252,9 +1252,9 @@ namespace Breadnone
         /// <param name="end">End point.</param>
         /// <param name="duration"></param>
         /// <returns></returns>/
-        public static STFloat splineFrom(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float duration)
+        public static STFloat splineFrom(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float duration, bool lookAtDirection, bool is2d)
         {
-            var instance = new STSplines(transform, start, middle, end, duration);
+            var instance = new STSplines(transform, start, middle, end, duration, lookAtDirection, is2d);
             return instance.sfloat;
         }
         /// <summary>

@@ -157,7 +157,7 @@ public class EaseTest : MonoBehaviour
             if(i == 0)
             {
                 var mid = new Vector3(moves[i+1].gameObject.transform.position.x, moves[i+1].gameObject.transform.position.y + power, moves[i+1].gameObject.transform.position.z);
-                smove = STween.spline(go.transform, mid, moves[i+2].gameObject.transform.position, 0.9f);
+                smove = STween.spline(go.transform, mid, moves[i+2].gameObject.transform.position, 0.9f, true, true);
             }
             else
             {
@@ -168,7 +168,7 @@ public class EaseTest : MonoBehaviour
                         if(smove != null)
                         {
                             var mid = new Vector3(defaultposs[i+1].x, defaultposs[i+1].y + power, defaultposs[i+1].z);
-                            var t = STween.splineFrom(go.transform, defaultposs[i], mid, defaultposs[i+2], 0.9f).halt(true);
+                            var t = STween.splineFrom(go.transform, defaultposs[i], mid, defaultposs[i+2], 0.9f, true, true).halt(true);
 
                             (smove as ISlimRegister).RegisterLastOnComplete(()=>
                             {

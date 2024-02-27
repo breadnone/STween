@@ -14,44 +14,6 @@ namespace Breadnone.Extension
             source = b;
             target = a;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        /// <summary>
-        /// Main interpolator function.
-        /// </summary>
-        /// <param name="tclass">The tween instance.</param>
-        /// <param name="start">Tweening state.</param>
-        /// <param name="end">End value (usually normalized 0-1).</param>
-        /// <param name="time">The tick count of the delta times.</param>
-        /// <returns></returns>
-        public static float FloatLerp(this TweenClass tclass, float time)
-        {
-            if (tclass.tprops.speed < 0)
-            {
-                if (tclass.tprops.animationCurve is null)
-                {
-                    return STEasing.Easing(tclass.ease, time); //disable easepower for now, change time param to : (tclass.tprops.easePower + time)
-                }
-                else
-                {
-                    ISlimRegister islim = tclass;
-                    var zero = 0f;
-                    var one = 1f;
-                    if (islim.FlipTickIs)
-                    {
-                        zero = 1f;
-                        one = 0f;
-                    }
-                    return Mathf.LerpUnclamped(zero, one, tclass.tprops.animationCurve.Evaluate(time));
-                }
-            }
-            else
-            {
-                ISlimRegister islim = tclass;
-                tclass.tprops.runningFloat = Mathf.MoveTowards(tclass.tprops.runningFloat, !islim.FlipTickIs ? 1f : 0f, tclass.tprops.speed / 3f * (!islim.UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime));
-                return tclass.tprops.runningFloat; //TODO: if tprops.runningFloat won't work, rever it back to runningTime
-            }
-        }
         public static float FloatInterp(this TweenClass tclass, float time)
         {
             if (tclass.tprops.lerptype > 2)
@@ -85,34 +47,6 @@ namespace Breadnone.Extension
                 }
                 
                 return Mathf.LerpUnclamped(zero, one, tclass.tprops.animationCurve.Evaluate(time));
-            }
-        }
-        public static float LerpRefs(this TweenClass tclass, float time, ref Vector3 refs)
-        {
-            if (tclass.tprops.speed < 0)
-            {
-                if (tclass.tprops.animationCurve is null)
-                {
-                    return STEasing.Easing(tclass.ease, time); //disable easepower for now, change time param to : (tclass.tprops.easePower + time)
-                }
-                else
-                {
-                    ISlimRegister islim = tclass;
-                    var zero = 0f;
-                    var one = 1f;
-                    if (islim.FlipTickIs)
-                    {
-                        zero = 1f;
-                        one = 0f;
-                    }
-                    return Mathf.LerpUnclamped(zero, one, tclass.tprops.animationCurve.Evaluate(time));
-                }
-            }
-            else
-            {
-                ISlimRegister islim = tclass;
-                tclass.tprops.runningFloat = Mathf.MoveTowards(tclass.tprops.runningFloat, !islim.FlipTickIs ? 1f : 0f, tclass.tprops.speed / 3f * (!islim.UnscaledTimeIs ? Time.deltaTime : Time.unscaledDeltaTime));
-                return tclass.tprops.runningFloat; //TODO: if tprops.runningFloat won't work, rever it back to runningTime
             }
         }
 

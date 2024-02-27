@@ -551,7 +551,7 @@ public class VTweenTests : MonoBehaviour
     {
         obj.transform.position = defaultPos;
         var arr = new Vector3[]{target.position, fromTarget.position, lastTarget.position};
-        STween.spline(obj.transform, fromTarget.position, lastTarget.position ,duration);
+        STween.spline(obj.transform, fromTarget.position, lastTarget.position ,duration, true, true);
     }
 
     public void BezierTest()

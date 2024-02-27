@@ -166,7 +166,7 @@ namespace Breadnone.Extension
             {
                 var tmp = removeList[i];
 
-                activeTweens.Remove(tmp);
+                activeTweens?.Remove(tmp);
                 removeList[i] = null;
                 ISlimRegister ievent = tmp;
 

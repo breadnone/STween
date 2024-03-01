@@ -2,11 +2,21 @@
 ![2024-02-24-STween-ezgif com-crop(1)](https://github.com/breadnone/STween/assets/64100867/b7572eee-bc4c-4b6e-9b69-6e3da6fe22d5)
 
 ## STween - Zero allocation tweening library for Unity3D    
-Zero allocation tweening library that works for both runtime and edit-mode (editor).
+Works for both runtime and edit-mode (editor).
 
 ![ZYFXLQ5Zrf](https://github.com/breadnone/STween/assets/64100867/9c418ea0-4f05-46cf-9642-461a012efe41)  
 
-Features:
+**Installation & Requirements**  
+Requirements :  
+- Unity3D version 2022 and above.
+  
+Installation :  
+- Download the release `.unitypackage` on the right hand side.  
+- OR Download the .zip file and extract it to your project.  
+- OR git clone it.  
+- Pick the easiest for you :)    
+    
+Features :
 - Move
 - Rotation (Quats, Eulers etc)
 - Scale
@@ -232,7 +242,6 @@ Main APIs : Can be chained with helper apis
 - STween.parabolic : Moves gameObject in parabolic paths : input : GameObject, Transform, Vector3, Vector2
 - STween.sine : Moves gameObject in sine waves : input : GameObject, Transform, Vector3, Vector2
 - STween.value : Value intepolator supports : float, int, Vector2, Vector3, Vector4, Matrix4x4, Quaternion, Rect
-- STween.combine : Combines multiple tweens into one : input : TweenClass, ISlimTween, SlimTransform, SlimRect
 - STween.create : Create custom tween to interpolate any public properties. This is still EXPERIMENTAL
 - STween.queue : Lazily queue multiple tweens in succession.
 - STween.Cancel : Cancels single tween : input : (optional)GameObject, (optional)int
@@ -339,8 +348,10 @@ STween.dispatchInvokeRepeat : Dispatching the repeat cycle.
 STween.dispatchInvokeResetLoop : Dispatching the reset timing.  
 STween.flushEvents : Clearing all assigned delegates.
 
+**Combine OR Multiple Tweens in a Sequence**  
+STween can do multiple tweens at once on a single Transform/GameObject out of the box without any special apis :)   
 
-**Works In Edit-mode (Non-PlayMode)**  
+**Works In Edit-mode (Non-PlayMode)**    
 ![pylUFJ20Mv](https://github.com/breadnone/STween/assets/64100867/624de2e1-6891-4f58-979d-2a83b1d5d9b9)
 
   

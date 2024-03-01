@@ -45,7 +45,7 @@ namespace Breadnone.Extension
         public static TweenClass[] removeList = new TweenClass[30];
         public static int removeCount { get; set; }
         public static int poolsLength { get; private set; } = 50;
-        public static int mainPoolLength { get; private set; } = 300;
+        public static int mainPoolLength { get; private set; } = 50;
         ///<summary>Fast worker loop.</summary>
         public static bool editorPaused { get; set; }
         /// <summary> Playmode state. </summary>

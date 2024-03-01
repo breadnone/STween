@@ -76,8 +76,8 @@ namespace Breadnone.Extension
                 var islimA = atransform as ISlimTween;
                 var islimB = btransform as ISlimTween;
 
-                islimA.CombineMode = true;
-                islimB.CombineMode = true;
+                islimA.TweenMode = TweenMode.Combine;
+                islimB.TweenMode = TweenMode.Combine;
 
                 Transform transform = null;
 
@@ -221,7 +221,7 @@ namespace Breadnone.Extension
                 fluent.Add(btransform);
 
                 var islimB = btransform as ISlimTween;
-                islimB.CombineMode = true;
+                islimB.TweenMode = TweenMode.Combine;
 
                 Transform transform = null;
 
@@ -453,9 +453,6 @@ public static class UnsafeMath
     /// <summary>
     /// The clamping only happening for greater than 1(tail).
     /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <param name=""></param>
     public static float Flerp(float a, float b, float t)
     {
         return a + (b - a) * Clamp1(t);
@@ -463,14 +460,10 @@ public static class UnsafeMath
     /// <summary>
     /// The clamping only happening for less than 0 (head).
     /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <param name="t"></param>
     public static float Flerp0(float a, float b, float t)
     {
         return a + (b - a) * Clamp0(t);
     }
-
     public static float FSmoothStep1(float from, float to, float t)
     {
         t = Clamp1(t);

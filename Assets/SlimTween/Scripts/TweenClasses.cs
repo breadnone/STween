@@ -53,6 +53,14 @@ namespace Breadnone.Extension
         /// </summary>
         protected ISlimTween islim => this as ISlimTween;
         protected ISlimRegister ireg => this as ISlimRegister;
+        TweenMode ISlimRegister.TweenMode
+        {
+            get => islim.TweenMode;
+            set 
+            { 
+                islim.TweenMode = value;
+            }
+        }
         /// <summary>The tween state of this instance.</summary>
         protected TweenState state = TweenState.None;
         /// <summary>The on update function.</summary>
@@ -335,7 +343,7 @@ namespace Breadnone.Extension
             if (this is ISlimTween sl)
             {
                 RemoveFromTransformPool(tprops.id);
-                sl.CombineMode = false;
+                sl.TweenMode = TweenMode.Tweeen;
             }
 
             TweenManager.RemoveFromActiveTween(this);
@@ -426,11 +434,11 @@ namespace Breadnone.Extension
             if (TryUpdateCounterTransform(id, true))
             {
                 islim.BackupPreviousPosition();
-                islim.CombineMode = true;
+                islim.TweenMode = TweenMode.Combine;
 
                 if (TweenExtension.GetTween(id, out var tween))
                 {
-                    (tween as ISlimTween).CombineMode = true;
+                    (tween as ISlimTween).TweenMode = TweenMode.Combine;
                 }
             }
             else
@@ -625,6 +633,7 @@ namespace Breadnone.Extension
     /// </summary>
     public interface ISlimRegister
     {
+        public TweenMode TweenMode{get;set;}
         public bool FlipTickIs { get; }
         /// <summary> An object can only be revived once and MUST NOT be pooled.</summary>
         public bool wasResurected { get; set; }
@@ -668,11 +677,11 @@ namespace Breadnone.Extension
         TransformType type = TransformType.None;
         /// <summary>Locality.</summary>
         bool isLocal = false;
-        bool combineMode;
-        bool ISlimTween.CombineMode
+        TweenMode tweenMode;
+        TweenMode ISlimTween.TweenMode
         {
-            get => combineMode;
-            set => combineMode = value;
+            get => tweenMode;
+            set => tweenMode = value;
         }
         /// <summary>Locality.</summary>
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
@@ -681,12 +690,12 @@ namespace Breadnone.Extension
         protected override void InternalOnComplete()
         {
             InvokeLerps(tprops.pingpong ? 0f : 1f);
-            combineMode = false;
+            tweenMode = TweenMode.Tweeen;
         }
         ///<summary>Resets properties shuffle from/to value.</summary>
         protected override void ResetLoop()
         {
-            if (combineMode && GetTransformCount(tprops.id) == 1)
+            if (tweenMode == TweenMode.Combine && GetTransformCount(tprops.id) == 1)
             {
                 islim.RestorePreviousPosition();
             }
@@ -698,7 +707,7 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
 
-            if (combineMode)
+            if (tweenMode == TweenMode.Combine)
             {
                 islim.UpdateTransform();
             }
@@ -734,7 +743,7 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move || type == TransformType.Translate)
             {
-                if(!combineMode)
+                if(tweenMode != TweenMode.Combine)
                 {
                     interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
                 }
@@ -744,8 +753,7 @@ namespace Breadnone.Extension
                     // Calculate weighted average of the positions
                     //Vector3 weightedAverage = interp.from * (1 - weight) + transform.position * weight;
                     //interp.SetFrom(Vector3.Lerp(interp.from, Vector3.Lerp(weightedAverage, interp.to, tick), tick));
-                    var a = Vector3.LerpUnclamped(interp.from, transform.position, tick);
-                    var b = Vector3.LerpUnclamped(interp.previousPos, a, tick);
+                    var b = Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, transform.position, tick), tick);
                     interp.SetFrom(b);
                 }
             }
@@ -768,7 +776,7 @@ namespace Breadnone.Extension
         }
         void ISlimTween.RestorePreviousPosition()
         {
-            combineMode = false;
+            tweenMode = TweenMode.Tweeen;
             interp.SetFrom(interp.previousPos);
         }
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
@@ -898,11 +906,11 @@ namespace Breadnone.Extension
         TransformType type = TransformType.None;
         /// <summary>Locality.</summary>
         bool isLocal = false;
-        bool combineMode;
-        bool ISlimTween.CombineMode
+        TweenMode tweenMode;
+        TweenMode ISlimTween.TweenMode
         {
-            get => combineMode;
-            set => combineMode = value;
+            get => tweenMode;
+            set => tweenMode = value;
         }
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
@@ -984,7 +992,7 @@ namespace Breadnone.Extension
         ///<summary>Resets properties shuffle from/to value.</summary>
         protected override void ResetLoop()
         {
-            if (combineMode && GetTransformCount(tprops.id) == 1)
+            if (tweenMode == TweenMode.Combine && GetTransformCount(tprops.id) == 1)
             {
                 islim.RestorePreviousPosition();
             }
@@ -996,7 +1004,7 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
 
-            if (combineMode)
+            if (tweenMode == TweenMode.Combine)
             {
                 islim.UpdateTransform();
             }
@@ -1034,14 +1042,13 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move)
             {
-                if(!combineMode)
+                if(tweenMode != TweenMode.Combine)
                 {                
                     interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
                 }
                 else
                 {
-                    var a = Vector3.LerpUnclamped(interp.from, transform.position, tick);
-                    var b = Vector3.LerpUnclamped(interp.previousPos, a, tick);
+                    var b = Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, transform.position, tick), tick);
                     interp.SetFrom(b);
                 }
             }
@@ -1071,7 +1078,7 @@ namespace Breadnone.Extension
         }
         void ISlimTween.RestorePreviousPosition()
         {
-            combineMode = false;
+            tweenMode = TweenMode.Tweeen;
             interp.SetFrom(interp.previousPos);
         }
         /// <summary>Interpoaltes world position.</summary>
@@ -1139,7 +1146,7 @@ namespace Breadnone.Extension
     public interface ISlimTween
     {
         public bool Locality { get; set; }
-        public bool CombineMode { get; set; }
+        public TweenMode TweenMode { get; set; }
         public TransformType GetTransformType { get; set; }
         public void UpdateTransform();
         public void BackupPreviousPosition();
@@ -1223,6 +1230,12 @@ namespace Breadnone.Extension
             c + (z - c) * tick);
         }
         
+    }
+    public enum TweenMode
+    {
+        Combine,
+        Queue,
+        Tweeen
     }
     /// <summary>
     /// 

@@ -56130,7 +56130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loopCount: 1
-  pingPong: 2
+  pingPong: 0
   textVal: {fileID: 285644081}
   floatVecJoinTest: {x: 0, y: 33, z: 0}
   obj: {fileID: 1256568957}

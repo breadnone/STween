@@ -177,6 +177,7 @@ namespace Breadnone
             fluent.Add(nextTween);
 
             var reg = tween as ISlimRegister;
+            reg.TweenMode = TweenMode.Queue;
 
             if(tween != null)
             {
@@ -192,6 +193,7 @@ namespace Breadnone
             }
 
             var regNext = nextTween as ISlimRegister;
+            regNext.TweenMode = TweenMode.Queue;
 
             if(regNext != null)
             {
@@ -225,6 +227,7 @@ namespace Breadnone
             }
 
             fluent.Add(nextTween);
+            (nextTween as ISlimRegister).TweenMode = TweenMode.Queue;
 
             if(lastween != null)
             {

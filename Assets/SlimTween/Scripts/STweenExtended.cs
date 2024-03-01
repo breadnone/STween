@@ -712,15 +712,11 @@ namespace Breadnone
 
                 Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
                 var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
-                var sub = stween.transform.lerpRotateAround(new Vector3(0, 0, -val), 45, duration/2.1f).setEase(Ease.EaseInOutQuad);
+                var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
                 (sub as ISlimRegister).RegisterLastOnComplete(()=> 
                 {
                     stween.transform.rotation = defrotation;
                     var t = stween.transform.lerpRotation(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
-                    (t as ISlimRegister).RegisterLastOnComplete(()=>
-                    {
-                        stween.transform.rotation = defrotation;
-                    });
                 });
             }
         }

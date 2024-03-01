@@ -6,7 +6,17 @@ Works for both runtime and edit-mode (editor).
 
 ![ZYFXLQ5Zrf](https://github.com/breadnone/STween/assets/64100867/9c418ea0-4f05-46cf-9642-461a012efe41)  
 
-Features:
+**Installation & Requirements**  
+Requirements :  
+- Unity3D version 2022 and above.
+  
+Installation :  
+- Download the release `.unitypackage` on the right hand side.  
+- OR Download the .zip file and extract it to your project.  
+- OR git clone it.  
+- Pick the easiest for you :)    
+    
+Features :
 - Move
 - Rotation (Quats, Eulers etc)
 - Scale

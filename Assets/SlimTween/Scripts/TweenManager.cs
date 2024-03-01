@@ -53,11 +53,9 @@ namespace Breadnone.Extension
         ///<summary>Singleton mono component</summary>
         public static TweenMono mono { get; set; }
         public static ArrayNullSort temporary {get;set;}
-
+        public static STFloat extrunner;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        /// <summary>
-        /// This basically to avoid deep nested branches being unnecessarily iterated every frame.
-        /// </summary>/
+        /// <summary>This basically to avoid deep nested branches being unnecessarily iterated every frame.</summary>/
         public static void TweenBagCache()
         {
             for (int i = temporary.Count; i-- > 0;)
@@ -541,6 +539,17 @@ namespace Breadnone.Extension
                 var tw = TweenManager.activeTweens.array[i];
 
                 if (tw.IsTweening && tw.tprops.id == id)
+                {
+                    tween = tw;
+                    return true;
+                }
+            }
+
+            for(int i = 0; i < TweenManager.temporary.Count; i++)
+            {
+                var tw = TweenManager.temporary.array[i];
+
+                if(tw.tprops.id == id)
                 {
                     tween = tw;
                     return true;

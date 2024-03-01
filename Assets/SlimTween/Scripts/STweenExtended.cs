@@ -70,6 +70,41 @@ namespace Breadnone
         {
             return rotate(transform, direction, duration);
         }
+        /// <summary>Rotates around a transform.</summary>
+        /// <param name="transform"></param>
+        /// <param name="direction"></param>
+        /// <param name="angle"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public static SlimTransform lerpRotateAround(this Transform transform, Vector3 direction, float angle, float duration)
+        {
+            return rotateAround(transform, direction, angle, duration);
+        }
+
+        /// <summary>
+        /// Rotates around a rectTransform.
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="direction"></param>
+        /// <param name="angle"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public static SlimRect lerpRotateAround(this RectTransform transform, Vector3 direction, float angle, float duration)
+        {
+            return rotateAround(transform, direction, angle, duration);
+        }
+        /// <summary>
+        /// Rotates around a rectTransform.
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <param name="direction"></param>
+        /// <param name="angle"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public static SlimRect lerpRotateAroundLocal(this RectTransform transform, Vector3 direction, float angle, float duration)
+        {
+            return rotateAroundLocal(transform, direction, angle, duration);
+        }  
         /// <summary>Rotates the transform in localSpace to target value.</summary>
         /// <param name="transform"></param>
         /// <param name="angle"></param>
@@ -677,7 +712,7 @@ namespace Breadnone
 
                 Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
                 var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
-                var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
+                var sub = stween.transform.lerpRotateAround(new Vector3(0, 0, -val), 45, duration/2.1f).setEase(Ease.EaseInOutQuad);
                 (sub as ISlimRegister).RegisterLastOnComplete(()=> 
                 {
                     stween.transform.rotation = defrotation;

@@ -59,6 +59,8 @@ public class VTweenTests : MonoBehaviour
     [SerializeField] private float exponentShake = 1.5f;
     [SerializeField] private float shakeDuration = 1.5f;
     [SerializeField] private int curveSegments = 5;
+    [SerializeField] private Transform rot1;
+    [SerializeField] private Transform rot2;
     private List<GameObject> objs = new List<GameObject>();
     private int defaultDistance;
     private Vector3 defaultPos;
@@ -200,7 +202,26 @@ public class VTweenTests : MonoBehaviour
             if (enableStopwatch)
                 t.Start();
 
-            STween.rotate(moveRectTransform, floatVecJoinTest, duration).setOnComplete(() =>
+            STween.rotateAround(obj.gameObject, Vector3.forward, 90, duration).setOnComplete(() =>
+            {
+                if (enableStopwatch)
+                {
+                    UnityEngine.Debug.Log(t.Elapsed.TotalSeconds);
+                    t.Stop();
+                }
+            }).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong);
+        }
+    }
+    public void TestRotateAroundLocal()
+    {
+        if (rot1 is object && rot2 is object)
+        {
+            var t = new Stopwatch();
+
+            if (enableStopwatch)
+                t.Start();
+
+            STween.rotateAroundLocal(rot1.gameObject, Vector3.forward, 90, duration).setOnComplete(() =>
             {
                 if (enableStopwatch)
                 {
@@ -322,6 +343,7 @@ public class VTweenTests : MonoBehaviour
     /// </summary>
     public void MoveAndJump()
     {
+        UnityEngine.Debug.Log("Jump");
         if (obj is object)
         {
             obj.transform.position = defaultPos;
@@ -335,8 +357,8 @@ public class VTweenTests : MonoBehaviour
             var a = obj.transform.position;
             var b = target.transform.position;
             
-            STween.move(obj, target.transform.position, duration).setOnCompleteRepeat(true).setEase(easeTest)
-            .combine(STween.moveY(obj, obj.transform.position.y + 300f, duration/2f).setOnCompleteRepeat(true).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong));
+            STween.move(obj, target.transform.position, duration).setOnCompleteRepeat(true).setEase(easeTest).setPingPong(pingPong);
+            STween.moveY(obj, obj.transform.position.y + 300f, duration/2f).setOnCompleteRepeat(true).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong);
         }
     }
     public void MoveAndJumpAndScale()
@@ -601,8 +623,10 @@ public class VTweenTests : MonoBehaviour
     }
     public void TestRotateAndScaleCombineObject()
     {
-        STween.combine(STween.scale(rotateArObject, new Vector3(1.5f, 1.5f, 1), duration).setEase(Ease.EaseInOutQuad).setPingPong(pingPong),
-        STween.rotate(rotateArObject, new Vector3(0, 0, 90f), duration).setPingPong(pingPong));
+        //STween.combine(STween.scale(rotateArObject, new Vector3(1.5f, 1.5f, 1), duration).setEase(Ease.EaseInOutQuad).setPingPong(pingPong),
+        //STween.rotate(rotateArObject, new Vector3(0, 0, 90f), duration).setPingPong(pingPong));
+        STween.scale(rotateArObject, new Vector3(1.5f, 1.5f, 1), duration).setEase(Ease.EaseInOutQuad).setPingPong(pingPong);
+        STween.rotate(rotateArObject, new Vector3(0, 0, 90f), duration).setPingPong(pingPong);
     }
     public void TestWaitCoroutine()
     {

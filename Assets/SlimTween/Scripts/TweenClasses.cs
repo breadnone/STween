@@ -25,6 +25,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 using UnityEngine;
 using System;
 using System.Runtime.CompilerServices;
+using System.Collections;
+using System.Collections.Generic;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -36,9 +39,16 @@ namespace Breadnone.Extension
     [Serializable]
     public class TweenClass : ISlimRegister
     {
+        /// <summary>Running transforms.</summary>
+        public static List<(int id, int counter)> transforms { get; private set; } = new(8);
         bool ISlimRegister.wasResurected { get; set; }
         /// <summary>Internal use only.</summary>
         public TProps tprops;
+        /// <summary>
+        /// This may returns null. Internal use only.
+        /// </summary>
+        protected ISlimTween islim => this as ISlimTween;
+        protected ISlimRegister ireg => this as ISlimRegister;
         /// <summary>The tween state of this instance.</summary>
         protected TweenState state = TweenState.None;
         /// <summary>The on update function.</summary>
@@ -50,23 +60,24 @@ namespace Breadnone.Extension
         protected bool unscaledTime;
         /// <summary>The frameCount when it 1st initialized.</summary>
         protected int frameIn;
-        public int ease { get; private set; }
+        public Ease ease { get; private set; }
         /// <summary>Gets and sets the duration.</summary>
         float ISlimRegister.GetSetDuration { get => duration; set => duration = value; }
         /// <summary>Gets and sets the runningTime.</summary>
         float ISlimRegister.GetSetRunningTime { get => runningTime; set => runningTime = value; }
         /// <summary>Unscaled or scaled Time.delta.</summary>
         bool ISlimRegister.UnscaledTimeIs { get => unscaledTime; set => unscaledTime = value; }
-        void ISlimRegister.SetEase(Ease easeType) => ease = (int)easeType;
+        void ISlimRegister.SetEase(Ease easeType) => ease = easeType;
         void ISlimRegister.SetState(TweenState stateType) => state = stateType;
-        void ISlimRegister.SetEstimationTime()=> EstimateDuration(0, 1f, tprops.speed);
+        void ISlimRegister.SetEstimationTime() => EstimateDuration(0, 1f, tprops.speed);
+
         /// <summary>Flips the delta ticks</summary>
         protected void FlipTick()
         {
             flipTick = !flipTick;
-            
+
             //2 = speed based here
-            if(tprops.lerptype != 2)
+            if (tprops.lerptype != 2)
             {
                 tprops.updatecondition += flipTick ? 1 : -1;
             }
@@ -215,11 +226,6 @@ namespace Breadnone.Extension
                 update?.Invoke(false);
             }
 
-            if (this is ISlimTween islim)
-            {
-                islim.DisableLerps(false);
-            }
-
             Clear();
         }
 
@@ -321,6 +327,13 @@ namespace Breadnone.Extension
             duration = 0f;
             state = 0;
             ease = 0;
+
+            if (this is ISlimTween sl)
+            {
+                RemoveFromTransformPool(tprops.id);
+                sl.CombineMode = false;
+            }
+
             TweenManager.RemoveFromActiveTween(this);
         }
         /// <summary>Estimation based interpolation</summary>
@@ -330,10 +343,10 @@ namespace Breadnone.Extension
         float EstimateDuration(float current, float target, float speed)
         {
             float deltaTime = !unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime;
-            
+
             // Calculate the distance between current and target value
             float distance = Mathf.Abs(target - current);
-            
+
             // Calculate the time duration to reach the target value
             float duration = distance / (speed / 3f);
             return duration;
@@ -401,6 +414,85 @@ namespace Breadnone.Extension
         void ISlimRegister.RegisterOnUpdate(Action func) { update += x => { if (x) func.Invoke(); }; }
         void ISlimRegister.ForceInvokeRepeat() { InvokeRepeat(); }
         void ISlimRegister.ForceInvokeResetLoop() { ResetLoop(); }
+
+        /////// Combine logic here
+        /// <summary>Sends transform id to pool</summary>
+        protected void PoolTransformID(int id)
+        {
+            if (TryUpdateCounterTransform(id, true))
+            {
+                islim.BackupPreviousPosition();
+                islim.CombineMode = true;
+
+                if (TweenExtension.GetTween(id, out var tween))
+                {
+                    (tween as ISlimTween).CombineMode = true;
+                }
+            }
+            else
+            {
+                transforms.Add((id, 1));
+                islim.BackupPreviousPosition();
+                //islim.CombineMode(true);
+            }
+        }
+        /// <summary>Checks if the transform exists or not.</summary>
+        bool TransformDataExists(int id, out int index)
+        {
+            for (int i = 0; i < transforms.Count; i++)
+            {
+                if (transforms[i].id == id)
+                {
+                    index = i;
+                    return true;
+                }
+            }
+
+            index = -1;
+            return false;
+        }
+        /// <summary>Try to update the transform data counter.</summary>
+        bool TryUpdateCounterTransform(int id, bool increaseElseDecrease)
+        {
+            if (TransformDataExists(id, out var index))
+            {
+                var tmp = transforms[index];
+                transforms[index] = (tmp.id, increaseElseDecrease ? tmp.counter++ : tmp.counter--);
+
+                if (transforms[index].counter == 0)
+                {
+                    RemoveFromTransformPool(id);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+        /// <summary>Gets same root id transform left in the pool</summary>
+        protected int GetTransformCount(int id)
+        {
+            for (int j = 0; j < transforms.Count; j++)
+            {
+                if (transforms[j].id == id)
+                {
+                    return transforms[j].counter;
+                }
+            }
+
+            return 0;
+        }
+        /// <summary>Removes from transform pool.</summary>
+        protected void RemoveFromTransformPool(int id)
+        {
+            TryUpdateCounterTransform(id, false);
+            /*
+                        if (GetTransformCount(id) == 1 && TweenExtension.GetTween(id, out var stween))
+                        {
+                            (stween as ISlimTween).DisableLerps(false);
+                        }
+                    */
+        }
     }
     ///<summary>State of the tweening instance.</summary>
     public enum TweenState
@@ -568,20 +660,29 @@ namespace Breadnone.Extension
         TransformType type = TransformType.None;
         /// <summary>Locality.</summary>
         bool isLocal = false;
-        float angle;
-        bool disableLerps;
-        void ISlimTween.DisableLerps(bool state) { disableLerps = state; }
+        bool combineMode;
+        bool ISlimTween.CombineMode
+        {
+            get => combineMode;
+            set => combineMode = value;
+        }
         /// <summary>Locality.</summary>
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
+        ref InterpolatorStruct ISlimTween.GetInterpolator() => ref interp;
         /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
         protected override void InternalOnComplete()
         {
             InvokeLerps(tprops.pingpong ? 0f : 1f);
-            disableLerps = false;
+            combineMode = false;
         }
         ///<summary>Resets properties shuffle from/to value.</summary>
         protected override void ResetLoop()
         {
+            if (combineMode && GetTransformCount(tprops.id) == 1)
+            {
+                islim.RestorePreviousPosition();
+            }
+
             InvokeLerps(!flipTick ? 1f : 0f);
         }
         /// <summary>Invoked every frame.</summary>
@@ -589,29 +690,12 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
 
-            if (disableLerps)
+            if (combineMode)
             {
-                return;
+                islim.UpdateTransform();
             }
 
-            switch (type)
-            {
-                case TransformType.Move: //Move
-                    LerpPosition(this.FloatInterp(tick));
-                    break;
-                case TransformType.Scale: //Scale
-                    LerpScale(this.FloatInterp(tick));
-                    break;
-                case TransformType.Rotate: //Rotate
-                    LerpEuler(this.FloatInterp(tick));
-                    break;
-                case TransformType.RotateAround: //RotateAround
-                    LerpRotateAround(this.FloatInterp(tick));
-                    break;
-                case TransformType.Translate: //Translate
-                    LerpTranslate(this.FloatInterp(tick));
-                    break;
-            }
+            InvokeLerps(tick);
         }
         void InvokeLerps(float tick)
         {
@@ -629,6 +713,9 @@ namespace Breadnone.Extension
                 case TransformType.RotateAround: //RotateAround
                     LerpRotateAround(this.FloatInterp(tick));
                     break;
+                case TransformType.RotateAroundLocal:
+                    LerpRotateAroundLocal(this.FloatInterp(tick));
+                    break;
                 case TransformType.Translate: //Translate
                     LerpTranslate(this.FloatInterp(tick));
                     break;
@@ -639,12 +726,39 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move || type == TransformType.Translate)
             {
-                interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                if(!combineMode)
+                {
+                    interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                }
+                else
+                {
+                    float weight = 0.5f; // You can adjust this value based on your requirements
+                    // Calculate weighted average of the positions
+                    Vector3 weightedAverage = interp.from * (1 - weight) + transform.position * weight;
+                    interp.SetFrom(Vector3.Lerp(interp.from, Vector3.Lerp(weightedAverage, interp.to, tick), tick));
+                }
             }
             else if (type == TransformType.Scale)
             {
                 interp.SetFrom(transform.localScale);
             }
+            
+        }
+        void ISlimTween.BackupPreviousPosition()
+        {
+            if (type == TransformType.Move || type == TransformType.Translate)
+            {
+                interp.SetPreviousPos(!isLocal ? transform.position : transform.localPosition);
+            }
+            else if (type == TransformType.Scale)
+            {
+                interp.SetPreviousPos(transform.localScale);
+            }
+        }
+        void ISlimTween.RestorePreviousPosition()
+        {
+            combineMode = false;
+            interp.SetFrom(interp.previousPos);
         }
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         /// <summary>Initialize transform base value.</summary>
@@ -667,6 +781,7 @@ namespace Breadnone.Extension
             if (transformType == TransformType.Move || transformType == TransformType.Translate)
             {
                 interp.SetFrom(!local ? objectTransform.position : objectTransform.localPosition);
+                PoolTransformID(tprops.id);
             }
             else if (transformType == TransformType.Scale)
             {
@@ -695,17 +810,19 @@ namespace Breadnone.Extension
             interp.SetTo(axis);
             TweenManager.InsertToActiveTween(this);
         }
-        public void InitRotateAround(Transform objectTransform, Vector3 point, Vector3 axis, float targetAngle, float time, TransformType transformType)
+        public void InitRotateAround(Transform objectTransform, Vector3 target, Vector3 axis, float targetAngle, float time, TransformType transformType)
         {
             type = transformType;
             transform = objectTransform;
             duration = time;
-            angle = targetAngle;
+            interp.SetAngle(targetAngle);
+            this.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
-            interp.Set(point, axis);
+            interp.Set(target, axis);
             TweenManager.InsertToActiveTween(this);
         }
+
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
         {
@@ -738,8 +855,22 @@ namespace Breadnone.Extension
         /// <summary>Rotates based on target point.</summary>
         void LerpRotateAround(float value)
         {
-            transform.RotateAround(interp.from, interp.to, angle * value);
+            var localto = interp.to.normalized;
+            transform.rotation = Quaternion.Euler(localto * interp.angle * value);
         }
+        Vector3 tmp;
+        void LerpRotateAroundLocal(float value)
+        {
+            if (tmp == Vector3.zero)
+            {
+                tmp = transform.position;
+            }
+            Vector3 pivotOffset = tmp - interp.from;
+            Quaternion rotation = Quaternion.AngleAxis(interp.angle * value, interp.to);
+            Vector3 rotatedOffset = rotation * pivotOffset;
+            transform.position = transform.TransformPoint(interp.from) + rotatedOffset;
+        }
+
         /// <summary>Rotates based on target point.</summary>
         void LerpTranslate(float value)
         {
@@ -763,11 +894,15 @@ namespace Breadnone.Extension
         TransformType type = TransformType.None;
         /// <summary>Locality.</summary>
         bool isLocal = false;
-        bool disableLerps;
-        float angle;
-        void ISlimTween.DisableLerps(bool state) { disableLerps = state; }
+        bool combineMode;
+        bool ISlimTween.CombineMode
+        {
+            get => combineMode;
+            set => combineMode = value;
+        }
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
+        ref InterpolatorStruct ISlimTween.GetInterpolator() => ref interp;
         /// <summary>Previous assigned type.</summary>
         TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
         /// <summary>Initialize transform base value.</summary>
@@ -788,6 +923,7 @@ namespace Breadnone.Extension
             if (transformType == TransformType.Move)
             {
                 interp.SetFrom(!isLocal ? objectTransform.anchoredPosition3D : objectTransform.anchoredPosition);
+                PoolTransformID(tprops.id);
             }
             else if (transformType == TransformType.Scale)
             {
@@ -818,16 +954,20 @@ namespace Breadnone.Extension
             duration = time;
             transform = objectTransform;
             isLocal = local;
-            angle = targetAngle;
-            interp.Set(new Vector3(0f, angle, 0f), axis);
+            interp.SetAngle(targetAngle);
+            interp.Set(new Vector3(0f, interp.angle, 0f), axis);
+
             TweenManager.InsertToActiveTween(this);
         }
-        public void InitRotateAround(UnityEngine.RectTransform objectTransform, Vector3 point, Vector3 axis, float angle, float time, TransformType transformType)
+        public void InitRotateAround(UnityEngine.RectTransform objectTransform, Vector3 target, Vector3 axis, float angle, float time, TransformType transformType)
         {
             type = transformType;
+            this.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
             transform = objectTransform;
             duration = time;
-            interp.Set(point, axis);
+            interp.Set(target, axis);
+            interp.SetAngle(angle);
+
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
@@ -840,6 +980,11 @@ namespace Breadnone.Extension
         ///<summary>Resets properties shuffle from/to value.</summary>
         protected override void ResetLoop()
         {
+            if (combineMode && GetTransformCount(tprops.id) == 1)
+            {
+                islim.RestorePreviousPosition();
+            }
+
             InvokeLerps(!flipTick ? 1f : 0f);
         }
         /// <summary>Invoked every frame.</summary>
@@ -847,9 +992,9 @@ namespace Breadnone.Extension
         {
             base.InternalOnUpdate();
 
-            if (disableLerps)
+            if (combineMode)
             {
-                return;
+                islim.UpdateTransform();
             }
 
             InvokeLerps(tick);
@@ -870,6 +1015,9 @@ namespace Breadnone.Extension
                 case TransformType.RotateAround: //RotateAround
                     LerpRotateAround(this.FloatInterp(tick));
                     break;
+                case TransformType.RotateAroundLocal:
+                    LerpRotateAroundLocal(this.FloatInterp(tick));
+                    break;
                 case TransformType.SizeDelta: //SizeDelta
                     LerpSizeDelta(this.FloatInterp(tick));
                     break;
@@ -888,10 +1036,30 @@ namespace Breadnone.Extension
             {
                 interp.SetFrom(transform.localScale);
             }
-            else if ((this as ISlimTween).GetTransformType == TransformType.SizeDelta)
+            else if (islim.GetTransformType == TransformType.SizeDelta)
             {
                 interp.SetFrom(transform.sizeDelta);
             }
+        }
+        void ISlimTween.BackupPreviousPosition()
+        {
+            if (type == TransformType.Move)
+            {
+                interp.SetPreviousPos(!isLocal ? transform.position : transform.localPosition);
+            }
+            else if (type == TransformType.Scale)
+            {
+                interp.SetPreviousPos(transform.localScale);
+            }
+            else if (islim.GetTransformType == TransformType.SizeDelta)
+            {
+                interp.SetPreviousPos(transform.sizeDelta);
+            }
+        }
+        void ISlimTween.RestorePreviousPosition()
+        {
+            combineMode = false;
+            interp.SetFrom(interp.previousPos);
         }
         /// <summary>Interpoaltes world position.</summary>
         void LerpPosition(float value)
@@ -922,11 +1090,23 @@ namespace Breadnone.Extension
                 transform.localRotation = Quaternion.Euler(interp.to * value);
             }
         }
-        /// <summary>Rotates based on target point.</summary>
+        /// <summary>Rotates around.</summary>
+        /// <param name="value"></param>
         void LerpRotateAround(float value)
         {
-            transform.RotateAround(interp.from, interp.to, angle * value);
+            var localto = interp.to.normalized;
+            transform.rotation = Quaternion.Euler(localto * interp.angle * value);
         }
+        /// <summary>
+        /// Rotates around localSpace.
+        /// </summary>
+        /// <param name="value"></param>
+        void LerpRotateAroundLocal(float value)
+        {
+            var localto = transform.InverseTransformDirection(interp.to).normalized;
+            transform.localRotation = Quaternion.Euler(localto * interp.angle * value);
+        }
+
         /// <summary>Interpolate delta value.</summary>
         void LerpSizeDelta(float value)
         {
@@ -946,11 +1126,14 @@ namespace Breadnone.Extension
     public interface ISlimTween
     {
         public bool Locality { get; set; }
-        public void DisableLerps(bool state);
+        public bool CombineMode { get; set; }
         public TransformType GetTransformType { get; set; }
         public void UpdateTransform();
+        public void BackupPreviousPosition();
+        public void RestorePreviousPosition();
         /// <summary>Access to the starting and target value.</summary>
         public (Vector3 from, Vector3 to) FromTo { get; set; }
+        public ref InterpolatorStruct GetInterpolator();
     }
     /// <summary>
     /// Delegate to pass easeing refs
@@ -966,11 +1149,12 @@ namespace Breadnone.Extension
         Scale = 2,
         Rotate = 3,
         RotateAround = 4,
-        SizeDelta = 5,
-        SizeAnchored = 6,
-        Translate = 7
+        RotateAroundLocal = 5,
+        SizeDelta = 6,
+        SizeAnchored = 7,
+        Translate = 8
     }
-
+    /// <summary>Interpolator.</summary>
     [Serializable]
     public struct InterpolatorStruct
     {
@@ -980,15 +1164,27 @@ namespace Breadnone.Extension
         float b;
         float z;
         float c;
+
+        public float angle => _prevPos.x;
+        Vector3 _prevPos;
+        /// <summary>Gets previous position. Used for combining.</summary>
+        public Vector3 previousPos => _prevPos;
         /// <summary>Starting value</summary>
         public Vector3 from => new Vector3(a, b, c);
         /// <summary>Target value</summary>
         public Vector3 to => new Vector3(x, y, z);
+        /// <summary>Sets the angle</summary>
+        public void SetAngle(float angles) => _prevPos = new Vector3(angles, 0f, 0f);
+        /// <summary>Sets previous position.</summary>
+        public void SetPreviousPos(Vector3 prevPos) => _prevPos = prevPos;
+        public bool combineMode;
+        /// <summary>Sets the from and to.</summary>
         public void Set(Vector3 from, Vector3 to)
         {
             SetFrom(from);
             SetTo(to);
         }
+        /// <summary>Sets from.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetFrom(Vector3 from)
         {
@@ -996,6 +1192,7 @@ namespace Breadnone.Extension
             b = from.y;
             c = from.z;
         }
+        /// <summary>Sets target value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetTo(Vector3 to)
         {
@@ -1003,6 +1200,7 @@ namespace Breadnone.Extension
             y = to.y;
             z = to.z;
         }
+        /// <summary>Interpolates frokm - to value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 Interpolate(float tick)
         {
@@ -1011,7 +1209,10 @@ namespace Breadnone.Extension
             b + (y - b) * tick,
             c + (z - c) * tick);
         }
+        
     }
+    /// <summary>
+    /// 
     public struct TFloat6
     {
         readonly float _x;
@@ -1079,6 +1280,45 @@ namespace Breadnone.Extension
 
                 followers[i].transform.position = Vector3.LerpUnclamped(followers[i].position, transform.position, spd);
             }
+        }
+    }
+    [Serializable]
+    public struct TransformProperty
+    {
+        public int id;
+        public Vector3 lastposition;
+        public Quaternion lastRotation;
+        public Vector3 lastScale;
+        public bool isRectTransform;
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TransformProperty))
+                return false;
+
+            TransformProperty mys = (TransformProperty)obj;
+            return mys.id == id;
+        }
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = id;
+                hashCode = (hashCode * 397) ^ lastposition.GetHashCode();
+                hashCode = (hashCode * 397) ^ lastRotation.GetHashCode();
+                hashCode = (hashCode * 397) ^ lastScale.GetHashCode();
+                hashCode = (hashCode * 397) ^ isRectTransform.GetHashCode();
+                return hashCode;
+            }
+        }
+        public static bool operator ==(TransformProperty a, TransformProperty b)
+        {
+            return a.id == b.id;
+        }
+
+        public static bool operator !=(TransformProperty a, TransformProperty b)
+        {
+            return !(a == b);
         }
     }
 }

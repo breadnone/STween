@@ -4079,8 +4079,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1993989960}
-        m_TargetAssemblyTypeName: VTween.VTweenTests, Assembly-CSharp
-        m_MethodName: TestRotate
+        m_TargetAssemblyTypeName: VTweenTests, STween
+        m_MethodName: TestRotateAroundLocal
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -22744,7 +22744,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -366, y: -128}
-  m_SizeDelta: {x: 149, y: 129}
+  m_SizeDelta: {x: 320.9097, y: 277.83}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &770732251
 GameObject:
@@ -23500,7 +23500,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &791748149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56154,6 +56154,8 @@ MonoBehaviour:
   exponentShake: 2
   shakeDuration: 0.5
   curveSegments: 5
+  rot1: {fileID: 1800501934}
+  rot2: {fileID: 648971072}
 --- !u!4 &1993989961
 Transform:
   m_ObjectHideFlags: 0

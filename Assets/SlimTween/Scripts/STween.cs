@@ -746,7 +746,7 @@ namespace Breadnone
         /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAround(Transform transform, Vector3 target, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAround(Transform transform, Vector3 direction, float angle, float duration)
         {
             if (transform is null)
             {
@@ -754,25 +754,41 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimTransform>(transform.gameObject.GetInstanceID());
-            instance.InitRotateAround(transform, target, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(transform, transform.position, direction, angle, duration, TransformType.RotateAround);
             return instance;
         }
-        ///<summary>Rotates around target.</summary>
+        ///<summary>Rotates around target in localSpace.</summary>
         /// <param name="transform">The transform to rotate.</param>
-        /// <param name="target">Target transform.</param>
         /// <param name="angle">Angle value.</param>
         /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAround(Transform transform, Transform target, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAroundLocal(Transform transform, Vector3 direction, float angle, float duration)
         {
-            if (transform is null || target == null)
+            if (transform is null)
             {
                 throw new STweenException("Transforms can't be null.");
             }
 
             var instance = STPool.GetInstance<SlimTransform>(transform.gameObject.GetInstanceID());
-            instance.InitRotateAround(transform, target.position, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(transform, transform.position, direction, angle, duration, TransformType.RotateAroundLocal);
+            return instance;
+        }
+        ///<summary>Rotates around target in localSpace.</summary>
+        /// <param name="gameObject">The gameObject to rotate.</param>
+        /// <param name="angle">Angle value.</param>
+        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimTransform rotateAroundLocal(GameObject gameObject, Vector3 direction, float angle, float duration)
+        {
+            if (gameObject is null)
+            {
+                throw new STweenException("GameObject can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimTransform>(gameObject.transform.gameObject.GetInstanceID());
+            instance.InitRotateAround(gameObject.transform, gameObject.transform.position, direction, angle, duration, TransformType.RotateAroundLocal);
             return instance;
         }
         ///<summary>Rotates around target.</summary>
@@ -782,7 +798,7 @@ namespace Breadnone
         /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAround(GameObject gameObject, Vector3 target, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAround(GameObject gameObject, Vector3 direction, float angle, float duration)
         {
             if (gameObject is null)
             {
@@ -790,25 +806,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimTransform>(gameObject.GetInstanceID());
-            instance.InitRotateAround(gameObject.transform, target, direction, angle, duration, TransformType.RotateAround);
-            return instance;
-        }
-        ///<summary>Rotates around target.</summary>
-        /// <param name="gameObject">The transform to rotate.</param>
-        /// <param name="target">The transform to rotate.</param>
-        /// <param name="angle">Target angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
-        /// <param name="duration">Duration to reach the target.</param>
-        /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAround(GameObject gameObject, GameObject target, Vector3 direction, float angle, float duration)
-        {
-            if (gameObject is null || target is null)
-            {
-                throw new STweenException("GameObjects can't be null.");
-            }
-
-            var instance = STPool.GetInstance<SlimTransform>(gameObject.GetInstanceID());
-            instance.InitRotateAround(gameObject.transform, target.transform.position, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(gameObject.transform, gameObject.transform.position, direction, angle, duration, TransformType.RotateAround);
             return instance;
         }
         ///<summary>Rotates around target.</summary>
@@ -818,7 +816,7 @@ namespace Breadnone
         /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimRect rotateAround(RectTransform rectTransform, Vector3 target, Vector3 direction, float angle, float duration)
+        public static SlimRect rotateAround(RectTransform rectTransform, Vector3 direction, float angle, float duration)
         {
             if (rectTransform is null)
             {
@@ -826,7 +824,25 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            instance.InitRotateAround(rectTransform, target, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(rectTransform, rectTransform.position, direction, angle, duration, TransformType.RotateAround);
+            return instance;
+        }
+        ///<summary>Rotates around target.</summary>
+        /// <param name="rectTransform">The transform to rotate.</param>
+        /// <param name="target">Target to be rotated around.</param>
+        /// <param name="angle">Target angle value.</param>
+        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <exception cref="STweenException"></exception>
+        public static SlimRect rotateAroundLocal(RectTransform rectTransform, Vector3 direction, float angle, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
+            instance.InitRotateAround(rectTransform, rectTransform.position, direction, angle, duration, TransformType.RotateAroundLocal);
             return instance;
         }
         ///<summary>Rotates transform to target x axis.</summary>
@@ -1492,7 +1508,7 @@ namespace Breadnone
                 throw new STweenException("CanvasGroup can't be null.");
             }
 
-            var instance = STPool.GetInstance<STFloat>(canvasGroup.GetInstanceID());
+            var instance = STPool.GetInstance<STFloat>(canvasGroup.gameObject.GetInstanceID());
             instance.SetBase(from, to, time, (value) =>
             {
                 canvasGroup.alpha = value;
@@ -1500,7 +1516,130 @@ namespace Breadnone
 
             return instance;
         }
+        /// <summary>
+        /// Interpolates alpha value of UI components.
+        /// </summary>
+        /// <param name="canvasGroup">The canvasGroup component.</param>
+        /// <param name="from">Start value.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="time">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat alpha(CanvasGroup canvasGroup, float to, float time)
+        {
+            if (canvasGroup is null)
+            {
+                throw new STweenException("CanvasGroup can't be null.");
+            }
 
+            var instance = STPool.GetInstance<STFloat>(canvasGroup.gameObject.GetInstanceID());
+            instance.SetBase(canvasGroup.alpha, to, time, (value) =>
+            {
+                canvasGroup.alpha = value;
+            });
+
+            return instance;
+        }
+        /// <summary>
+        /// Interpolates alpha value of UI components.
+        /// </summary>
+        /// <param name="image">Image component.</param>
+        /// <param name="from">Start value.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="time">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat alpha(UnityEngine.UI.Image image, float from, float to, float time)
+        {
+            if (image is null)
+            {
+                throw new STweenException("Image component can't be null.");
+            }
+
+            var instance = STPool.GetInstance<STFloat>(image.gameObject.GetInstanceID());
+            instance.SetBase(from, to, time, (value) =>
+            {
+                var tempColor = image.color;
+                tempColor.a = value;
+                image.color = tempColor;
+            });
+
+            return instance;
+        }
+        /// <summary>
+        /// Interpolates alpha value of UI components.
+        /// </summary>
+        /// <param name="image">Image component.</param>
+        /// <param name="from">Start value.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="time">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat alpha(UnityEngine.UI.Image image, float to, float time)
+        {
+            if (image is null)
+            {
+                throw new STweenException("Image component can't be null.");
+            }
+
+            var instance = STPool.GetInstance<STFloat>(image.gameObject.GetInstanceID());
+            instance.SetBase(image.color.a, to, time, (value) =>
+            {
+                var tempColor = image.color;
+                tempColor.a = value;
+                image.color = tempColor;
+            });
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Interpolates alpha value of UI components.
+        /// </summary>
+        /// <param name="sprite">SpriteRenderer component.</param>
+        /// <param name="from">Start value.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="time">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat alpha(SpriteRenderer sprite, float from, float to, float time)
+        {
+            if (sprite is null)
+            {
+                throw new STweenException("Sprite can't be null.");
+            }
+
+            var instance = STPool.GetInstance<STFloat>(sprite.gameObject.GetInstanceID());
+            instance.SetBase(from, to, time, (value) =>
+            {
+                var tempColor = sprite.color;
+                tempColor.a = value;
+                sprite.color = tempColor;
+            });
+
+            return instance;
+        }
+        /// <summary>
+        /// Interpolates alpha value of UI components.
+        /// </summary>
+        /// <param name="sprite">SpriteRenderer component.</param>
+        /// <param name="from">Start value.</param>
+        /// <param name="to">Target value.</param>
+        /// <param name="time">Duration.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat alpha(SpriteRenderer sprite, float to, float time)
+        {
+            if (sprite is null)
+            {
+                throw new STweenException("Sprite can't be null.");
+            }
+
+            var instance = STPool.GetInstance<STFloat>(sprite.gameObject.GetInstanceID());
+            instance.SetBase(sprite.color.a, to, time, (value) =>
+            {
+                var tempColor = sprite.color;
+                tempColor.a = value;
+                sprite.color = tempColor;
+            });
+
+            return instance;
+        }
         #endregion
 
         #region Color
@@ -1709,7 +1848,7 @@ namespace Breadnone
                 throw new STweenException("GameObject can't be null.");
             }
 
-            return rotateAround(gameObject, gameObject.transform.position, Vector3.forward, angle, duration);
+            return rotateAround(gameObject, Vector3.forward, angle, duration);
         }
         /// <summary>
         /// Equals to Vector3.right for positive angle, Vector2.left for negative angle. Rotates on locked origin.
@@ -1724,7 +1863,7 @@ namespace Breadnone
                 throw new STweenException("GameObject can't be null.");
             }
 
-            return rotateAround(gameObject, gameObject.transform.position, Vector3.right, angle, duration);
+            return rotateAround(gameObject, Vector3.right, angle, duration);
         }
         public static STFollow follow(GameObject gameObject, Transform[] followers, float minDistance, float speed)
         {

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using Breadnone;
 
 namespace Breadnone.Extension
 {
@@ -75,8 +76,8 @@ namespace Breadnone.Extension
                 var islimA = atransform as ISlimTween;
                 var islimB = btransform as ISlimTween;
 
-                islimA.DisableLerps(true);
-                islimB.DisableLerps(true);
+                islimA.CombineMode = true;
+                islimB.CombineMode = true;
 
                 Transform transform = null;
 
@@ -114,11 +115,11 @@ namespace Breadnone.Extension
 
                                 if (transform != null)
                                 {
-                                    fluent.previousPos = !islimB.Locality ? loc : transform.TransformDirection(loc);
+                                    fluent.previousPos = !islimB.Locality ? loc : transform.TransformPoint(loc);
                                 }
                                 if (rect != null)
                                 {
-                                    fluent.previousPos = !islimB.Locality ? loc : rect.TransformDirection(loc);
+                                    fluent.previousPos = !islimB.Locality ? loc : rect.TransformPoint(loc);
                                 }
                             }
                             else if (islimB.GetTransformType == TransformType.Scale)
@@ -137,11 +138,11 @@ namespace Breadnone.Extension
 
                             if (transform != null)
                             {
-                                fluent.previousPos = !islimA.Locality ? loc : transform.TransformDirection(loc);
+                                fluent.previousPos = !islimA.Locality ? loc : transform.TransformPoint(loc);
                             }
                             if (rect != null)
                             {
-                                fluent.previousPos = !islimA.Locality ? loc : rect.TransformDirection(loc);
+                                fluent.previousPos = !islimA.Locality ? loc : rect.TransformPoint(loc);
                             }
                         }
                         else if (islimA.GetTransformType == TransformType.Scale)
@@ -160,11 +161,11 @@ namespace Breadnone.Extension
 
                                 if (transform != null)
                                 {
-                                    fluent.previousPos = !islimA.Locality ? loc : transform.TransformDirection(loc);
+                                    fluent.previousPos = !islimA.Locality ? loc : transform.TransformPoint(loc);
                                 }
                                 if (rect != null)
                                 {
-                                    fluent.previousPos = !islimA.Locality ? loc : rect.TransformDirection(loc);
+                                    fluent.previousPos = !islimA.Locality ? loc : rect.TransformPoint(loc);
                                 }
                             }
                             else if (islimA.GetTransformType == TransformType.Scale)
@@ -185,11 +186,11 @@ namespace Breadnone.Extension
 
                             if (transform != null)
                             {
-                                fluent.previousPos = !islimB.Locality ? loc : transform.TransformDirection(loc);
+                                fluent.previousPos = !islimB.Locality ? loc : transform.TransformPoint(loc);
                             }
                             if (rect != null)
                             {
-                                fluent.previousPos = !islimB.Locality ? loc : rect.TransformDirection(loc);
+                                fluent.previousPos = !islimB.Locality ? loc : rect.TransformPoint(loc);
                             }
                         }
                         else if (islimB.GetTransformType == TransformType.Scale)
@@ -220,7 +221,7 @@ namespace Breadnone.Extension
                 fluent.Add(btransform);
 
                 var islimB = btransform as ISlimTween;
-                islimB.DisableLerps(true);
+                islimB.CombineMode = true;
 
                 Transform transform = null;
 
@@ -254,11 +255,11 @@ namespace Breadnone.Extension
 
                             if (transform != null)
                             {
-                                fluent.previousPos = !islimB.Locality ? loc : transform.TransformDirection(loc);
+                                fluent.previousPos = !islimB.Locality ? loc : transform.TransformPoint(loc);
                             }
                             else if (rect != null)
                             {
-                                fluent.previousPos = !islimB.Locality ? loc : rect.TransformDirection(loc);
+                                fluent.previousPos = !islimB.Locality ? loc : rect.TransformPoint(loc);
                             }
                         }
                         else if (islimB.GetTransformType == TransformType.Scale)
@@ -305,7 +306,7 @@ namespace Breadnone.Extension
 
         }
     }
-}
+}	
 public static class UnsafeMath
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

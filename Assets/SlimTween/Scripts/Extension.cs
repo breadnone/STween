@@ -72,6 +72,30 @@ namespace Breadnone
             (stween as ISlimRegister).SetEase(ease);
             return stween;
         }
+        /*
+        /// <summary>Target position to rotate around used by rotateAround/rotateAroundLocal.</summary>
+        /// <param name="stween">Tween instance.</param>
+        /// <param name="target">Target to rotate around.</param>
+        public static TweenClass setPoint(this TweenClass stween, Vector3 target)
+        {
+            ISlimTween islim = stween as ISlimTween;
+
+            if (!islim.Locality)
+            {
+                islim.FromTo = (target, islim.FromTo.to);
+            }
+            else
+            {
+                if (stween is SlimTransform sr)
+                    islim.FromTo = (sr.GetTransform.TransformPoint(target), islim.FromTo.to);
+
+                else if (stween is SlimRect st)
+                    islim.FromTo = (st.GetTransform.TransformPoint(target), islim.FromTo.to);
+            }
+
+            return stween;
+        }
+        */
         /// <summary>Amount of repetition for the tween to complete.</summary>
         /// <param name="loopCount">The amount on how many time the loop should be repeated.</param>
         public static TweenClass setLoop(this TweenClass stween, int loopCount)
@@ -88,12 +112,12 @@ namespace Breadnone
         /// <param name="state">Scaled or unscaled state.</param>
         public static TweenClass setUnscaledTime(this TweenClass stween, bool state)
         {
-#if UNITY_EDITOR
+            #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)
             {
                 return stween;
             }
-#endif
+            #endif
 
             (stween as ISlimRegister).UnscaledTimeIs = state;
             return stween;
@@ -140,13 +164,13 @@ namespace Breadnone
         /// <param name="state">Enable/disable.</param>
         public static TweenClass setDestroyOnComplete(this TweenClass stween, bool state)
         {
-#if UNITY_EDITOR
+            #if UNITY_EDITOR
             if (!UnityEditor.EditorApplication.isPlaying)
             {
                 Debug.LogWarning("STween Warning : DestroyOnComplete isn't supported while in edit-mode!. Destroy was cancelled.");
                 return stween;
             }
-#endif
+            #endif
 
             (stween as ISlimRegister).RegisterLastOnComplete(() =>
             {
@@ -185,12 +209,28 @@ namespace Breadnone
         /// <param name="from">Reposition the target object.</param>
         public static TweenClass setFrom(this TweenClass stween, Vector3 from)
         {
-            stween.Pause();
             ISlimTween sr = stween as ISlimTween;
+            
+            if(sr.GetTransformType == TransformType.Scale || sr.GetTransformType == TransformType.Move || sr.GetTransformType == TransformType.Translate || sr.GetTransformType == TransformType.SizeDelta || sr.GetTransformType == TransformType.SizeAnchored)
+            {
+                var valsr = sr.FromTo;
+                sr.FromTo = (from, valsr.to);
+            }
 
-            var valsr = (sr as ISlimTween).FromTo;
-            sr.FromTo = (from, valsr.to);
-            stween.Resume();
+            return stween;
+        }
+        /// <summary>Reposition the target object before running the tween.</summary>
+        /// <param name="from">Reposition the target object.</param>
+        public static TweenClass setFrom(this TweenClass stween, Vector2 from)
+        {
+            ISlimTween sr = stween as ISlimTween;
+            
+            if(sr.GetTransformType == TransformType.Scale || sr.GetTransformType == TransformType.Move || sr.GetTransformType == TransformType.Translate || sr.GetTransformType == TransformType.SizeDelta || sr.GetTransformType == TransformType.SizeAnchored)
+            {
+                var valsr = sr.FromTo;
+                sr.FromTo = (from, valsr.to);
+            }
+
             return stween;
         }
         /// <summary>Focus on a transform while tweening.</summary>

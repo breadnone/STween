@@ -732,10 +732,13 @@ namespace Breadnone.Extension
                 }
                 else
                 {
-                    float weight = 0.5f; // You can adjust this value based on your requirements
+                    //float weight = 1f; // You can adjust this value based on your requirements
                     // Calculate weighted average of the positions
-                    Vector3 weightedAverage = interp.from * (1 - weight) + transform.position * weight;
-                    interp.SetFrom(Vector3.Lerp(interp.from, Vector3.Lerp(weightedAverage, interp.to, tick), tick));
+                    //Vector3 weightedAverage = interp.from * (1 - weight) + transform.position * weight;
+                    //interp.SetFrom(Vector3.Lerp(interp.from, Vector3.Lerp(weightedAverage, interp.to, tick), tick));
+                    var a = Vector3.LerpUnclamped(interp.from, transform.position, tick);
+                    var b = Vector3.LerpUnclamped(interp.previousPos, a, tick);
+                    interp.SetFrom(b);
                 }
             }
             else if (type == TransformType.Scale)
@@ -858,17 +861,10 @@ namespace Breadnone.Extension
             var localto = interp.to.normalized;
             transform.rotation = Quaternion.Euler(localto * interp.angle * value);
         }
-        Vector3 tmp;
         void LerpRotateAroundLocal(float value)
         {
-            if (tmp == Vector3.zero)
-            {
-                tmp = transform.position;
-            }
-            Vector3 pivotOffset = tmp - interp.from;
-            Quaternion rotation = Quaternion.AngleAxis(interp.angle * value, interp.to);
-            Vector3 rotatedOffset = rotation * pivotOffset;
-            transform.position = transform.TransformPoint(interp.from) + rotatedOffset;
+            var localto = transform.InverseTransformDirection(interp.to).normalized;
+            transform.localRotation = Quaternion.Euler(localto * interp.angle * value);
         }
 
         /// <summary>Rotates based on target point.</summary>

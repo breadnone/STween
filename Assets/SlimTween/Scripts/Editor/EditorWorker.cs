@@ -185,6 +185,7 @@ namespace Breadnone.Editor
 
                 EditorApplication.delayCall += () =>
                 {
+                    TweenClass.ClearTransformPool();
                     TweenManager.isPlayMode = false;
                     STPool.ClearCache();
                     SessionState.SetBool("STplaying", false);

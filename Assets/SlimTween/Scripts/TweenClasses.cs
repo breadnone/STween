@@ -39,6 +39,10 @@ namespace Breadnone.Extension
     [Serializable]
     public class TweenClass : ISlimRegister
     {
+        /// <summary>Cancels all running tweens.</summary>
+        public static void CancelAll()=> STween.CancelAll();
+        /// <summary>Clears the transform pools used for combining tweens. This might break things when not done properly.</summary>
+        public static void ClearTransformPool()=> transforms = new(8);
         /// <summary>Running transforms.</summary>
         public static List<(int id, int counter)> transforms { get; private set; } = new(8);
         bool ISlimRegister.wasResurected { get; set; }
@@ -457,14 +461,18 @@ namespace Breadnone.Extension
             if (TransformDataExists(id, out var index))
             {
                 var tmp = transforms[index];
-                transforms[index] = (tmp.id, increaseElseDecrease ? tmp.counter++ : tmp.counter--);
+                transforms[index] = (tmp.id, increaseElseDecrease ? tmp.counter + 1 : tmp.counter - 1);
 
-                if (transforms[index].counter == 0)
+                if(!increaseElseDecrease && transforms[index].counter == 0)
                 {
-                    RemoveFromTransformPool(id);
+                    transforms.RemoveAt(index);
                 }
 
                 return true;
+            }
+            else
+            {
+
             }
 
             return false;
@@ -1026,7 +1034,16 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move)
             {
-                interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                if(!combineMode)
+                {                
+                    interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                }
+                else
+                {
+                    var a = Vector3.LerpUnclamped(interp.from, transform.position, tick);
+                    var b = Vector3.LerpUnclamped(interp.previousPos, a, tick);
+                    interp.SetFrom(b);
+                }
             }
             else if (type == TransformType.Scale)
             {

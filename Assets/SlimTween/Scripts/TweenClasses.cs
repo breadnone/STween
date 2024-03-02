@@ -52,7 +52,6 @@ namespace Breadnone.Extension
         /// This may returns null. Internal use only.
         /// </summary>
         protected ISlimTween islim => this as ISlimTween;
-        protected ISlimRegister ireg => this as ISlimRegister;
         TweenMode ISlimRegister.TweenMode
         {
             get => islim.TweenMode;
@@ -339,11 +338,12 @@ namespace Breadnone.Extension
             duration = 0f;
             state = 0;
             ease = 0;
-
-            if (this is ISlimTween sl)
+            
+            if (islim != null)
             {
                 RemoveFromTransformPool(tprops.id);
-                sl.TweenMode = TweenMode.Tweeen;
+                islim.TweenMode = TweenMode.Tweeen;
+                islim.ClearInterpolatorProperty();
             }
 
             TweenManager.RemoveFromActiveTween(this);
@@ -433,7 +433,6 @@ namespace Breadnone.Extension
         {
             if (TryUpdateCounterTransform(id, true))
             {
-                islim.BackupPreviousPosition();
                 islim.TweenMode = TweenMode.Combine;
 
                 if (TweenExtension.GetTween(id, out var tween))
@@ -444,9 +443,9 @@ namespace Breadnone.Extension
             else
             {
                 transforms.Add((id, 1));
-                islim.BackupPreviousPosition();
-                //islim.CombineMode(true);
             }
+
+            islim.BackupPreviousPosition();
         }
         /// <summary>Checks if the transform exists or not.</summary>
         bool TransformDataExists(int id, out int index)
@@ -477,10 +476,6 @@ namespace Breadnone.Extension
                 }
 
                 return true;
-            }
-            else
-            {
-
             }
 
             return false;
@@ -663,29 +658,25 @@ namespace Breadnone.Extension
     {
         public SlimTransform()
         {
-            interp = new InterpolatorStruct();
+            interp = new Interpolator();
         }
         /// <summary>Previous assigned type.</summary>
         TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
-        /// <summary>The transform.</summary>
-        Transform transform;
         /// <summary>Starting value.</summary>
-        InterpolatorStruct interp = default;
+        Interpolator interp = new();
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
-        public Transform GetTransform => transform;
+        public Transform GetTransform => interp.getTransform;
         /// <summary>Tween type.</summary>
         TransformType type = TransformType.None;
-        /// <summary>Locality.</summary>
-        bool isLocal = false;
-        TweenMode tweenMode;
+        TweenMode tweenMode = TweenMode.Tweeen;
         TweenMode ISlimTween.TweenMode
         {
             get => tweenMode;
             set => tweenMode = value;
         }
         /// <summary>Locality.</summary>
-        bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
-        ref InterpolatorStruct ISlimTween.GetInterpolator() => ref interp;
+        bool ISlimTween.Locality { get => interp.isLocal; set => interp.isLocal = value; }
+        Interpolator ISlimTween.GetInterpolator() => interp;
         /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
         protected override void InternalOnComplete()
         {
@@ -702,6 +693,7 @@ namespace Breadnone.Extension
 
             InvokeLerps(!flipTick ? 1f : 0f);
         }
+        Vector3 tmp;
         /// <summary>Invoked every frame.</summary>
         protected override void InternalOnUpdate()
         {
@@ -709,7 +701,10 @@ namespace Breadnone.Extension
 
             if (tweenMode == TweenMode.Combine)
             {
-                islim.UpdateTransform();
+                if(GetTransformCount(tprops.id) > 1)
+                {
+                    islim.UpdateTransform();
+                }
             }
 
             InvokeLerps(tick);
@@ -719,47 +714,46 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move: //Move
-                    LerpPosition(this.FloatInterp(tick));
+                    interp.LerpPosition(this.FloatInterp(tick));
                     break;
                 case TransformType.Scale: //Scale
-                    LerpScale(this.FloatInterp(tick));
+                    interp.LerpScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate: //Rotate
-                    LerpEuler(this.FloatInterp(tick));
+                    interp.LerpEuler(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround: //RotateAround
-                    LerpRotateAround(this.FloatInterp(tick));
-                    break;
-                case TransformType.RotateAroundLocal:
-                    LerpRotateAroundLocal(this.FloatInterp(tick));
+                    interp.LerpRotateAround(this.FloatInterp(tick));
                     break;
                 case TransformType.Translate: //Translate
-                    LerpTranslate(this.FloatInterp(tick));
+                    interp.LerpTranslate(this.FloatInterp(tick));
                     break;
             }
         }
         /// <summary>Updates the transform.</summary>
         void ISlimTween.UpdateTransform()
         {
-            if (type == TransformType.Move || type == TransformType.Translate)
+            if (type == TransformType.Move)
             {
                 if(tweenMode != TweenMode.Combine)
                 {
-                    interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                    interp.SetFrom(!interp.isLocal ? interp.getTransform.position : interp.getTransform.localPosition);
                 }
                 else
                 {
-                    //float weight = 1f; // You can adjust this value based on your requirements
-                    // Calculate weighted average of the positions
-                    //Vector3 weightedAverage = interp.from * (1 - weight) + transform.position * weight;
-                    //interp.SetFrom(Vector3.Lerp(interp.from, Vector3.Lerp(weightedAverage, interp.to, tick), tick));
-                    var b = Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, transform.position, tick), tick);
-                    interp.SetFrom(b);
+                    interp.SetFrom(Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, !interp.isLocal ? interp.getTransform.position : interp.getTransform.localPosition, tick), tick));
                 }
             }
             else if (type == TransformType.Scale)
             {
-                interp.SetFrom(transform.localScale);
+                if(tweenMode != TweenMode.Combine)
+                {
+                    interp.SetFrom(interp.getTransform.localScale);
+                }
+                else
+                {
+                    interp.SetFrom(Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, interp.getTransform.localScale, tick), tick));
+                }
             }
             
         }
@@ -767,17 +761,21 @@ namespace Breadnone.Extension
         {
             if (type == TransformType.Move || type == TransformType.Translate)
             {
-                interp.SetPreviousPos(!isLocal ? transform.position : transform.localPosition);
+                interp.SetPreviousPos(!interp.isLocal ? interp.getTransform.position : interp.getTransform.localPosition);
             }
             else if (type == TransformType.Scale)
             {
-                interp.SetPreviousPos(transform.localScale);
+                interp.SetPreviousPos(interp.getTransform.localScale);
             }
         }
         void ISlimTween.RestorePreviousPosition()
         {
             tweenMode = TweenMode.Tweeen;
             interp.SetFrom(interp.previousPos);
+        }
+        void ISlimTween.ClearInterpolatorProperty()
+        {
+            interp.Clear();
         }
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
         /// <summary>Initialize transform base value.</summary>
@@ -790,10 +788,10 @@ namespace Breadnone.Extension
         public void Init(Transform objectTransform, Vector3 to, float time, bool local, TransformType transformType)
         {
             type = transformType;
-            transform = objectTransform;
+            interp.setTransform(objectTransform);
             interp.SetTo(to);
             duration = time;
-            isLocal = local;
+            interp.isLocal = local;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
 
@@ -822,8 +820,8 @@ namespace Breadnone.Extension
         {
             type = transformType;
             duration = time;
-            transform = objectTransform;
-            isLocal = local;
+            interp.setTransform(objectTransform);
+            interp.isLocal = local;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
             interp.SetTo(axis);
@@ -832,61 +830,14 @@ namespace Breadnone.Extension
         public void InitRotateAround(Transform objectTransform, Vector3 target, Vector3 axis, float targetAngle, float time, TransformType transformType)
         {
             type = transformType;
-            transform = objectTransform;
+            interp.setTransform(objectTransform);
             duration = time;
             interp.SetAngle(targetAngle);
-            this.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
+            interp.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
             interp.Set(target, axis);
             TweenManager.InsertToActiveTween(this);
-        }
-
-        /// <summary>Interpoaltes world position.</summary>
-        void LerpPosition(float value)
-        {
-            if (!isLocal)
-            {
-                transform.position = interp.Interpolate(value);
-            }
-            else
-            {
-                transform.localPosition = interp.Interpolate(value);
-            }
-        }
-        /// <summary>Interpolates the scale.</summary>
-        void LerpScale(float value)
-        {
-            transform.localScale = interp.Interpolate(value);
-        }
-        /// <summary>Interpolates local/world rotation.</summary>
-        void LerpEuler(float value)
-        {
-            if (!isLocal)
-            {
-                transform.rotation = Quaternion.Euler(interp.to * value);
-            }
-            else
-            {
-                transform.localRotation = Quaternion.Euler(interp.to * value);
-            }
-        }
-        /// <summary>Rotates based on target point.</summary>
-        void LerpRotateAround(float value)
-        {
-            var localto = interp.to.normalized;
-            transform.rotation = Quaternion.Euler(localto * interp.angle * value);
-        }
-        void LerpRotateAroundLocal(float value)
-        {
-            var localto = transform.InverseTransformDirection(interp.to).normalized;
-            transform.localRotation = Quaternion.Euler(localto * interp.angle * value);
-        }
-
-        /// <summary>Rotates based on target point.</summary>
-        void LerpTranslate(float value)
-        {
-            transform.Translate(interp.to * value, !isLocal ? Space.World : Space.Self);
         }
     }
     /// <summary>The sub base class.</summary>
@@ -894,27 +845,27 @@ namespace Breadnone.Extension
     {
         public SlimRect()
         {
-            interp = new InterpolatorStruct();
+            interp = new Interpolator();
         }
-        /// <summary>The transform.</summary>
-        UnityEngine.RectTransform transform;
         /// <summary>Starting position to target value.</summary>
-        InterpolatorStruct interp;
+        Interpolator interp = new();
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>
-        public UnityEngine.RectTransform GetTransform => transform;
+        public UnityEngine.RectTransform GetTransform => interp.getRectTransform;
         /// <summary>Tween type.</summary>
         TransformType type = TransformType.None;
-        /// <summary>Locality.</summary>
-        bool isLocal = false;
-        TweenMode tweenMode;
+        TweenMode tweenMode = TweenMode.Tweeen;
         TweenMode ISlimTween.TweenMode
         {
             get => tweenMode;
             set => tweenMode = value;
         }
+        void ISlimTween.ClearInterpolatorProperty()
+        {
+            interp.Clear();
+        }
         (Vector3 from, Vector3 to) ISlimTween.FromTo { get { return (interp.from, interp.to); } set { interp.SetFrom(value.from); interp.SetTo(value.to); } }
-        bool ISlimTween.Locality { get => isLocal; set => isLocal = value; }
-        ref InterpolatorStruct ISlimTween.GetInterpolator() => ref interp;
+        bool ISlimTween.Locality { get => interp.isLocal; set => interp.isLocal = value; }
+        Interpolator ISlimTween.GetInterpolator() => interp;
         /// <summary>Previous assigned type.</summary>
         TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
         /// <summary>Initialize transform base value.</summary>
@@ -927,14 +878,14 @@ namespace Breadnone.Extension
         public void Init(UnityEngine.RectTransform objectTransform, Vector3 to, float time, bool local, TransformType transformType)
         {
             type = transformType;
-            transform = objectTransform;
+            interp.setTransform(objectTransform);
             interp.SetTo(to);
             duration = time;
-            isLocal = local;
+            interp.isLocal = local;
 
             if (transformType == TransformType.Move)
             {
-                interp.SetFrom(!isLocal ? objectTransform.anchoredPosition3D : objectTransform.anchoredPosition);
+                interp.SetFrom(!interp.isLocal ? objectTransform.anchoredPosition3D : objectTransform.anchoredPosition);
                 PoolTransformID(tprops.id);
             }
             else if (transformType == TransformType.Scale)
@@ -964,8 +915,8 @@ namespace Breadnone.Extension
         {
             type = transformType;
             duration = time;
-            transform = objectTransform;
-            isLocal = local;
+            interp.setTransform(objectTransform);
+            interp.isLocal = local;
             interp.SetAngle(targetAngle);
             interp.Set(new Vector3(0f, interp.angle, 0f), axis);
 
@@ -974,8 +925,8 @@ namespace Breadnone.Extension
         public void InitRotateAround(UnityEngine.RectTransform objectTransform, Vector3 target, Vector3 axis, float angle, float time, TransformType transformType)
         {
             type = transformType;
-            this.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
-            transform = objectTransform;
+            interp.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
+            interp.setTransform(objectTransform);
             duration = time;
             interp.Set(target, axis);
             interp.SetAngle(angle);
@@ -986,7 +937,7 @@ namespace Breadnone.Extension
         protected override void InternalOnComplete()
         {
             InvokeLerps(tprops.pingpong ? 0f : 1f);
-            transform.ForceUpdateRectTransforms();
+            interp.getRectTransform.ForceUpdateRectTransforms();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ///<summary>Resets properties shuffle from/to value.</summary>
@@ -1006,7 +957,10 @@ namespace Breadnone.Extension
 
             if (tweenMode == TweenMode.Combine)
             {
-                islim.UpdateTransform();
+                if(GetTransformCount(tprops.id) > 1)
+                {
+                    islim.UpdateTransform();
+                }
             }
 
             InvokeLerps(tick);
@@ -1016,25 +970,22 @@ namespace Breadnone.Extension
             switch (type)
             {
                 case TransformType.Move: //Move
-                    LerpPosition(this.FloatInterp(tick));
+                    interp.Lerp2DPosition(this.FloatInterp(tick));
                     break;
                 case TransformType.Scale: //Scale
-                    LerpScale(this.FloatInterp(tick));
+                    interp.Lerp2DScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate: //Rotate
-                    LerpEuler(this.FloatInterp(tick));
+                    interp.Lerp2DEuler(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround: //RotateAround
-                    LerpRotateAround(this.FloatInterp(tick));
-                    break;
-                case TransformType.RotateAroundLocal:
-                    LerpRotateAroundLocal(this.FloatInterp(tick));
+                    interp.Lerp2DRotateAround(this.FloatInterp(tick));
                     break;
                 case TransformType.SizeDelta: //SizeDelta
-                    LerpSizeDelta(this.FloatInterp(tick));
+                    interp.Lerp2DSizeDelta(this.FloatInterp(tick));
                     break;
                 case TransformType.SizeAnchored: //SizeAnchored
-                    LerpSizeAnchored(this.FloatInterp(tick));
+                    interp.Lerp2DSizeAnchored(this.FloatInterp(tick));
                     break;
             }
         }
@@ -1044,36 +995,51 @@ namespace Breadnone.Extension
             {
                 if(tweenMode != TweenMode.Combine)
                 {                
-                    interp.SetFrom(!isLocal ? transform.position : transform.localPosition);
+                    interp.SetFrom(!interp.isLocal ? interp.getTransform.position : interp.getTransform.localPosition);
                 }
                 else
                 {
-                    var b = Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, transform.position, tick), tick);
-                    interp.SetFrom(b);
+                    interp.SetFrom(Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, !interp.isLocal ? interp.getTransform.position : interp.getTransform.localPosition, tick), tick));
                 }
             }
             else if (type == TransformType.Scale)
             {
-                interp.SetFrom(transform.localScale);
+                if(tweenMode != TweenMode.Combine)
+                {                
+                    interp.SetFrom(interp.getTransform.localScale);
+                }
+                else
+                {
+                    var b = Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, interp.getTransform.localScale, tick), tick);
+                    interp.SetFrom(b);
+                }
             }
             else if (islim.GetTransformType == TransformType.SizeDelta)
             {
-                interp.SetFrom(transform.sizeDelta);
+                if(tweenMode != TweenMode.Combine)
+                {                
+                    interp.SetFrom(interp.getRectTransform.sizeDelta);
+                }
+                else
+                {
+                    var b = Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, interp.getRectTransform.sizeDelta, tick), tick);
+                    interp.SetFrom(b);
+                }
             }
         }
         void ISlimTween.BackupPreviousPosition()
         {
             if (type == TransformType.Move)
             {
-                interp.SetPreviousPos(!isLocal ? transform.position : transform.localPosition);
+                interp.SetPreviousPos(!interp.isLocal ? interp.getRectTransform.anchoredPosition3D : interp.getRectTransform.anchoredPosition);
             }
             else if (type == TransformType.Scale)
             {
-                interp.SetPreviousPos(transform.localScale);
+                interp.SetPreviousPos(interp.getRectTransform.localScale);
             }
             else if (islim.GetTransformType == TransformType.SizeDelta)
             {
-                interp.SetPreviousPos(transform.sizeDelta);
+                interp.SetPreviousPos(interp.getRectTransform.sizeDelta);
             }
         }
         void ISlimTween.RestorePreviousPosition()
@@ -1081,70 +1047,26 @@ namespace Breadnone.Extension
             tweenMode = TweenMode.Tweeen;
             interp.SetFrom(interp.previousPos);
         }
-        /// <summary>Interpoaltes world position.</summary>
-        void LerpPosition(float value)
-        {
-            if (!isLocal)
-            {
-                transform.anchoredPosition3D = interp.Interpolate(value);
-            }
-            else
-            {
-                transform.anchoredPosition = interp.Interpolate(value);
-            }
-        }
-        /// <summary>Interpolates the scale.</summary>
-        void LerpScale(float value)
-        {
-            transform.localScale = interp.Interpolate(value);
-        }
-        /// <summary>Interpolates local/world rotation.</summary>
-        void LerpEuler(float value)
-        {
-            if (!isLocal)
-            {
-                transform.rotation = Quaternion.Euler(interp.to * value);
-            }
-            else
-            {
-                transform.localRotation = Quaternion.Euler(interp.to * value);
-            }
-        }
         /// <summary>Rotates around.</summary>
         /// <param name="value"></param>
         void LerpRotateAround(float value)
         {
-            var localto = interp.to.normalized;
-            transform.rotation = Quaternion.Euler(localto * interp.angle * value);
-        }
-        /// <summary>
-        /// Rotates around localSpace.
-        /// </summary>
-        /// <param name="value"></param>
-        void LerpRotateAroundLocal(float value)
-        {
-            var localto = transform.InverseTransformDirection(interp.to).normalized;
-            transform.localRotation = Quaternion.Euler(localto * interp.angle * value);
-        }
-
-        /// <summary>Interpolate delta value.</summary>
-        void LerpSizeDelta(float value)
-        {
-            transform.sizeDelta = interp.Interpolate(value);
-        }
-        void LerpSizeAnchored(float value)
-        {
-            Vector2 myPrevPivot = transform.pivot;
-            var to = interp.to;
-            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Lerp(transform.rect.width, to.x, value));
-            transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(transform.rect.height, to.y, value));
-            transform.pivot = myPrevPivot;
-            transform.ForceUpdateRectTransforms();
+            if(type == TransformType.RotateAround)
+            {
+                var localto = interp.to.normalized;
+                interp.getRectTransform.rotation = Quaternion.Euler(localto * interp.angle * value);
+            }
+            else
+            {
+                var localto = interp.getRectTransform.InverseTransformDirection(interp.to).normalized;
+                interp.getRectTransform.localRotation = Quaternion.Euler(localto * interp.angle * value);
+            }
         }
     }
     /// <summary>Public access to internals.</summary>
     public interface ISlimTween
     {
+        public void ClearInterpolatorProperty();
         public bool Locality { get; set; }
         public TweenMode TweenMode { get; set; }
         public TransformType GetTransformType { get; set; }
@@ -1153,7 +1075,7 @@ namespace Breadnone.Extension
         public void RestorePreviousPosition();
         /// <summary>Access to the starting and target value.</summary>
         public (Vector3 from, Vector3 to) FromTo { get; set; }
-        public ref InterpolatorStruct GetInterpolator();
+        public Interpolator GetInterpolator();
     }
     /// <summary>
     /// Delegate to pass easeing refs
@@ -1176,7 +1098,7 @@ namespace Breadnone.Extension
     }
     /// <summary>Interpolator.</summary>
     [Serializable]
-    public struct InterpolatorStruct
+    public sealed class Interpolator
     {
         float x;
         float a;
@@ -1184,20 +1106,35 @@ namespace Breadnone.Extension
         float b;
         float z;
         float c;
-
         public float angle => _prevPos.x;
+        Quaternion _prevRotation;
         Vector3 _prevPos;
+        Transform transform;
+        RectTransform rectTransform => transform as RectTransform;
+        public TransformType type {get;set;} = TransformType.None;
+        public bool isLocal {get;set;}
         /// <summary>Gets previous position. Used for combining.</summary>
         public Vector3 previousPos => _prevPos;
+        public Quaternion previousRot => _prevRotation;
+        public Transform setTransform(Transform trans)=> transform = trans;
+        public Transform getTransform => transform;
+        public RectTransform getRectTransform => transform as RectTransform;
         /// <summary>Starting value</summary>
         public Vector3 from => new Vector3(a, b, c);
         /// <summary>Target value</summary>
         public Vector3 to => new Vector3(x, y, z);
+        public void Clear()
+        {
+            transform = null;
+        }
+        public void SetPreviousRot(Quaternion quat)
+        {
+            _prevRotation = quat;
+        }
         /// <summary>Sets the angle</summary>
         public void SetAngle(float angles) => _prevPos = new Vector3(angles, 0f, 0f);
         /// <summary>Sets previous position.</summary>
         public void SetPreviousPos(Vector3 prevPos) => _prevPos = prevPos;
-        public bool combineMode;
         /// <summary>Sets the from and to.</summary>
         public void Set(Vector3 from, Vector3 to)
         {
@@ -1220,16 +1157,138 @@ namespace Breadnone.Extension
             y = to.y;
             z = to.z;
         }
-        /// <summary>Interpolates frokm - to value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3 Interpolate(float tick)
+        /// <summary>Interpoaltes world position.</summary>
+        public void LerpPosition(float tick)
         {
-            return new Vector3(
+            if (!isLocal)
+            {
+                transform.position = new Vector3(
+                a + (x - a) * tick,
+                b + (y - b) * tick,
+                c + (z - c) * tick);
+            }
+            else
+            {
+                transform.localPosition = new Vector3(
+                a + (x - a) * tick,
+                b + (y - b) * tick,
+                c + (z - c) * tick);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>Interpolates the scale.</summary>
+        public void LerpScale(float tick)
+        {
+            transform.localScale = new Vector3(
             a + (x - a) * tick,
             b + (y - b) * tick,
             c + (z - c) * tick);
         }
-        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>Interpolates local/world rotation.</summary>
+        public void LerpEuler(float value)
+        {
+            if (!isLocal)
+            {
+                transform.rotation = Quaternion.Euler(to * value);
+            }
+            else
+            {
+                transform.localRotation = Quaternion.Euler(to * value);
+            }
+        }
+        /// <summary>Rotates based on target point.</summary>
+        public void LerpRotateAround(float value)
+        {
+            if(type == TransformType.RotateAround)
+            {
+                var localto = to.normalized;
+                transform.rotation = Quaternion.Euler(localto * angle * value);
+            }
+            else
+            {
+                var localto = transform.InverseTransformDirection(to).normalized;
+                transform.localRotation = Quaternion.Euler(localto * angle * value);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>Rotates based on target point.</summary>
+        public void LerpTranslate(float value)
+        {
+            transform.Translate(to * value, !isLocal ? Space.World : Space.Self);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>Interpolates local/world rotation.</summary>
+        public void Lerp2DEuler(float value)
+        {
+            if (!isLocal)
+            {
+                rectTransform.rotation = Quaternion.Euler(to * value);
+            }
+            else
+            {
+                rectTransform.localRotation = Quaternion.Euler(to * value);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Lerp2DRotateAround(float value)
+        {
+            if(type == TransformType.RotateAround)
+            {
+                rectTransform.rotation = Quaternion.Euler(to.normalized * angle * value);
+            }
+            else
+            {
+                var localto = rectTransform.InverseTransformDirection(to).normalized;
+                rectTransform.localRotation = Quaternion.Euler(localto * angle * value);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>Interpolates the scale.</summary>
+        public void Lerp2DScale(float tick)
+        {
+            rectTransform.localScale = new Vector3(
+            a + (x - a) * tick,
+            b + (y - b) * tick,
+            c + (z - c) * tick);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Lerp2DSizeDelta(float tick)
+        {
+            rectTransform.sizeDelta = new Vector3(
+            a + (x - a) * tick,
+            b + (y - b) * tick,
+            c + (z - c) * tick);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Lerp2DSizeAnchored(float tick)
+        {
+            Vector2 myPrevPivot = rectTransform.pivot;
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Lerp(rectTransform.rect.width, to.x, tick));
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(rectTransform.rect.height, to.y, tick));
+            rectTransform.pivot = myPrevPivot;
+            rectTransform.ForceUpdateRectTransforms();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>Interpoaltes world position.</summary>
+        public void Lerp2DPosition(float tick)
+        {
+            if (!isLocal)
+            {
+                rectTransform.anchoredPosition3D = new Vector3(
+                a + (x - a) * tick,
+                b + (y - b) * tick,
+                c + (z - c) * tick);
+            }
+            else
+            {
+                rectTransform.anchoredPosition = new Vector3(
+                a + (x - a) * tick,
+                b + (y - b) * tick,
+                c + (z - c) * tick);
+            }
+        }
     }
     public enum TweenMode
     {
@@ -1237,8 +1296,6 @@ namespace Breadnone.Extension
         Queue,
         Tweeen
     }
-    /// <summary>
-    /// 
     public struct TFloat6
     {
         readonly float _x;

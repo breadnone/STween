@@ -712,11 +712,11 @@ namespace Breadnone
 
                 Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
                 var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
-                var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
+                var sub = stween.transform.lerpRotationLocal(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
                 (sub as ISlimRegister).RegisterLastOnComplete(()=> 
                 {
                     stween.transform.rotation = defrotation;
-                    var t = stween.transform.lerpRotation(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
+                    var t = stween.transform.lerpPositionLocal(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
                 });
             }
         }
@@ -733,6 +733,21 @@ namespace Breadnone
                 var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutElastic);
                 (sub as ISlimRegister).RegisterLastOnComplete(()=> stween.transform.lerpRotation(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutElastic));
             }
+        }
+        /// <summary>
+        /// Lerps localScale based on pivot point.
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <param name="target"></param>
+        /// <param name="newScale"></param>
+        public static void lerpScaleAround(Transform transform, Vector3 target, Vector3 newScale)
+        {
+            Vector3 a = transform.localPosition;
+            Vector3 c = a - target; 
+            float RS = newScale.x / transform.localScale.x; 
+            Vector3 FP = target + c * RS;
+            transform.localScale = newScale;
+            transform.localPosition = FP;
         }
     }
 }

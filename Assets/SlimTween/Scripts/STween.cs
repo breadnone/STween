@@ -1160,6 +1160,25 @@ namespace Breadnone
         /// <param name="transform">The transform to scale.</param>
         /// <param name="to">Target scale value.</param>
         /// <param name="duration">Duration to reach the target.</param>
+        /// <param name="pivot">Target pivot.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat scaleAround(Transform transform, Vector3 pivot, Vector3 to, float duration)
+        {
+            if (transform is null)
+            {
+                throw new STweenException("Transform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<STFloat>(transform.gameObject.GetInstanceID());
+            Vector3 from = transform.localScale;
+
+            instance.SetBase(0, 1, duration, x=>{ lerpScaleAround(transform, pivot, Vector3.LerpUnclamped(from, to, x));});
+            return instance;
+        }
+        ///<summary>Scales a transform.</summary>
+        /// <param name="transform">The transform to scale.</param>
+        /// <param name="to">Target scale value.</param>
+        /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
         public static SlimTransform scale(Transform transform, Vector3 to, float duration)
         {
@@ -1947,7 +1966,20 @@ namespace Breadnone
         }
         ///<summary>Checks if an instance is tweening.</summary>
         public static bool IsTweening(TweenClass vtween) { return vtween.IsTweening; }
+        /// <summary>Check pause state of a tween instance.</summary>
+        /// <param name="vtween">Tween instance.</param>
         public static bool IsPaused(TweenClass vtween) { return vtween.IsPaused;}
+        /// <summary>Tries to find active tween.</summary>
+        /// <param name="gameObject">GameObject.</param>
+        /// <param name="stween">Tween instance.</param>
+        public static bool TryFindTween(GameObject gameObject, out TweenClass stween)
+        {
+            var t = TweenExtension.GetTween(gameObject.GetInstanceID(), out var obj);
+            stween = obj;
+            return t;
+        }
+        /// <summary>Check pause state of a tween instance.</summary>
+        /// <param name="id">Tween id.</param>
         public static bool IsPaused(int id)
         {
             return TweenExtension.GetTween(id, out var tw) && tw.IsPaused;
@@ -1957,7 +1989,7 @@ namespace Breadnone
         {
             return TweenExtension.GetTween(customId, out var tw) && tw.IsTweening;
         }
-        ///<summary>Reinitialize the max tweens.</summary>
+        ///<summary>(EXPERIMENTAL!) Reinitialize the max tweens pool.</summary>
         public static void Init(int newSize) { TweenManager.InitSize(newSize); }
         #endregion
     }

@@ -1111,16 +1111,13 @@ namespace Breadnone.Extension
         float z;
         float c;
         public float angle => _prevPos.x;
-        Quaternion _prevRotation;
         Quaternion _fromRotation;
         Vector3 _prevPos;
         Transform transform;
         RectTransform rectTransform => transform as RectTransform;
-        public TransformType type {get;set;} = TransformType.None;
         public bool isLocal {get;set;}
         /// <summary>Gets previous position. Used for combining.</summary>
         public Vector3 previousPos => _prevPos;
-        public Quaternion previousRot => _prevRotation;
         public Quaternion fromRotation => _fromRotation;
         public Transform setTransform(Transform trans)=> transform = trans;
         public Transform getTransform => transform;
@@ -1136,10 +1133,6 @@ namespace Breadnone.Extension
         public void Clear()
         {
             transform = null;
-        }
-        public void SetPreviousRot(Quaternion quat)
-        {
-            _prevRotation = quat;
         }
         /// <summary>Sets the angle</summary>
         public void SetAngle(float angles) => _prevPos = new Vector3(angles, 0f, 0f);
@@ -1167,6 +1160,7 @@ namespace Breadnone.Extension
             y = to.y;
             z = to.z;
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>Interpoaltes world position.</summary>
         public void LerpPosition(float tick)
@@ -1245,7 +1239,7 @@ namespace Breadnone.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Lerp2DRotateAround(float tick)
         {
-            if(type == TransformType.RotateAround)
+            if(!isLocal)
             {
                 var localto = to.normalized;
                 rectTransform.rotation = Quaternion.SlerpUnclamped(_fromRotation, Quaternion.Euler(localto * angle), tick);
@@ -1277,8 +1271,8 @@ namespace Breadnone.Extension
         public void Lerp2DSizeAnchored(float tick)
         {
             Vector2 myPrevPivot = rectTransform.pivot;
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Lerp(rectTransform.rect.width, to.x, tick));
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(rectTransform.rect.height, to.y, tick));
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.LerpUnclamped(rectTransform.rect.width, to.x, tick));
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.LerpUnclamped(rectTransform.rect.height, to.y, tick));
             rectTransform.pivot = myPrevPivot;
             rectTransform.ForceUpdateRectTransforms();
         }

@@ -1176,6 +1176,25 @@ namespace Breadnone
             return instance;
         }
         ///<summary>Scales a transform.</summary>
+        /// <param name="rectTransform">The transform to scale.</param>
+        /// <param name="to">Target scale value.</param>
+        /// <param name="duration">Duration to reach the target.</param>
+        /// <param name="pivot">Target pivot.</param>
+        /// <exception cref="STweenException"></exception>
+        public static STFloat scaleAround(RectTransform rectTransform, Vector3 pivot, Vector3 to, float duration)
+        {
+            if (rectTransform is null)
+            {
+                throw new STweenException("RectTransform can't be null.");
+            }
+
+            var instance = STPool.GetInstance<STFloat>(rectTransform.gameObject.GetInstanceID());
+            Vector3 from = rectTransform.localScale;
+
+            instance.SetBase(0, 1, duration, x=>{ lerpScaleAround(rectTransform, pivot, Vector3.LerpUnclamped(from, to, x));});
+            return instance;
+        }
+        ///<summary>Scales a transform.</summary>
         /// <param name="transform">The transform to scale.</param>
         /// <param name="to">Target scale value.</param>
         /// <param name="duration">Duration to reach the target.</param>

@@ -720,10 +720,10 @@ namespace Breadnone.Extension
                     interp.LerpScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate: //Rotate
-                    interp.LerpEuler(this.FloatInterp(tick));
+                    interp.SlerpRotation(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround: //RotateAround
-                    interp.LerpRotateAround(this.FloatInterp(tick));
+                    interp.SlerpRotateAround(this.FloatInterp(tick));
                     break;
                 case TransformType.Translate: //Translate
                     interp.LerpTranslate(this.FloatInterp(tick));
@@ -822,6 +822,7 @@ namespace Breadnone.Extension
             duration = time;
             interp.setTransform(objectTransform);
             interp.isLocal = local;
+            interp.SetFromRotation(objectTransform.rotation);
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
             interp.SetTo(axis);
@@ -829,14 +830,16 @@ namespace Breadnone.Extension
         }
         public void InitRotateAround(Transform objectTransform, Vector3 target, Vector3 axis, float targetAngle, float time, TransformType transformType)
         {
-            type = transformType;
+            type = TransformType.RotateAround;
             interp.setTransform(objectTransform);
             duration = time;
             interp.SetAngle(targetAngle);
             interp.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
+            interp.SetFromRotation(objectTransform.rotation);
 
             //ROTATION will take FROM as axis and TO.x as degree angle.
             interp.Set(target, axis);
+            type = TransformType.RotateAround;
             TweenManager.InsertToActiveTween(this);
         }
     }
@@ -919,18 +922,19 @@ namespace Breadnone.Extension
             interp.isLocal = local;
             interp.SetAngle(targetAngle);
             interp.Set(new Vector3(0f, interp.angle, 0f), axis);
+            interp.SetFromRotation(objectTransform.rotation);
 
             TweenManager.InsertToActiveTween(this);
         }
         public void InitRotateAround(UnityEngine.RectTransform objectTransform, Vector3 target, Vector3 axis, float angle, float time, TransformType transformType)
         {
-            type = transformType;
             interp.isLocal = transformType == TransformType.RotateAroundLocal ? true : false;
             interp.setTransform(objectTransform);
             duration = time;
             interp.Set(target, axis);
             interp.SetAngle(angle);
-
+            interp.SetFromRotation(objectTransform.rotation);
+            type = TransformType.RotateAround;
             TweenManager.InsertToActiveTween(this);
         }
         /// <summary>Invoked at the very last of a completion. Won't be executec if cancelled.</summary>
@@ -976,7 +980,7 @@ namespace Breadnone.Extension
                     interp.Lerp2DScale(this.FloatInterp(tick));
                     break;
                 case TransformType.Rotate: //Rotate
-                    interp.Lerp2DEuler(this.FloatInterp(tick));
+                    interp.Slerp2DRotation(this.FloatInterp(tick));
                     break;
                 case TransformType.RotateAround: //RotateAround
                     interp.Lerp2DRotateAround(this.FloatInterp(tick));
@@ -1108,6 +1112,7 @@ namespace Breadnone.Extension
         float c;
         public float angle => _prevPos.x;
         Quaternion _prevRotation;
+        Quaternion _fromRotation;
         Vector3 _prevPos;
         Transform transform;
         RectTransform rectTransform => transform as RectTransform;
@@ -1116,6 +1121,7 @@ namespace Breadnone.Extension
         /// <summary>Gets previous position. Used for combining.</summary>
         public Vector3 previousPos => _prevPos;
         public Quaternion previousRot => _prevRotation;
+        public Quaternion fromRotation => _fromRotation;
         public Transform setTransform(Transform trans)=> transform = trans;
         public Transform getTransform => transform;
         public RectTransform getRectTransform => transform as RectTransform;
@@ -1123,6 +1129,10 @@ namespace Breadnone.Extension
         public Vector3 from => new Vector3(a, b, c);
         /// <summary>Target value</summary>
         public Vector3 to => new Vector3(x, y, z);
+        public void SetFromRotation(Quaternion quat)
+        {
+            _fromRotation = quat;
+        }
         public void Clear()
         {
             transform = null;
@@ -1187,61 +1197,63 @@ namespace Breadnone.Extension
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>Interpolates local/world rotation.</summary>
-        public void LerpEuler(float value)
+        public void SlerpRotation(float tick)
         {
-            if (!isLocal)
-            {
-                transform.rotation = Quaternion.Euler(to * value);
+            if(!isLocal)
+            { 
+                transform.rotation = Quaternion.SlerpUnclamped(_fromRotation, fromRotation * Quaternion.Euler(to), tick);
             }
             else
             {
-                transform.localRotation = Quaternion.Euler(to * value);
+                transform.localRotation = Quaternion.SlerpUnclamped(_fromRotation, fromRotation * Quaternion.Euler(to), tick);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>Rotates based on target point.</summary>
-        public void LerpRotateAround(float value)
+        public void SlerpRotateAround(float tick)
         {
-            if(type == TransformType.RotateAround)
+            if(!isLocal)
             {
                 var localto = to.normalized;
-                transform.rotation = Quaternion.Euler(localto * angle * value);
+                transform.rotation = Quaternion.SlerpUnclamped(_fromRotation, _fromRotation * Quaternion.AngleAxis(angle, localto), tick);
             }
             else
             {
                 var localto = transform.InverseTransformDirection(to).normalized;
-                transform.localRotation = Quaternion.Euler(localto * angle * value);
+                transform.rotation = Quaternion.SlerpUnclamped(_fromRotation, _fromRotation * Quaternion.AngleAxis(angle, localto), tick);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>Rotates based on target point.</summary>
-        public void LerpTranslate(float value)
+        public void LerpTranslate(float tick)
         {
-            transform.Translate(to * value, !isLocal ? Space.World : Space.Self);
+            transform.Translate(to * tick, !isLocal ? Space.World : Space.Self);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>Interpolates local/world rotation.</summary>
-        public void Lerp2DEuler(float value)
+        public void Slerp2DRotation(float tick)
         {
-            if (!isLocal)
-            {
-                rectTransform.rotation = Quaternion.Euler(to * value);
+            if(!isLocal)
+            { 
+                rectTransform.rotation = Quaternion.SlerpUnclamped(fromRotation, fromRotation * Quaternion.Euler(to), tick);
             }
             else
             {
-                rectTransform.localRotation = Quaternion.Euler(to * value);
+                rectTransform.localRotation = Quaternion.SlerpUnclamped(fromRotation, fromRotation * Quaternion.Euler(to), tick);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Lerp2DRotateAround(float value)
+        public void Lerp2DRotateAround(float tick)
         {
             if(type == TransformType.RotateAround)
             {
-                rectTransform.rotation = Quaternion.Euler(to.normalized * angle * value);
+                var localto = to.normalized;
+                rectTransform.rotation = Quaternion.SlerpUnclamped(_fromRotation, Quaternion.Euler(localto * angle), tick);
             }
             else
             {
-                var localto = rectTransform.InverseTransformDirection(to).normalized;
-                rectTransform.localRotation = Quaternion.Euler(localto * angle * value);
+                var localto = transform.InverseTransformDirection(to).normalized;
+                rectTransform.localRotation = Quaternion.SlerpUnclamped(_fromRotation, Quaternion.Euler(localto * angle), tick);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

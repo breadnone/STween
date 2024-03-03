@@ -700,38 +700,46 @@ namespace Breadnone
 
             return ins;
         }
-
-        public static void lerpPunch(this GameObject stween, float punchFactor, float punchSize, float duration)
+        /// <summary>
+        /// Punch effect.
+        /// </summary>
+        /// <param name="gameObject">The gameObject.</param>
+        /// <param name="punchFactor">Punch factor.</param>
+        /// <param name="punchSize">Punch size.</param>
+        /// <param name="duration">Duration.</param>
+        public static void lerpPunch(this GameObject gameObject, float punchFactor, float punchSize, float duration)
         {
-            if(stween.transform != null)
+            if(gameObject != null)
             {
-                var defrotation = stween.transform.rotation;
-                float val = 8.5f * punchFactor;
-                var vec = stween.transform.localScale;
-                float tmp = punchSize * 0.5f;
+                var trans = gameObject.transform.localPosition;
+                var scale = gameObject.transform.localScale;
+                float angle = punchFactor * 10f;
 
-                Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
-                var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration).setPingPong(1);
-                var sub = stween.transform.lerpRotationLocal(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutQuad);
-                (sub as ISlimRegister).RegisterLastOnComplete(()=> 
+                var rot1 = rotateLocal(gameObject.transform, new Vector3(0, 0, angle), duration/2f);
+                var sc1 = STween.scale(gameObject.transform, scale * punchSize, duration/2f).setPingPong(1).setEase(Ease.EaseInOutBack);
+                
+                (rot1 as ISlimRegister).RegisterLastOnComplete(()=>
                 {
-                    stween.transform.rotation = defrotation;
-                    var t = stween.transform.lerpPositionLocal(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutQuad);
-                });
+                    var rot2 = rotateLocal(gameObject.transform, new Vector3(0, 0, -angle * 2f), duration).setEase(Ease.EaseInOutQuad);
+                    
+                    (rot2 as ISlimRegister).RegisterLastOnComplete(()=>
+                    {
+                        rotateLocal(gameObject.transform, new Vector3(0, 0, angle), duration).setEase(Ease.EaseOutBounce);
+                    });
+                }); 
             }
         }
-        public static void punch(GameObject stween, float punchFactor, float punchSize, float duration)
+        public static void punch(GameObject gameObject, float punchFactor, float punchSize, float duration, bool isLocal)
         {
-            if(stween.transform != null)
+            var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            
+            if(!isLocal)
             {
-                float val = 8.5f * punchFactor;
-                var vec = stween.transform.localScale;
-                float tmp = punchSize * 0.5f;
 
-                Vector3 scale = new Vector3(vec.x + tmp, vec.y + tmp, vec.z + tmp);
-                var main = stween.transform.lerpScale(new Vector3(punchSize, punchSize, punchSize), duration);
-                var sub = stween.transform.lerpRotation(new Vector3(0, 0, -val), duration/2.1f).setEase(Ease.EaseInOutElastic);
-                (sub as ISlimRegister).RegisterLastOnComplete(()=> stween.transform.lerpRotation(new Vector3(0, 0, val * 2f), duration/2.1f).setPingPong(1).setEase(Ease.EaseInOutElastic));
+            }
+            else
+            {
+
             }
         }
         /// <summary>
@@ -748,6 +756,21 @@ namespace Breadnone
             Vector3 FP = target + c * RS;
             transform.localScale = newScale;
             transform.localPosition = FP;
+        }
+        /// <summary>
+        /// Lerps localScale based on pivot point.
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <param name="target"></param>
+        /// <param name="newScale"></param>
+        public static void lerpScaleAround(RectTransform transform, Vector3 target, Vector3 newScale)
+        {
+            Vector3 a = transform.anchoredPosition;
+            Vector3 c = a - target; 
+            float RS = newScale.x / transform.localScale.x; 
+            Vector3 FP = target + c * RS;
+            transform.localScale = newScale;
+            transform.anchoredPosition = FP;
         }
     }
 }

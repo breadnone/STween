@@ -214,8 +214,7 @@ public class VTweenTests : MonoBehaviour
     }
     public void TestRotateAroundLocal()
     {
-        if (rot1 is object && rot2 is object)
-        {
+
             var t = new Stopwatch();
 
             if (enableStopwatch)
@@ -229,7 +228,7 @@ public class VTweenTests : MonoBehaviour
                     t.Stop();
                 }
             }).setEase(easeTest).setLoop(loopCount).setPingPong(pingPong);
-        }
+        
     }
     public void TestScale()
     {
@@ -613,7 +612,7 @@ public class VTweenTests : MonoBehaviour
     }
     public void TestPunch()
     {
-        obj.lerpPunch(4, 4, 0.5f);
+        obj.lerpPunch(4, 1.3f, 0.5f);
     }
     public void TestRotateAndScaleRectObject()
     {

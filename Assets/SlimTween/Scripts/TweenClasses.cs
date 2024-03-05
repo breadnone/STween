@@ -661,7 +661,7 @@ namespace Breadnone.Extension
             interp = new Interpolator();
         }
         /// <summary>Previous assigned type.</summary>
-        TransformType ISlimTween.GetTransformType { get => (TransformType)type; set => type = value; }
+        TransformType ISlimTween.GetTransformType { get => type; set => type = value; }
         /// <summary>Starting value.</summary>
         Interpolator interp = new();
         /// <summary>Get the underlying transform object. Note : This is only for development purposes.</summary>

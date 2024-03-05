@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using UnityEngine;
 using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace Breadnone.Extension

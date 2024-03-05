@@ -598,11 +598,11 @@ public class VTweenTests : MonoBehaviour
     }
     public void TestShakeCamera()
     {
-        //TweenShake.Shake(Camera.main.transform, shakeDuration, exponentShake, exponentShake, false);
+        Camera.main.gameObject.lerpShake(0.2f, 1.5f, 2f);
     }
     public void TestShakeObject()
     {
-        //TweenShake.Shake(obj.transform, shakeDuration, exponentShake, exponentShake, false);
+        obj.lerpShake(0.2f, 1.5f, 2f);
     }
     public void TestRotateAndScaleObject()
     {

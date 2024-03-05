@@ -729,19 +729,45 @@ namespace Breadnone
                 }); 
             }
         }
-        public static void punch(GameObject gameObject, float punchFactor, float punchSize, float duration, bool isLocal)
+        public static void lerpShake(this GameObject gameObject, float power, float shakeAmount, float duration)
         {
             var ins = STPool.GetInstance<STFloat>(gameObject.GetInstanceID());
+            var pos = gameObject.transform.position;
+
+            var x = 0.8f;
+            Vector3 laspos = pos;
             
-            if(!isLocal)
+            ins.SetBase(0f, 1f, duration, tick =>
             {
+                if(tick < 0.3f)
+                {
+                    var a  = Vector3.LerpUnclamped(laspos, new Vector3(laspos.x - x, laspos.y, laspos.z), tick);
+                    var b = Vector3.LerpUnclamped(laspos, new Vector3(laspos.x, laspos.y + x, laspos.z), tick);
+                    laspos = Vector3.LerpUnclamped(a, b, tick);
+                    gameObject.transform.position = laspos;
+                }
+                else if(tick < 0.6f)
+                {
+                    var a  = Vector3.LerpUnclamped(laspos, new Vector3(laspos.x + (x * 2f), laspos.y, laspos.z), tick);
+                    var b = Vector3.LerpUnclamped(laspos, new Vector3(laspos.x, laspos.y - (x * 2f), laspos.z), tick);
+                    laspos = Vector3.LerpUnclamped(a, b, tick);
+                    gameObject.transform.position = laspos;
+                }
+                else
+                {
+                    var a  = Vector3.LerpUnclamped(laspos, new Vector3(laspos.x - x, laspos.y, laspos.z), tick);
+                    var b = Vector3.LerpUnclamped(laspos, new Vector3(laspos.x, laspos.y + x, laspos.z), tick);
+                    laspos = Vector3.LerpUnclamped(a, b, tick);
+                    gameObject.transform.position = laspos;
+                }
+            });
 
-            }
-            else
+            ins.setEase(Ease.EaseInBounce).setOnCompleteRepeat(true).setPingPong(2).setOnComplete(()=>
             {
-
-            }
+                x = -x;
+            });
         }
+
         /// <summary>
         /// Lerps localScale based on pivot point.
         /// </summary>

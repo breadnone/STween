@@ -24,14 +24,24 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using TweenLoop;
 
 namespace Breadnone
 {
     public static partial class STween
     {
-        /// <summary>
-        /// Gets random ids.
-        /// </summary>
+        /// <summary>Changes the execution order of the PlayerLoop. 2 modes, before and after script(monobehavior) update. \nNote! This must be done at least once before building the project.</summary>
+        /// <param name="order">0 = before script Update, 1 = after script Update</param>
+        public static void initExecutionOrder(int order)
+        {
+            if(order > 1 || order < 0)
+            {
+                return;
+            }
+
+            TweenPlayerLoop.stExecutionOrder = order;
+        }
+        /// <summary>Gets random ids.</summary>
         static int RandomId
         {
             get

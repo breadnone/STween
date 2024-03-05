@@ -21,13 +21,13 @@ namespace Breadnone.Extension
             {
                 return STEasing.Easing(tclass.ease, time); //disable easepower for now, change time param to : (tclass.tprops.easePower + time)
             }
-            else if(tclass.tprops.lerptype > 1)
+            else if (tclass.tprops.lerptype > 1)
             {
                 ISlimRegister islim = tclass;
-                
+
                 var to = 1f;
 
-                if(islim.FlipTickIs)
+                if (islim.FlipTickIs)
                 {
                     to = 0f;
                 }
@@ -40,13 +40,13 @@ namespace Breadnone.Extension
                 ISlimRegister islim = tclass;
                 var zero = 0f;
                 var one = 1f;
-                
+
                 if (islim.FlipTickIs)
                 {
                     zero = 1f;
                     one = 0f;
                 }
-                
+
                 return Mathf.LerpUnclamped(zero, one, tclass.tprops.animationCurve.Evaluate(time));
             }
         }
@@ -306,7 +306,7 @@ namespace Breadnone.Extension
 
         }
     }
-}	
+}
 public static class UnsafeMath
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -463,6 +463,22 @@ public static class UnsafeMath
     public static float Flerp0(float a, float b, float t)
     {
         return a + (b - a) * Clamp0(t);
+    }
+    public static Vector3 FBilerp(Vector3 p0, Vector3 p1, Vector3 p2, float t)
+    {
+        float t2 = t * t;
+        float t3 = t2 * t;
+
+        float c0 = 2 * t3 - 3 * t2 + 1;
+        float c1 = t3 - 2 * t2 + t;
+        float c2 = -2 * t3 + 3 * t2;
+        float c3 = t3 - t2;
+
+        return new Vector3(
+            c0 * p1.x + c1 * (p1.x - p0.x) + c2 * (p2.x - p1.x) + c3 * p2.x,
+            c0 * p1.y + c1 * (p1.y - p0.y) + c2 * (p2.y - p1.y) + c3 * p2.y,
+            c0 * p1.z + c1 * (p1.z - p0.z) + c2 * (p2.z - p1.z) + c3 * p2.z
+        );
     }
     public static float FSmoothStep1(float from, float to, float t)
     {

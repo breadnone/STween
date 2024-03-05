@@ -7,24 +7,31 @@ using Breadnone.Extension;
 
 namespace TweenLoop
 {
-    //Update dummy class
-    sealed class AwaitUpdate { }
-    //Update dummy class
+    [Serializable]
+    struct AwaitUpdate { }
+    [Serializable]
     public sealed class TweenPlayerLoop
     {
         public static TweenPlayerLoop tweenLoop;
-        public static PlayerLoopSystem playerLoop;
-        static Action Update;
-
-        public void RegisterUpdate(Action update)
+        public static int stExecutionOrder 
         {
-            Update = update;
+            get
+            {
+                if(PlayerPrefs.HasKey("st-hn-nh-order-mode"))
+                {
+                    return PlayerPrefs.GetInt("st-hn-nh-order-mode");
+                }
+                else
+                {
+                    PlayerPrefs.SetInt("st-hn-nh-order-mode", 0);
+                    return 0;
+                }
+            }
+            set
+            {
+                PlayerPrefs.SetInt("st-hn-nh-order-mode", value);
+            }
         }
-        public void UnregisterUpdate()
-        {
-            Update = null;
-        }
-
         public TweenPlayerLoop()
         {
             InitUpdate();
@@ -36,145 +43,91 @@ namespace TweenLoop
         }
         void AssignPlayerLoop(bool addElseRemove)
         {
-            playerLoop = PlayerLoop.GetDefaultPlayerLoop();
-
             if (addElseRemove)
             {
-                var copy = InjectCustomUpdate(ref playerLoop, true);
-                PlayerLoop.SetPlayerLoop(copy);
+                PlayerLoop.SetPlayerLoop(InjectCustomUpdate(PlayerLoop.GetCurrentPlayerLoop(), true));
             }
             else
             {
-                var copy = InjectCustomUpdate(ref playerLoop, false);
-                PlayerLoop.SetPlayerLoop(copy);
+                PlayerLoop.SetPlayerLoop(InjectCustomUpdate(PlayerLoop.GetCurrentPlayerLoop(), false));
             }
         }
         bool OnQuit()
         {
             AssignPlayerLoop(false);
+            Application.wantsToQuit -= OnQuit;
+            tweenLoop = null;
             return true;
         }
 
-        PlayerLoopSystem CreateLoopSystem()
+        PlayerLoopSystem InjectCustomUpdate(PlayerLoopSystem root, bool addCustomUpdateElseClear)
         {
-            PlayerLoopSystem before = default;
-
-            before = new PlayerLoopSystem()
-            {
-                updateDelegate = UpdateRun,
-                type = typeof(AwaitUpdate)
-            };
-
-            return before;
-        }
-
-        PlayerLoopSystem InjectCustomUpdate(ref PlayerLoopSystem root, bool addCustomUpdateElseClear)
-        {
-            var lis = root.subSystemList.ToList();
-            int? index = null;
+            int index = 0;
 
             for (int i = 0; i < root.subSystemList.Length; i++)
             {
-                Type t = typeof(Update);
-
-                if (lis[i].type == t)
+                if (root.subSystemList[i].type == typeof(Update))
                 {
                     index = i;
                     break;
                 }
             }
 
-            if (index.HasValue)
+            var tmp = root.subSystemList[index].subSystemList.ToList();
+
+            for (int i = tmp.Count; i-- > 0;)
             {
-                var tmp = root.subSystemList[index.Value].subSystemList.ToList();
-
-                for (int i = tmp.Count; i-- > 0;)
+                if (tmp[i].type == typeof(AwaitUpdate))
                 {
-                    Type t = typeof(AwaitUpdate);
-
-                    if (tmp[i].type == t)
-                    {
-                        tmp.Remove(tmp[i]);
-                    }
+                    tmp.Remove(tmp[i]);
                 }
-
-                if (addCustomUpdateElseClear)
-                {
-                    var sys = CreateLoopSystem();
-                    int idx = 0;
-
-                    idx = tmp.FindIndex(x => x.type == typeof(Update.ScriptRunBehaviourUpdate));
-
-                    var beforeIndex = idx--;
-                    var afterIndex = idx++;
- 
-                    if (idx == 0)
-                    {
-                        beforeIndex = 0;
-                        afterIndex = 2;
-                    }
-
-                    tmp.Insert(beforeIndex, sys);
-                }
-
-                root.subSystemList[index.Value].subSystemList = tmp.ToArray();
             }
 
+            if (addCustomUpdateElseClear)
+            {
+                var sys = new PlayerLoopSystem()
+                {
+                    updateDelegate = TweenManager.TweenWorkerUpdate,
+                    type = typeof(AwaitUpdate)
+                };
+
+                int idx = tmp.FindIndex(x => x.type == typeof(Update.ScriptRunBehaviourUpdate));
+                var beforeIndex = idx--;
+                var afterIndex = idx++;
+
+                if (idx == 0)
+                {
+                    beforeIndex = 0;
+                    afterIndex = 2;
+                }
+
+                if(stExecutionOrder == 0)
+                {
+                    tmp.Insert(beforeIndex, sys);
+                }
+                else
+                {
+                    tmp.Insert(afterIndex, sys);
+                }
+            }
+
+            root.subSystemList[index].subSystemList = tmp.ToArray();
             return root;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Init()
         {
-            if (tweenLoop == null)
-            {
-                TweenManager.isPlayMode = true;
-                tweenLoop = new TweenPlayerLoop();
-                tweenLoop.RegisterUpdate(TweenManager.TweenWorkerUpdate);
-            }
-            else
-            {
-                tweenLoop.RegisterUpdate(TweenManager.TweenWorkerUpdate);
-            }
+            TweenManager.isPlayMode = true;
+            tweenLoop = new TweenPlayerLoop();
         }
- 
+
         public static void RetriggerUpdateLoop()
         {
-            if(TweenManager.mono != null)
-            {            
+            if (TweenManager.mono != null)
+            {
                 Init();
             }
-        }
-
-        void UpdateRun()
-        {
-            Update?.Invoke();
-        }
-
-        /// <summary>
-        /// Finds subsystem.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        private static PlayerLoopSystem FindSubSystem<T>(PlayerLoopSystem def)
-        {
-            if (def.type == typeof(T))
-            {
-                return def;
-            }
-            if (def.subSystemList != null)
-            {
-                foreach (var s in def.subSystemList)
-                {
-                    var system = FindSubSystem<Update.ScriptRunBehaviourUpdate>(s);
-                    if (system.type == typeof(T))
-                    {
-                        return system;
-                    }
-                }
-            }
-            return default(PlayerLoopSystem);
         }
     }
 }

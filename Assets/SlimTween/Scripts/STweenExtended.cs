@@ -145,7 +145,7 @@ namespace Breadnone
         /// <param name="duration">Duration.</param>
         public static STVector2 lerpSize(this VisualElement visualElement, float to, float duration)
         {
-            return size(visualElement, to, duration);
+            return sizePercent(visualElement, to, duration);
         }
         /// <summary>Rotates the visaulElement.</summary>
         /// <param name="visualElement">The visualElement.</param>

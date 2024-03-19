@@ -93,7 +93,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<STVector3>(visualElement.GetHashCode());
-            var tmp = visualElement.resolvedStyle.translate;
+            var tmp = visualElement.resolvedStyle.scale.value;
             
             instance.SetBase(new Vector3(tmp.x, tmp.y, tmp.z), to, duration, (value)=>
             {
@@ -132,7 +132,7 @@ namespace Breadnone
         /// <param name="visualElement">The visualElement.</param>
         /// <param name="to">Target position</param>
         /// <param name="duration">The duration of the tween.</param>
-        public static STVector2 size(VisualElement visualElement, float to, float duration)
+        public static STVector2 sizePercent(VisualElement visualElement, float to, float duration)
         {
             if(visualElement is null)
             {
@@ -164,7 +164,30 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<STVector3>(visualElement.GetHashCode());
-            var tmp = visualElement.resolvedStyle.translate;
+            var tmp = visualElement.resolvedStyle.scale.value;
+
+            instance.SetBase(new Vector3(tmp.x, tmp.y, tmp.z), new Vector3(to, to, to), duration, (value)=>
+            {
+                visualElement.style.scale = new Scale(value);
+            });
+
+            return instance;
+        }
+        /// <summary>
+        /// Resizes the visualElement on both width and height properties based on a single float value. 
+        /// </summary>
+        /// <param name="visualElement">The visualElement.</param>
+        /// <param name="to">Target position</param>
+        /// <param name="duration">The duration of the tween.</param>
+        public static STVector3 scalePercent(VisualElement visualElement, float to, float duration)
+        {
+            if(visualElement is null)
+            {
+                throw new STweenException("VisualElement can't be null or empty.");
+            }
+
+            var instance = STPool.GetInstance<STVector3>(visualElement.GetHashCode());
+            var tmp = visualElement.resolvedStyle.scale.value;
 
             instance.SetBase(new Vector3(tmp.x, tmp.y, tmp.z), new Vector3(to, to, to), duration, (value)=>
             {
@@ -187,12 +210,11 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<STFloat>(visualElement.GetHashCode());
-            var tmp = visualElement.style.translate.value;
-
             var val = visualElement.resolvedStyle.rotate.angle.value;
+
             instance.SetBase( val, angle, duration, (value)=>
             {
-                visualElement.style.rotate = new Rotate(value);
+                visualElement.style.rotate = new Rotate(Angle.Degrees(value));
             });
 
             return instance;

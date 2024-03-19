@@ -693,7 +693,6 @@ namespace Breadnone.Extension
 
             InvokeLerps(!flipTick ? 1f : 0f);
         }
-        Vector3 tmp;
         /// <summary>Invoked every frame.</summary>
         protected override void InternalOnUpdate()
         {
@@ -755,7 +754,6 @@ namespace Breadnone.Extension
                     interp.SetFrom(Vector3.LerpUnclamped(interp.previousPos, Vector3.LerpUnclamped(interp.from, interp.getTransform.localScale, tick), tick));
                 }
             }
-            
         }
         void ISlimTween.BackupPreviousPosition()
         {

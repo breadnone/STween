@@ -12,7 +12,7 @@ namespace TweenLoop
     [Serializable]
     public sealed class TweenPlayerLoop
     {
-        public static TweenPlayerLoop tweenLoop;
+        static TweenPlayerLoop tweenLoop;
         public static int stExecutionOrder 
         {
             get
@@ -85,7 +85,7 @@ namespace TweenLoop
 
             if (addCustomUpdateElseClear)
             {
-                var sys = new PlayerLoopSystem()
+                var sys = new PlayerLoopSystem
                 {
                     updateDelegate = TweenManager.TweenWorkerUpdate,
                     type = typeof(AwaitUpdate)

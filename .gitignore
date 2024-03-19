@@ -1,5 +1,3 @@
 README.md export-ignore
-/*
-!/mainFolder/
-/mainFolder/*
+
 !/mainFolder/subFolder/

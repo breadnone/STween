@@ -753,10 +753,10 @@ namespace Breadnone
         ///<summary>Rotates around target.</summary>
         /// <param name="transform">The transform to rotate.</param>
         /// <param name="angle">Target angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="axis">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAround(Transform transform, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAround(Transform transform, Vector3 axis, float angle, float duration)
         {
             if (transform is null)
             {
@@ -764,16 +764,16 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimTransform>(transform.gameObject.GetInstanceID());
-            instance.InitRotateAround(transform, transform.position, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(transform, transform.position, axis, angle, duration, TransformType.RotateAround);
             return instance;
         }
         ///<summary>Rotates around target in localSpace.</summary>
         /// <param name="transform">The transform to rotate.</param>
         /// <param name="angle">Angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="axis">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAroundLocal(Transform transform, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAroundLocal(Transform transform, Vector3 axis, float angle, float duration)
         {
             if (transform is null)
             {
@@ -781,16 +781,16 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimTransform>(transform.gameObject.GetInstanceID());
-            instance.InitRotateAround(transform, transform.position, direction, angle, duration, TransformType.RotateAroundLocal);
+            instance.InitRotateAround(transform, transform.position, axis, angle, duration, TransformType.RotateAroundLocal);
             return instance;
         }
         ///<summary>Rotates around target in localSpace.</summary>
         /// <param name="gameObject">The gameObject to rotate.</param>
         /// <param name="angle">Angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="axis">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAroundLocal(GameObject gameObject, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAroundLocal(GameObject gameObject, Vector3 axis, float angle, float duration)
         {
             if (gameObject is null)
             {
@@ -798,17 +798,17 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimTransform>(gameObject.transform.gameObject.GetInstanceID());
-            instance.InitRotateAround(gameObject.transform, gameObject.transform.position, direction, angle, duration, TransformType.RotateAroundLocal);
+            instance.InitRotateAround(gameObject.transform, gameObject.transform.position, axis, angle, duration, TransformType.RotateAroundLocal);
             return instance;
         }
         ///<summary>Rotates around target.</summary>
         /// <param name="gameObject">The transform to rotate.</param>
         /// <param name="target">Target to be rotated around.</param>
         /// <param name="angle">Target angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="axis">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimTransform rotateAround(GameObject gameObject, Vector3 direction, float angle, float duration)
+        public static SlimTransform rotateAround(GameObject gameObject, Vector3 axis, float angle, float duration)
         {
             if (gameObject is null)
             {
@@ -816,17 +816,17 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimTransform>(gameObject.GetInstanceID());
-            instance.InitRotateAround(gameObject.transform, gameObject.transform.position, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(gameObject.transform, gameObject.transform.position, axis, angle, duration, TransformType.RotateAround);
             return instance;
         }
         ///<summary>Rotates around target.</summary>
         /// <param name="rectTransform">The transform to rotate.</param>
         /// <param name="target">Target to be rotated around.</param>
         /// <param name="angle">Target angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="axis">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimRect rotateAround(RectTransform rectTransform, Vector3 direction, float angle, float duration)
+        public static SlimRect rotateAround(RectTransform rectTransform, Vector3 axis, float angle, float duration)
         {
             if (rectTransform is null)
             {
@@ -834,17 +834,17 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            instance.InitRotateAround(rectTransform, rectTransform.position, direction, angle, duration, TransformType.RotateAround);
+            instance.InitRotateAround(rectTransform, rectTransform.position, axis, angle, duration, TransformType.RotateAround);
             return instance;
         }
         ///<summary>Rotates around target.</summary>
         /// <param name="rectTransform">The transform to rotate.</param>
         /// <param name="target">Target to be rotated around.</param>
         /// <param name="angle">Target angle value.</param>
-        /// <param name="direction">Direction of the rotation. e.g: Vector3.forward etc.</param>
+        /// <param name="axis">Direction of the rotation. e.g: Vector3.forward etc.</param>
         /// <param name="duration">Duration to reach the target.</param>
         /// <exception cref="STweenException"></exception>
-        public static SlimRect rotateAroundLocal(RectTransform rectTransform, Vector3 direction, float angle, float duration)
+        public static SlimRect rotateAroundLocal(RectTransform rectTransform, Vector3 axis, float angle, float duration)
         {
             if (rectTransform is null)
             {
@@ -852,7 +852,7 @@ namespace Breadnone
             }
 
             var instance = STPool.GetInstance<SlimRect>(rectTransform.gameObject.GetInstanceID());
-            instance.InitRotateAround(rectTransform, rectTransform.position, direction, angle, duration, TransformType.RotateAroundLocal);
+            instance.InitRotateAround(rectTransform, rectTransform.position, axis, angle, duration, TransformType.RotateAroundLocal);
             return instance;
         }
         ///<summary>Rotates transform to target x axis.</summary>
@@ -1220,9 +1220,7 @@ namespace Breadnone
             instance.Init(transform, to, duration, false, TransformType.Scale);
             return instance;
         }
-        /// <summary>
-        /// Moves the transform in the direction and distance of translation.
-        /// </summary>
+        /// <summary>Moves the transform in the direction and distance of translation.</summary>
         /// <param name="transform">The transform to move.</param>
         /// <param name="direction">Direction.</param>
         /// <param name="duration">Duration.</param>
@@ -1238,9 +1236,7 @@ namespace Breadnone
             instance.Init(transform, direction, duration, false, TransformType.Translate);
             return instance;
         }
-        /// <summary>
-        /// Moves the transform in localSpace in the direction and distance of translation.
-        /// </summary>
+        /// <summary>Moves the transform in localSpace in the direction and distance of translation.</summary>
         /// <param name="transform">The transform to move.</param>
         /// <param name="direction">Direction.</param>
         /// <param name="duration">Duration.</param>
@@ -1256,9 +1252,7 @@ namespace Breadnone
             instance.Init(transform, direction, duration, true, TransformType.Translate);
             return instance;
         }
-        /// <summary>
-        /// Moves the transform in the direction and distance of translation.
-        /// </summary>
+        /// <summary>Moves the transform in the direction and distance of translation.</summary>
         /// <param name="gameObject">The gameObject to move.</param>
         /// <param name="direction">Direction.</param>
         /// <param name="duration">Duration.</param>
@@ -1274,9 +1268,7 @@ namespace Breadnone
             instance.Init(gameObject.transform, direction, duration, false, TransformType.Translate);
             return instance;
         }
-        /// <summary>
-        /// Moves the gameObject in localSpace in the direction and distance of translation.
-        /// </summary>
+        /// <summary>Moves the gameObject in localSpace in the direction and distance of translation.</summary>
         /// <param name="gameObject">The gameObject to move.</param>
         /// <param name="direction">Direction.</param>
         /// <param name="duration">Duration.</param>
@@ -1295,9 +1287,7 @@ namespace Breadnone
         #endregion
 
         #region Curves
-        /// <summary>
-        /// Move a gameObject along splines. Note : All curves can't be chained.
-        /// </summary>
+        /// <summary>Move a gameObject along splines. Note : All curves can't be chained.</summary>
         /// <param name="transform">The transform to move.</param>
         /// <param name="middle">Middle point.</param>
         /// <param name="end">End point.</param>
@@ -1307,69 +1297,54 @@ namespace Breadnone
             var instance = new STSplines(transform, transform.position, middle, end, duration, lookAtDirection, is2d);
             return instance.sfloat;
         }
-        /// <summary>
-        /// Moves a gameObject along splines. This version would teleport to a starting point instead of using the transform position.  Note : All curves can't be chained.
-        /// </summary>
+        /// <summary>Moves a gameObject along splines. This version would teleport to a starting point instead of using the transform position.  Note : All curves can't be chained.</summary>
         /// <param name="transform">Transform to move.</param>
         /// <param name="start">Stars from</param>
         /// <param name="middle">Middle point</param>
         /// <param name="end">End point.</param>
         /// <param name="duration"></param>
-        /// <returns></returns>/
         public static STFloat splineFrom(Transform transform, Vector3 start, Vector3 middle, Vector3 end, float duration, bool lookAtDirection, bool is2d)
         {
             var instance = new STSplines(transform, start, middle, end, duration, lookAtDirection, is2d);
             return instance.sfloat;
         }
-        /// <summary>
-        /// Moves a gameObject along bezier curves.
-        /// </summary>
+        /// <summary>Moves a gameObject along bezier curves.</summary>
         /// <param name="transform">The transform.</param>
         /// <param name="points">Points.</param>
         /// <param name="duration">Duration.</param>
-        /// <returns></returns>
         public static STFloat bezier(Transform transform, List<Vector3> points, float duration)
         {
             var instance = new STBezier(transform, duration, points);
             return instance.sfloat;
         }
-        /// <summary>
-        /// Parabolic shape curves. Note : All curves can't be chained.
-        /// </summary>
+        /// <summary>Parabolic shape curves. Note : All curves can't be chained.</summary>
         /// <param name="transform"></param>
         /// <param name="direction"></param>
         /// <param name="to"></param>
         /// <param name="height"></param>
         /// <param name="duration"></param>
-        /// <returns></returns>
         public static STFloat parabolic(Transform transform, Vector3 direction, Vector3 to, float height, float duration)
         {
             var instance = new STParabolic(transform, direction, to, height, duration);
             return instance.sfloat;
         }
-        /// <summary>
-        /// Sine wave shape curves. Note : All curves can't be chained.
-        /// </summary>
+        /// <summary>Sine wave shape curves. Note : All curves can't be chained.</summary>
         /// <param name="transform">Transform</param>
         /// <param name="direction">Duration</param>
         /// <param name="to">Direction</param>
         /// <param name="amplitude">Power/amplitude.</param>
         /// <param name="duration">Duration</param>
-        /// <returns></returns>
         public static STFloat sine(Transform transform, Vector3 direction, Vector3 to, float amplitude, float duration)
         {
             var instance = new STSine(transform, direction, to, amplitude, duration);
             return instance.sfloat;
         }
-        /// <summary>
-        /// Spiral wave shape curves. Note : All curves can't be chained.
-        /// </summary>
+        /// <summary>Spiral wave shape curves. Note : All curves can't be chained.</summary>
         /// <param name="transform">Transform</param>
         /// <param name="to">Direction</param>
         /// <param name="radius">Radius</param>
         /// <param name="exponent">Power/amplitude</param>
         /// <param name="duration">Duration</param>
-        /// <returns></returns>
         public static STFloat spiral(Transform transform, Vector3 to, float radius, float exponent, float duration)
         {
             var instance = new STSpiral(transform, to, radius, exponent, duration);
@@ -1501,9 +1476,7 @@ namespace Breadnone
             instance.SetBase(from, to, time, callback);
             return instance;
         }
-        /// <summary>
-        /// Schedules a delegate invocation at a later time.
-        /// </summary>
+        /// <summary>Schedules a delegate invocation at a later time.</summary>
         /// <param name="time">Time before invocation.</param>
         /// <param name="callback">Delegate</param>
         /// <exception cref="STweenException"></exception>
@@ -1541,9 +1514,7 @@ namespace Breadnone
         #endregion
 
         #region Alpha
-        /// <summary>
-        /// Interpolates alpha value of UI components.
-        /// </summary>
+        /// <summary>Interpolates alpha value of UI components.</summary>
         /// <param name="canvasGroup">The canvasGroup component.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -1564,9 +1535,7 @@ namespace Breadnone
 
             return instance;
         }
-        /// <summary>
-        /// Interpolates alpha value of UI components.
-        /// </summary>
+        /// <summary>Interpolates alpha value of UI components.</summary>
         /// <param name="canvasGroup">The canvasGroup component.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -1587,9 +1556,7 @@ namespace Breadnone
 
             return instance;
         }
-        /// <summary>
-        /// Interpolates alpha value of UI components.
-        /// </summary>
+        /// <summary>Interpolates alpha value of UI components.</summary>
         /// <param name="image">Image component.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -1612,9 +1579,7 @@ namespace Breadnone
 
             return instance;
         }
-        /// <summary>
-        /// Interpolates alpha value of UI components.
-        /// </summary>
+        /// <summary>Interpolates alpha value of UI components.</summary>
         /// <param name="image">Image component.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -1638,9 +1603,7 @@ namespace Breadnone
             return instance;
         }
 
-        /// <summary>
-        /// Interpolates alpha value of UI components.
-        /// </summary>
+        /// <summary>Interpolates alpha value of UI components.</summary>
         /// <param name="sprite">SpriteRenderer component.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -1663,9 +1626,7 @@ namespace Breadnone
 
             return instance;
         }
-        /// <summary>
-        /// Interpolates alpha value of UI components.
-        /// </summary>
+        /// <summary>Interpolates alpha value of UI components.</summary>
         /// <param name="sprite">SpriteRenderer component.</param>
         /// <param name="from">Start value.</param>
         /// <param name="to">Target value.</param>
@@ -1840,18 +1801,14 @@ namespace Breadnone
         #endregion
 
         #region Async
-        /// <summary>
-        /// Awaits the tween to finished in async/await context.
-        /// </summary>
+        /// <summary>Awaits the tween to finished in async/await context.</summary>
         /// <param name="tween">The tween class.</param>
         public static Task AsTask(this TweenClass tween)
         {
             tween.Pause();
             return TweenAsync.ConvertToTask(tween);
         }
-        /// <summary>
-        /// Waits for the tween to finished in coroutine context. Can't be used with setDelay.
-        /// </summary>
+        /// <summary>Waits for the tween to finished in coroutine context. Can't be used with setDelay.</summary>
         /// <param name="tween">The TweenClass.</param>
         public static YieldInstruction AsCoroutine(this TweenClass tween)
         {
@@ -1863,9 +1820,7 @@ namespace Breadnone
 
         #region  Utility
 
-        /// <summary>
-        /// Seqentially moves to multiple points in linear progression. Note: Easing is not supported. 
-        /// </summary>
+        /// <summary>Seqentially moves to multiple points in linear progression. Note: Easing is not supported.</summary>
         /// <param name="gameObject">The gamObject.</param>
         /// <param name="points">The target points array.</param>
         /// <param name="speed">Speed.</param>
@@ -1883,9 +1838,7 @@ namespace Breadnone
                 }
             }
         }
-        /// <summary>
-        /// Equal to Vector3.forward in euler angle. Rotates on locked y axis.
-        /// </summary>
+        /// <summary>Equal to Vector3.forward in euler angle. Rotates on locked y axis.</summary>
         /// <param name="gameObject">GameObject.</param>
         /// <param name="angle">Degree angle.</param>
         /// <param name="duration">Duration.</param>
@@ -1898,9 +1851,7 @@ namespace Breadnone
 
             return rotateAround(gameObject, Vector3.forward, angle, duration);
         }
-        /// <summary>
-        /// Equals to Vector3.right for positive angle, Vector2.left for negative angle. Rotates on locked origin.
-        /// </summary>
+        /// <summary>Equals to Vector3.right for positive angle, Vector2.left for negative angle. Rotates on locked origin.</summary>
         /// <param name="gameObject">GameObject.</param>
         /// <param name="angle">Degree angle.</param>
         /// <param name="duration">Duration.</param>
@@ -1913,6 +1864,11 @@ namespace Breadnone
 
             return rotateAround(gameObject, Vector3.right, angle, duration);
         }
+        /// <summary>Object following.</summary>
+        /// <param name="gameObject">GameObject.</param>
+        /// <param name="followers">Followers.</param>
+        /// <param name="minDistance">Minimum distance.</param>
+        /// <param name="speed">Move speed.</param>
         public static STFollow follow(GameObject gameObject, Transform[] followers, float minDistance, float speed)
         {
             var instance = STPool.GetInstance<STFollow>(gameObject.GetInstanceID());
@@ -1971,8 +1927,8 @@ namespace Breadnone
         public static void Cancel(Transform transform, bool onComplete)
         {
             TweenExtension.Cancel(transform.gameObject.GetInstanceID(), onComplete);
-        }        ///<summary>Cancels VTween instance.</summary>
-                 ///<summary>Cancels VTween instance.</summary>
+        } 
+        ///<summary>Cancels VTween instance.</summary>
         public static void Cancel(VisualElement visualElement, bool onComplete)
         {
             TweenExtension.Cancel(visualElement.GetHashCode(), onComplete);

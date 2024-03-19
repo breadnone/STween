@@ -37,7 +37,7 @@ Features :
 - Custom tween
 
 **How the pooling works**
-Internally, STween heavily utilizes object pooling and with weakReferences as a fallback when there's not enough resources can be taken from the pool.
+Internally, STween heavily utilizes object pooling and with weakReferences as a fallback when there's not enough resources can be taken from the pool. STween is feature packed compared to [CTween](https://github.com/breadnone/CTween).
 
 A deltatime simulation is needed for the duration-based interpolators to work properly to get the timing as close as possible to the runtime.
 
@@ -356,6 +356,7 @@ STween can do multiple tweens at once on a single Transform/GameObject out of th
 
   
 There are lots more APIs that aren't too common internally but they're exposed and ready to use so you can just take a peek at the written code documentations/summaries in the scripts.  
+STween is geared towards features, while [CTween](https://github.com/breadnone/CTween).   
   
 Note :
 All extensions related to VFXGraph are disabled by default due to Unity requires to install HDRP package to use VFXGraph.  

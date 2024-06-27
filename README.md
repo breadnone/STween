@@ -36,6 +36,9 @@ Features :
 - VFXGraph property interpolation //Requires vfxgraph to be installed
 - Custom tween
 
+High performance version of this lib :
+[CTween](https://github.com/breadnone/CTween)
+
 **How the pooling works**
 Internally, STween heavily utilizes object pooling and with weakReferences as a fallback when there's not enough resources can be taken from the pool. STween is feature packed compared to [CTween](https://github.com/breadnone/CTween).
 
